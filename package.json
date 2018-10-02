@@ -20,7 +20,9 @@
     "os": "^0.1.1",
     "path": "^0.12.7",
     "react": "^16.3.1",
-    "react-dom": "^16.3.1"
+    "react-dom": "^16.3.1",
+    "shelljs": "^0.8.2",
+    "simple-ssh": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
