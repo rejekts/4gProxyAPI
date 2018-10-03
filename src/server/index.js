@@ -36,6 +36,7 @@ app.get("/proxy1", function(req, res) {
 
 app.get("/proxy1/reset", function(req, res) {
   console.log("Reset API Endpoint getting hit!");
+  const ip = req.clientIp;
 
   child_process.exec(path.join(__dirname + "/pi1Reset.sh"), (error, stdout) => {
     if (error) {
