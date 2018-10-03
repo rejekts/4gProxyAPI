@@ -9,6 +9,7 @@ const node_ssh = require("node-ssh");
 const SSH = require("simple-ssh");
 const shell = require("shelljs");
 const requestIp = require("request-ip");
+const child_process = require("child_process");
 
 const app = express();
 
@@ -36,9 +37,14 @@ app.get("/proxy1", function(req, res) {
 app.get("/proxy1/reset", function(req, res) {
   console.log("Reset API Endpoint getting hit!");
 
-  shell.exec(path.join(__dirname + "/pi1Reset.sh"));
-
-  res.redirect("https://ipfingerprints.com");
+  child_process.exec(path.join(__dirname + "/pi1Reset.sh"), (error, stdout) => {
+    if (error) {
+      console.error(`exec error: ${error}`);
+      return;
+    }
+    console.log(`Connection: ${stdout}`);
+    res.redirect("https://ipfingerprints.com");
+  });
 });
 //sudo nmcli device disconnect cdc-wdm0 && sudo nmcli device connect cdc-wdm0
 //Using node-ssh wrapper below
