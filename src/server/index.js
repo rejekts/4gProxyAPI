@@ -48,6 +48,7 @@ app.get("/proxy1/reset", function(req, res) {
   res.setTimeout(15000, function() {
     console.log("TIMED!");
     res.redirect("https://ipfingerprints.com");
+    res.send(`Hello. Your new IP Address is ${ip}`);
   });
 });
 //sudo nmcli device disconnect cdc-wdm0 && sudo nmcli device connect cdc-wdm0
