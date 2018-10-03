@@ -43,8 +43,11 @@ app.get("/proxy1/reset", function(req, res) {
       return;
     } else {
       console.log(`Connection: ${stdout}`);
-      res.redirect("https://ipfingerprints.com");
     }
+  });
+  res.setTimeout(15000, function() {
+    console.log("TIMED!");
+    res.redirect("https://ipfingerprints.com");
   });
 });
 //sudo nmcli device disconnect cdc-wdm0 && sudo nmcli device connect cdc-wdm0
