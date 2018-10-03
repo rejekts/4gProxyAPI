@@ -41,9 +41,10 @@ app.get("/proxy1/reset", function(req, res) {
     if (error) {
       console.error(`exec error: ${error}`);
       return;
+    } else {
+      console.log(`Connection: ${stdout}`);
+      res.redirect("https://ipfingerprints.com");
     }
-    console.log(`Connection: ${stdout}`);
-    res.redirect("https://ipfingerprints.com");
   });
 });
 //sudo nmcli device disconnect cdc-wdm0 && sudo nmcli device connect cdc-wdm0
