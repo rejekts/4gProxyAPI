@@ -26,8 +26,7 @@ app.get("/proxy1/reset", function(req, res) {
 
   shell.exec(path.join(__dirname + "/pi1Reset.sh"));
 
-  // res.sendFile(path.join(__dirname + "../../resetIndex.html"));
-  res.sendFile(path.join(__dirname + "../../public/resetIndex.html"));
+  res.sendFile(path.join(__dirname + "/resetIndex.html"));
 });
 //sudo nmcli device disconnect cdc-wdm0 && sudo nmcli device connect cdc-wdm0
 //Using node-ssh wrapper below
@@ -41,5 +40,5 @@ app.get("/proxy1/reset/hard", function(req, res) {
 
   shell.exec(path.join(__dirname + "/pi1HardReset.sh"));
 
-  res.sendFile(path.join(__dirname + "../../public/resetIndex.html"));
+  res.sendFile(path.join(__dirname + "/resetIndex.html"));
 });
