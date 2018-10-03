@@ -38,7 +38,7 @@ app.get("/proxy1/reset", function(req, res) {
 
   shell.exec(path.join(__dirname + "/pi1Reset.sh"));
 
-  res.redirect("http://proxy.confucius.marketing");
+  res.redirect("https://ipfingerprints.com");
 });
 //sudo nmcli device disconnect cdc-wdm0 && sudo nmcli device connect cdc-wdm0
 //Using node-ssh wrapper below
