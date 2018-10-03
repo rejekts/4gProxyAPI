@@ -36,7 +36,8 @@ app.get("/proxy1", function(req, res) {
 
 app.get("/proxy1/reset", function(req, res) {
   console.log("Reset API Endpoint getting hit!");
-  const ip = req.clientIp;
+  // const ip = req.clientIp;
+  var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
 
   child_process.exec(path.join(__dirname + "/pi1Reset.sh"), (error, stdout) => {
     if (error) {
@@ -48,7 +49,7 @@ app.get("/proxy1/reset", function(req, res) {
   });
   res.setTimeout(15000, function() {
     console.log("TIMED!");
-    res.redirect("https://ipfingerprints.com");
+    // res.redirect("https://ipfingerprints.com");
     res.send(`Hello. Your new IP Address is ${ip}`);
   });
 });
