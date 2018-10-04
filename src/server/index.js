@@ -29,7 +29,11 @@ app.get("/proxy1", function(req, res) {
   console.log("Redirect to Main IP Page API Endpoint getting hit!", req.ip);
   let iplib = req.clientIp;
   console.log("request-ip lib IP => ", iplib);
-  var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  var ip =
+    req.headers["x-forwarded-for"] ||
+    req.connection.remoteAddress ||
+    req.socket.remoteAddress ||
+    (req.connection.socket ? req.connection.socket.remoteAddress : null);
 
   res.send(`Hello. Your new IP Address is ${ip}`);
 });
@@ -37,7 +41,24 @@ app.get("/proxy1", function(req, res) {
 app.get("/proxy1/reset", function(req, res) {
   console.log("Reset API Endpoint getting hit!");
   // const ip = req.clientIp;
-  var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  var ip =
+    req.headers["x-forwarded-for"] ||
+    req.connection.remoteAddress ||
+    req.socket.remoteAddress ||
+    (req.connection.socket ? req.connection.socket.remoteAddress : null);
+
+  var interfaces = os.networkInterfaces();
+  var addresses = [];
+  for (var k in interfaces) {
+    for (var k2 in interfaces[k]) {
+      var address = interfaces[k][k2];
+      if (address.family === "IPv4" && !address.internal) {
+        addresses.push(address.address);
+      }
+    }
+  }
+
+  console.log("Addresses => ", addresses);
 
   child_process.exec(path.join(__dirname + "/pi1Reset.sh"), (error, stdout) => {
     if (error) {
