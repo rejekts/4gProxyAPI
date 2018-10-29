@@ -1,6 +1,6 @@
 #!/bin/bash
 USERNAME=pi
-HOSTS="172.30.230.10"
+HOSTS=$1
 SCRIPT="sudo nmcli connection up Verizon"
 for HOSTNAME in ${HOSTS} ; do
     ssh -l ${USERNAME} ${HOSTNAME} "${SCRIPT}"

@@ -38,27 +38,29 @@ app.get("/proxy1", function(req, res) {
   res.send(`Hello. Your new IP Address is ${ip}`);
 });
 
-app.get("/proxy1/reset", function(req, res) {
+app.get("/proxy/reset", function(req, res) {
   console.log("Reset API Endpoint getting hit!");
-  const ip = req.clientIp;
-  // var ip = HttpContext.Request.UserHostAddress;
+  const host = req.param.host;
+  const network = req.param.network;
+  console.log("host ip => ", host, " network => ", network);
 
-  var interfaces = os.networkInterfaces();
-  console.log("Interaces => ", interfaces);
-  var addresses = [];
-  for (var k in interfaces) {
-    for (var k2 in interfaces[k]) {
-      var address = interfaces[k][k2];
-      if (address.family === "IPv4" && !address.internal) {
-        addresses.push(address.address);
-      }
-    }
-  }
+  // var interfaces = os.networkInterfaces();
+  // console.log("Interaces => ", interfaces);
+  // var addresses = [];
+  // for (var k in interfaces) {
+  //   for (var k2 in interfaces[k]) {
+  //     var address = interfaces[k][k2];
+  //     if (address.family === "IPv4" && !address.internal) {
+  //       addresses.push(address.address);
+  //     }
+  //   }
+  // }
 
-  console.log("Addresses => ", addresses);
+  // console.log("Addresses => ", addresses);
+  //path.join(__dirname + "/pi1ResetVerizon.sh")
 
-  child_process.exec(
-    path.join(__dirname + "/pi1ResetVerizon.sh"),
+  child_process.execFile(
+    `ssh pi@${host} "sudo nmcli connection up ${network}"`,
     (error, stdout) => {
       if (error) {
         console.error(`exec error: ${error}`);
