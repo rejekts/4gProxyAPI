@@ -41,7 +41,7 @@ app.get("/proxy/reset", function(req, res) {
       }
     }
   );
-  res.send(path.join(__dirname + "/resetIndex.html"));
+  res.sendFile(path.join(__dirname + "/resetIndex.html"));
 });
 
 app.get("/proxy/reset/hard", function(req, res) {
