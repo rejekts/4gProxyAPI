@@ -39,7 +39,7 @@ app.get("/proxy/reset", function(req, res) {
       } else {
         console.log(`Connection: ${stdout}`);
         res.send(
-          `<a href="http://ipfingerprints.com">Wait 15-30 seconds and click here to check your new ip address</a>`
+          '<a href="http://ipfingerprints.com">Wait 15-30 seconds and click here to check your new ip address</a>'
         );
       }
     }
