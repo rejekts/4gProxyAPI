@@ -38,10 +38,10 @@ app.get("/proxy/reset", function(req, res) {
         return;
       } else {
         console.log(`Connection: ${stdout}`);
-        res.send(path.join(__dirname + "/resetIndex.html"));
       }
     }
   );
+  res.send(path.join(__dirname + "/resetIndex.html"));
 });
 
 app.get("/proxy/reset/hard", function(req, res) {
