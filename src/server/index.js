@@ -20,7 +20,7 @@ app.enable("trust proxy");
 app.get("/api/getUsername", (req, res) =>
   res.send({ username: os.userInfo().username })
 );
-const server = app.listen(8080, () => console.log("Listening on port 3000!"));
+const server = app.listen(8080, () => console.log("Listening on port 8080!"));
 
 //Using simple-ssh wrapper below
 //Original UUID - e101f2c1-0dcd-4ce8-8744-c198faa828d7
@@ -40,14 +40,11 @@ app.get("/proxy1", function(req, res) {
 
 app.get("/proxy1/reset", function(req, res) {
   console.log("Reset API Endpoint getting hit!");
-  // const ip = req.clientIp;
-  var ip =
-    req.headers["x-forwarded-for"] ||
-    req.connection.remoteAddress ||
-    req.socket.remoteAddress ||
-    (req.connection.socket ? req.connection.socket.remoteAddress : null);
+  const ip = req.clientIp;
+  // var ip = HttpContext.Request.UserHostAddress;
 
   var interfaces = os.networkInterfaces();
+  console.log("Interaces => ", interfaces);
   var addresses = [];
   for (var k in interfaces) {
     for (var k2 in interfaces[k]) {
@@ -60,18 +57,18 @@ app.get("/proxy1/reset", function(req, res) {
 
   console.log("Addresses => ", addresses);
 
-  child_process.exec(path.join(__dirname + "/pi1Reset.sh"), (error, stdout) => {
-    if (error) {
-      console.error(`exec error: ${error}`);
-      return;
-    } else {
-      console.log(`Connection: ${stdout}`);
+  child_process.exec(
+    path.join(__dirname + "/pi1ResetVerizon.sh"),
+    (error, stdout) => {
+      if (error) {
+        console.error(`exec error: ${error}`);
+        return;
+      } else {
+        console.log(`Connection: ${stdout}`);
+      }
     }
-  });
-  // res.setTimeout(15000, function() {
-  //   console.log("TIMED!");
-  //   res.redirect("https://ipfingerprints.com");
-  // });
+  );
+
   res.send(`Hello. Your new IP Address is ${ip}`);
 });
 //sudo nmcli device disconnect cdc-wdm0 && sudo nmcli device connect cdc-wdm0
