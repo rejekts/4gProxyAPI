@@ -38,7 +38,7 @@ app.get("/proxy/reset", function(req, res) {
         return;
       } else {
         console.log(`Connection: ${stdout}`);
-        res.send("./resetIndex.html");
+        res.send(path.join(__dirname + "/resetIndex.html"));
       }
     }
   );
