@@ -49,7 +49,7 @@ app.get("/proxy/reset/hard", function(req, res) {
   console.log("Hard Reset API Endpoint getting hit!", "host => ", host);
 
   child_process.exec(
-    `ssh pi@${host} "squid -k shutdown && echo "" > /var/spool/squid/swap.state && sudo reboot"`,
+    `ssh pi@${host} "/usr/bin/squid -k shutdown && echo "" > /var/spool/squid/swap.state && sudo reboot"`,
     (error, stdout) => {
       if (error) {
         console.error(`exec error: ${error}`);
