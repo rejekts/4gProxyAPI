@@ -43,23 +43,23 @@ app.get("/proxy/reset", function(req, res) {
   );
   res.sendFile(path.join(__dirname + "/resetIndex.html"));
 });
-
+//`ssh pi@${host} "/usr/bin/squid -k shutdown && echo "" > /var/spool/squid/swap.state && sudo reboot"`
 app.get("/proxy/reset/hard", function(req, res) {
   const host = req.param("host");
   console.log("Hard Reset API Endpoint getting hit!", "host => ", host);
 
-  child_process.exec(
-    `ssh pi@${host} "/usr/bin/squid -k shutdown && echo "" > /var/spool/squid/swap.state && sudo reboot"`,
-    (error, stdout) => {
-      if (error) {
-        console.error(`exec error: ${error}`);
-        res.send(
-          `Proxy Server Rebooting. Please allow 60-90 seconds for the network to re-establish`
-        );
-        return;
-      } else {
-        console.log(`Connection: ${stdout}`);
-      }
+  child_process.exec(`ssh pi@${host} "sudo reboot"`, (error, stdout) => {
+    if (error) {
+      console.error(`exec error: ${error}`);
+      res.send(
+        `Proxy Server Rebooting. Please allow 60-90 seconds for the network to re-establish`
+      );
+      return;
+    } else {
+      console.log(`Connection: ${stdout}`);
+      res.send(
+        `Proxy Server Rebooting. Please allow 60-90 seconds for the network to re-establish`
+      );
     }
-  );
+  });
 });
