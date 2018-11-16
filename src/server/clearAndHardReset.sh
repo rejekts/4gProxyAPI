@@ -11,6 +11,7 @@ chown pi:pi /var/spool/squid
 echo "set chown for the new folder"
 squid -z
 echo "ran squid -z to setup thr cache again and calling sudo reboot next"
+sleep 5
 systemctl restart squid
-echo "restarted squid"
+sleep 2
 reboot
