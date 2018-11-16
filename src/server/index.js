@@ -72,7 +72,7 @@ app.get("/proxy/reset/hard", function(req, res) {
 
 app.get("/proxy/reset/clear-cache", function(req, res) {
   const host = req.param("host");
-  console.log("Hard Reset API Endpoint getting hit!", "host => ", host);
+  console.log("Clear Cache API Endpoint getting hit!", "host => ", host);
 
   child_process.exec(
     `ssh pi@${host} "sudo /usr/local/bin/clearAndHardReset.sh"`,
