@@ -2,7 +2,6 @@
 
 const express = require("express");
 const bodyParser = require("body-parser");
-const path = require("path");
 const child_process = require("child_process");
 const cors = require("cors");
 const { URL } = require("url");
