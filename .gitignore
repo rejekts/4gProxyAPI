@@ -3,4 +3,4 @@ node_modules
 dist
 *.log
 yarn.lock
-./src/server/services/config*
+src/server/services/config
