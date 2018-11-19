@@ -5,6 +5,15 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const child_process = require("child_process");
 const cors = require("cors");
+const { URL } = require("url");
+let path = require("path");
+// let config = require("./services/config/config.json");
+// const https = require("https");
+// const http = require("http");
+// const fs = require("fs");
+// const redirectToHTTPS = require("express-http-to-https").redirectToHTTPS;
+// const moment = require("moment-timezone");
+
 let dbConnection = require("./services/dbconnector");
 const app = express();
 
