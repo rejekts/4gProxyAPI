@@ -20,6 +20,7 @@
     "node-ssh": "^5.1.2",
     "os": "^0.1.1",
     "path": "^0.12.7",
+    "promise-mysql": "^3.3.1",
     "react": "^16.3.1",
     "react-dom": "^16.3.1",
     "request-ip": "^2.1.1",
