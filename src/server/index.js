@@ -108,32 +108,39 @@ app.get("/api/safeurl", async function(req, res) {
   where a.pixel = ${pid};`;
 
   let dbase = await dbConnection.init();
-  if (!dbase) {
-    return res.status(500).send("Failed to initialize the db.");
-  } else {
-    await dbase.query(queryStr).then(results => {
-      let safeUrl = new URL(results[0].url);
-      let hostname = safeUrl.hostname;
-      let pixel = results[0].pixel;
-      let pathname = safeUrl.pathname;
-      let filename = path.basename(pathname);
 
-      if (results[0].url.indexOf("shopify") > -1) {
-        let shopifyRedirectUrl = `https://${hostname}${pathname.replace(
-          filename,
-          ""
-        )}thank-you/one.php?pid=${pixel}&link=${hostname}`;
+  try {
+    if (!dbase) {
+      return res.status(500).send("Failed to initialize the db.");
+    } else {
+      await dbase.query(queryStr).then(results => {
+        let safeUrl = new URL(results[0].url);
+        let hostname = safeUrl.hostname;
+        let pixel = results[0].pixel;
+        let pathname = safeUrl.pathname;
+        let filename = path.basename(pathname);
 
-        console.log("test url to redirect to => ", shopifyRedirectUrl);
-        res.redirect(shopifyRedirectUrl);
-      } else {
-        let otherRedirectUrl = `https://${hostname}/thank-you/one.php?pid=${pixel}&link=${hostname}`;
+        if (results[0].url.indexOf("shopify") > -1) {
+          let shopifyRedirectUrl = `https://${hostname}${pathname.replace(
+            filename,
+            ""
+          )}thank-you/one.php?pid=${pixel}&link=${hostname}`;
 
-        console.log("test url to redirect to => ", otherRedirectUrl);
-        res.redirect(otherRedirectUrl);
-      }
-      dbase.end();
-    });
+          console.log("test url to redirect to => ", shopifyRedirectUrl);
+          res.redirect(shopifyRedirectUrl);
+        } else {
+          let otherRedirectUrl = `https://${hostname}/thank-you/one.php?pid=${pixel}&link=${hostname}`;
+
+          console.log("test url to redirect to => ", otherRedirectUrl);
+          res.redirect(otherRedirectUrl);
+        }
+        dbase.end();
+      });
+    }
+  } catch (error) {
+    if (error) {
+      console.log("Error in the safeurl endpoint => ", error);
+    }
   }
 });
 
@@ -149,32 +156,37 @@ app.get("/api/pageview", async function(req, res) {
   where a.pixel = ${pid};`;
 
   let dbase = await dbConnection.init();
-  if (!dbase) {
-    return res.status(500).send("Failed to initialize the db.");
-  } else {
-    await dbase.query(queryStr).then(results => {
-      let safeUrl = new URL(results[0].url);
-      let hostname = safeUrl.hostname;
-      let pixel = results[0].pixel;
-      let pathname = safeUrl.pathname;
-      let filename = path.basename(pathname);
 
-      if (results[0].url.indexOf("shopify") > -1) {
-        let shopifyRedirectUrl = `https://${hostname}${pathname.replace(
-          filename,
-          ""
-        )}pageview/one.php?pid=${pixel}&link=${hostname}`;
+  try {
+    if (!dbase) {
+      return res.status(500).send("Failed to initialize the db.");
+    } else {
+      await dbase.query(queryStr).then(results => {
+        let safeUrl = new URL(results[0].url);
+        let hostname = safeUrl.hostname;
+        let pixel = results[0].pixel;
+        let pathname = safeUrl.pathname;
+        let filename = path.basename(pathname);
 
-        console.log("test url to redirect to => ", shopifyRedirectUrl);
-        res.redirect(shopifyRedirectUrl);
-      } else {
-        let otherRedirectUrl = `https://${hostname}/pageview/one.php?pid=${pixel}&link=${hostname}`;
+        if (results[0].url.indexOf("shopify") > -1) {
+          let shopifyRedirectUrl = `https://${hostname}${pathname.replace(
+            filename,
+            ""
+          )}pageview/one.php?pid=${pixel}&link=${hostname}`;
 
-        console.log("test url to redirect to => ", otherRedirectUrl);
-        res.redirect(otherRedirectUrl);
-      }
-      dbase.end();
-    });
+          console.log("test url to redirect to => ", shopifyRedirectUrl);
+          res.redirect(shopifyRedirectUrl);
+        } else {
+          let otherRedirectUrl = `https://${hostname}/pageview/one.php?pid=${pixel}&link=${hostname}`;
+
+          console.log("test url to redirect to => ", otherRedirectUrl);
+          res.redirect(otherRedirectUrl);
+        }
+        dbase.end();
+      });
+    }
+  } catch (error) {
+    console.log("Error in the pageview endpoint => ", error);
   }
 });
 
@@ -190,31 +202,35 @@ app.get("/api/addtocart", async function(req, res) {
   where a.pixel = ${pid};`;
 
   let dbase = await dbConnection.init();
-  if (!dbase) {
-    return res.status(500).send("Failed to initialize the db.");
-  } else {
-    await dbase.query(queryStr).then(results => {
-      let safeUrl = new URL(results[0].url);
-      let hostname = safeUrl.hostname;
-      let pixel = results[0].pixel;
-      let pathname = safeUrl.pathname;
-      let filename = path.basename(pathname);
+  try {
+    if (!dbase) {
+      return res.status(500).send("Failed to initialize the db.");
+    } else {
+      await dbase.query(queryStr).then(results => {
+        let safeUrl = new URL(results[0].url);
+        let hostname = safeUrl.hostname;
+        let pixel = results[0].pixel;
+        let pathname = safeUrl.pathname;
+        let filename = path.basename(pathname);
 
-      if (results[0].url.indexOf("shopify") > -1) {
-        let shopifyRedirectUrl = `https://${hostname}${pathname.replace(
-          filename,
-          ""
-        )}addtocart/one.php?pid=${pixel}&link=${hostname}`;
+        if (results[0].url.indexOf("shopify") > -1) {
+          let shopifyRedirectUrl = `https://${hostname}${pathname.replace(
+            filename,
+            ""
+          )}addtocart/one.php?pid=${pixel}&link=${hostname}`;
 
-        console.log("test url to redirect to => ", shopifyRedirectUrl);
-        res.redirect(shopifyRedirectUrl);
-      } else {
-        let otherRedirectUrl = `https://${hostname}/addtocart/one.php?pid=${pixel}&link=${hostname}`;
+          console.log("test url to redirect to => ", shopifyRedirectUrl);
+          res.redirect(shopifyRedirectUrl);
+        } else {
+          let otherRedirectUrl = `https://${hostname}/addtocart/one.php?pid=${pixel}&link=${hostname}`;
 
-        console.log("test url to redirect to => ", otherRedirectUrl);
-        res.redirect(otherRedirectUrl);
-      }
-      dbase.end();
-    });
+          console.log("test url to redirect to => ", otherRedirectUrl);
+          res.redirect(otherRedirectUrl);
+        }
+        dbase.end();
+      });
+    }
+  } catch (error) {
+    console.log("Error in the safeurl endpoint => ", error);
   }
 });
