@@ -6,12 +6,13 @@ const child_process = require("child_process");
 const cors = require("cors");
 const { URL } = require("url");
 let path = require("path");
+
 // let config = require("./services/config/config.json");
 // const https = require("https");
 // const http = require("http");
 // const fs = require("fs");
 // const redirectToHTTPS = require("express-http-to-https").redirectToHTTPS;
-// const moment = require("moment-timezone");
+const moment = require("moment-timezone");
 
 let dbConnection = require("./services/dbconnector");
 const app = express();
@@ -126,12 +127,20 @@ app.get("/api/safeurl", async function(req, res) {
             ""
           )}thank-you/one.php?pid=${pixel}&link=${hostname}`;
 
-          console.log("test url to redirect to => ", shopifyRedirectUrl);
+          console.log(
+            moment(),
+            " test url to redirect to => ",
+            shopifyRedirectUrl
+          );
           res.redirect(shopifyRedirectUrl);
         } else {
           let otherRedirectUrl = `https://${hostname}/thank-you/one.php?pid=${pixel}&link=${hostname}`;
 
-          console.log("test url to redirect to => ", otherRedirectUrl);
+          console.log(
+            moment(),
+            " test url to redirect to => ",
+            otherRedirectUrl
+          );
           res.redirect(otherRedirectUrl);
         }
         dbase.end();
@@ -174,12 +183,20 @@ app.get("/api/pageview", async function(req, res) {
             ""
           )}pageview/one.php?pid=${pixel}&link=${hostname}`;
 
-          console.log("test url to redirect to => ", shopifyRedirectUrl);
+          console.log(
+            moment(),
+            " test url to redirect to => ",
+            shopifyRedirectUrl
+          );
           res.redirect(shopifyRedirectUrl);
         } else {
           let otherRedirectUrl = `https://${hostname}/pageview/one.php?pid=${pixel}&link=${hostname}`;
 
-          console.log("test url to redirect to => ", otherRedirectUrl);
+          console.log(
+            moment(),
+            " test url to redirect to => ",
+            otherRedirectUrl
+          );
           res.redirect(otherRedirectUrl);
         }
         dbase.end();
@@ -219,12 +236,20 @@ app.get("/api/addtocart", async function(req, res) {
             ""
           )}addtocart/one.php?pid=${pixel}&link=${hostname}`;
 
-          console.log("test url to redirect to => ", shopifyRedirectUrl);
+          console.log(
+            moment(),
+            " test url to redirect to => ",
+            shopifyRedirectUrl
+          );
           res.redirect(shopifyRedirectUrl);
         } else {
           let otherRedirectUrl = `https://${hostname}/addtocart/one.php?pid=${pixel}&link=${hostname}`;
 
-          console.log("test url to redirect to => ", otherRedirectUrl);
+          console.log(
+            moment(),
+            " test url to redirect to => ",
+            otherRedirectUrl
+          );
           res.redirect(otherRedirectUrl);
         }
         dbase.end();
