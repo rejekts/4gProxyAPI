@@ -32,11 +32,7 @@ exports.init = async function connector(multiple) {
       })
       .catch(err => {
         console.log("DB ERROR: ", err);
-        if (err.code === "PROTOCOL_CONNECTION_LOST") {
-          connector(multiple);
-        } else {
-          throw err;
-        }
+        throw err;
       });
   } else {
     connection = await mysql
@@ -53,11 +49,7 @@ exports.init = async function connector(multiple) {
       })
       .catch(err => {
         console.log("DB ERROR: ", err);
-        if (err.code === "PROTOCOL_CONNECTION_LOST") {
-          connector(multiple);
-        } else {
-          throw err;
-        }
+        throw err;
       });
   }
 
