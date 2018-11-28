@@ -37,10 +37,11 @@ app.get("/proxy/reset", function(req, res) {
         console.error(`exec error: ${error}`);
         return;
       } else {
-        res.send(
-          `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
-        );
-        console.log(`Connection: ${stdout}`);
+        // res.send(
+        //   `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
+        // );
+        res.sendFile(path.join(__dirname + "/resetIndex.html"));
+        console.log(`Connection to ${host}: ${stdout}`);
       }
     }
   );
@@ -58,7 +59,7 @@ app.get("/proxy/reset/hard", function(req, res) {
       );
       return;
     } else {
-      console.log(`Connection: ${stdout}`);
+      console.log(`Connection to ${host}: ${stdout}`);
       res.send(
         `Proxy Server Rebooting. Please allow 60-90 seconds for the network to re-establish`
       );
@@ -80,7 +81,7 @@ app.get("/proxy/reset/clear-cache", function(req, res) {
         );
         return;
       } else {
-        console.log(`Connection: ${stdout}`);
+        console.log(`Connection to ${host}: ${stdout}`);
         res.send(
           `Proxy Server Rebooting. Please allow 60-90 seconds for the network to re-establish`
         );
