@@ -22,6 +22,7 @@ const server = app.listen(8080, () => console.log("Listening on port 8080!"));
 app.get("/proxy/reset", function(req, res) {
   const host = req.param("host");
   const network = req.param("network");
+
   console.log(
     "Reset API Endpoint getting hit!",
     "host ip => ",
@@ -29,22 +30,28 @@ app.get("/proxy/reset", function(req, res) {
     " network => ",
     network
   );
-
-  child_process.exec(
-    `ssh pi@${host} "sudo nmcli connection up ${network}"`,
-    (error, stdout) => {
-      if (error) {
-        console.error(`exec error: ${error}`);
-        return;
-      } else {
-        // res.send(
-        //   `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
-        // );
-        res.sendFile(path.join(__dirname + "/resetIndex.html"));
-        console.log(`Connection to ${host}: ${stdout}`);
+  try {
+    child_process.exec(
+      `ssh pi@${host} "sudo nmcli connection up ${network}"`,
+      (error, stdout) => {
+        if (error) {
+          console.error(`exec error: ${error}`);
+          res.send(
+            `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
+          );
+          return;
+        } else {
+          // res.send(
+          //   `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
+          // );
+          res.sendFile(path.join(__dirname + "/resetIndex.html"));
+          console.log(`Connection to ${host}: ${stdout}`);
+        }
       }
-    }
-  );
+    );
+  } catch (e) {
+    console.log(`Error in the RESET GET request for ${host} => `, e);
+  }
 });
 //`ssh pi@${host} "/usr/bin/squid -k shutdown && echo "" > /var/spool/squid/swap.state && sudo reboot"`
 app.get("/proxy/reset/hard", function(req, res) {
