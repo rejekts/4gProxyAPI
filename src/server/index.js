@@ -84,13 +84,13 @@ app.get("/proxy/reset/clear-cache", function(req, res) {
       if (error) {
         console.error(`exec error: ${error}`);
         res.send(
-          `Proxy Server Rebooting. Please allow 60-90 seconds for the network to re-establish`
+          `Proxy Server Clearing Cache, Rebuilding and Rebooting. Please allow 60-90 seconds for the network to re-establish`
         );
         return;
       } else {
         console.log(`Connection to ${host}: ${stdout}`);
         res.send(
-          `Proxy Server Rebooting. Please allow 60-90 seconds for the network to re-establish`
+          `Proxy Server Clearing Cache, Rebuilding and Rebooting. Please allow 60-90 seconds for the network to re-establish`
         );
       }
     }
