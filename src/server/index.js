@@ -30,7 +30,8 @@ app.get("/proxy/reset", function(req, res) {
     host,
     " network => ",
     network,
-    moment().format("LLLL")
+    "Time => ",
+    moment().format("YYYY-MM-DDTHH:mm:ss")
   );
   try {
     child_process.exec(
@@ -62,7 +63,8 @@ app.get("/proxy/reset/hard", function(req, res) {
     "Hard Reset API Endpoint getting hit!",
     "host => ",
     host,
-    moment().format("LLLL")
+    "Time => ",
+    moment().format("YYYY-MM-DDTHH:mm:ss")
   );
 
   child_process.exec(`ssh pi@${host} "sudo reboot"`, (error, stdout) => {
@@ -87,7 +89,8 @@ app.get("/proxy/reset/clear-cache", function(req, res) {
     "Clear Cache API Endpoint getting hit!",
     "host => ",
     host,
-    moment().format("LLLL")
+    "Time => ",
+    moment().format("YYYY-MM-DDTHH:mm:ss")
   );
 
   child_process.exec(
