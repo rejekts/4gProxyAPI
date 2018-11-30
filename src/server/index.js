@@ -10,6 +10,7 @@ const SSH = require("simple-ssh");
 const shell = require("shelljs");
 const requestIp = require("request-ip");
 const child_process = require("child_process");
+const moment = require("moment-timezone");
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.get("/proxy/reset", function(req, res) {
   const network = req.param("network");
 
   console.log(
+    moment(),
     "Reset API Endpoint getting hit!",
     "host ip => ",
     host,
@@ -56,7 +58,12 @@ app.get("/proxy/reset", function(req, res) {
 //`ssh pi@${host} "/usr/bin/squid -k shutdown && echo "" > /var/spool/squid/swap.state && sudo reboot"`
 app.get("/proxy/reset/hard", function(req, res) {
   const host = req.param("host");
-  console.log("Hard Reset API Endpoint getting hit!", "host => ", host);
+  console.log(
+    moment(),
+    "Hard Reset API Endpoint getting hit!",
+    "host => ",
+    host
+  );
 
   child_process.exec(`ssh pi@${host} "sudo reboot"`, (error, stdout) => {
     if (error) {
@@ -76,7 +83,12 @@ app.get("/proxy/reset/hard", function(req, res) {
 
 app.get("/proxy/reset/clear-cache", function(req, res) {
   const host = req.param("host");
-  console.log("Clear Cache API Endpoint getting hit!", "host => ", host);
+  console.log(
+    moment(),
+    "Clear Cache API Endpoint getting hit!",
+    "host => ",
+    host
+  );
 
   child_process.exec(
     `ssh pi@${host} "sudo /usr/local/bin/clearAndHardReset.sh"`,
