@@ -25,12 +25,12 @@ app.get("/proxy/reset", function(req, res) {
   const network = req.param("network");
 
   console.log(
-    moment(),
     "Reset API Endpoint getting hit!",
     "host ip => ",
     host,
     " network => ",
-    network
+    network,
+    moment().format("LLLL")
   );
   try {
     child_process.exec(
@@ -59,10 +59,10 @@ app.get("/proxy/reset", function(req, res) {
 app.get("/proxy/reset/hard", function(req, res) {
   const host = req.param("host");
   console.log(
-    moment(),
     "Hard Reset API Endpoint getting hit!",
     "host => ",
-    host
+    host,
+    moment().format("LLLL")
   );
 
   child_process.exec(`ssh pi@${host} "sudo reboot"`, (error, stdout) => {
@@ -84,10 +84,10 @@ app.get("/proxy/reset/hard", function(req, res) {
 app.get("/proxy/reset/clear-cache", function(req, res) {
   const host = req.param("host");
   console.log(
-    moment(),
     "Clear Cache API Endpoint getting hit!",
     "host => ",
-    host
+    host,
+    moment().format("LLLL")
   );
 
   child_process.exec(
