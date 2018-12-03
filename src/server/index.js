@@ -33,8 +33,15 @@ app.get("/proxy/reset", function(req, res) {
     "Time => ",
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
+  child = child_process.spawn("ls", {
+    stdio: [
+      0, // use parents stdin for child
+      "pipe", // pipe child's stdout to parent
+      fs.openSync("/home/jimbob/.pm2/logs/4gProxyAPI-error.log", "w") // direct child's stderr to a file
+    ]
+  });
   try {
-    child_process.exec(
+    child.exec(
       `ssh pi@${host} "sudo nmcli connection up ${network}"`,
       (error, stdout) => {
         if (error) {
@@ -69,7 +76,15 @@ app.get("/proxy/reset/hard", function(req, res) {
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
 
-  child_process.exec(`ssh pi@${host} "sudo reboot"`, (error, stdout) => {
+  child = child_process.spawn("ls", {
+    stdio: [
+      0, // use parents stdin for child
+      "pipe", // pipe child's stdout to parent
+      fs.openSync("/home/jimbob/.pm2/logs/4gProxyAPI-error.log", "w") // direct child's stderr to a file
+    ]
+  });
+
+  child.exec(`ssh pi@${host} "sudo reboot"`, (error, stdout) => {
     if (error) {
       console.error(`exec error: ${error}`);
       res.send(
@@ -95,7 +110,15 @@ app.get("/proxy/reset/clear-cache", function(req, res) {
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
 
-  child_process.exec(
+  child = child_process.spawn("ls", {
+    stdio: [
+      0, // use parents stdin for child
+      "pipe", // pipe child's stdout to parent
+      fs.openSync("/home/jimbob/.pm2/logs/4gProxyAPI-error.log", "w") // direct child's stderr to a file
+    ]
+  });
+
+  child.exec(
     `ssh pi@${host} "sudo /usr/local/bin/clearAndHardReset.sh"`,
     (error, stdout) => {
       if (error) {
