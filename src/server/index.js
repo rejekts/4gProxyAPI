@@ -177,6 +177,18 @@ app.get("/api/pageview", async function(req, res) {
         let pathname = safeUrl.pathname;
         let filename = path.basename(pathname);
 
+        console.log(
+          " safeurl => ",
+          safeUrl,
+          " hostname => ",
+          hostname,
+          " pixel => ",
+          pixel,
+          " pathname => ",
+          pathname,
+          " filename => ",
+          filename
+        );
         if (results[0].url.indexOf("shopify") > -1) {
           let shopifyRedirectUrl = `https://${hostname}${pathname.replace(
             filename,
