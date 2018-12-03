@@ -74,7 +74,7 @@ app.get("/proxy/reset/hard", function(req, res) {
     .catch(err => {
       console.log("err in the catch => ", err);
       res.send(
-        `Proxy Server Rebooting. Please allow 60-90 seconds for the network to re-establish`
+        `Proxy Server Rebooting. Please allow 60-90 seconds for the network to re-establish. You can close this browser tab now.`
       );
     });
 });
