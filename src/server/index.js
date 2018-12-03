@@ -20,7 +20,7 @@ app.enable("trust proxy");
 
 const server = app.listen(8080, () => console.log("Listening on port 8080!"));
 
-app.get("/proxy/reset", async function(req, res) {
+app.get("/proxy/reset", function(req, res) {
   const host = req.param("host");
   const network = req.param("network");
 
@@ -33,15 +33,8 @@ app.get("/proxy/reset", async function(req, res) {
     "Time => ",
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
-  child = await child_process.spawn("ls", {
-    stdio: [
-      0, // use parents stdin for child
-      "pipe", // pipe child's stdout to parent
-      fs.openSync("/home/jimbob/.pm2/logs/4gProxyAPI-error.log", "w") // direct child's stderr to a file
-    ]
-  });
   try {
-    child.exec(
+    child_process.exec(
       `ssh pi@${host} "sudo nmcli connection up ${network}"`,
       (error, stdout) => {
         if (error) {
@@ -76,15 +69,7 @@ app.get("/proxy/reset/hard", function(req, res) {
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
 
-  child = child_process.spawn("ls", {
-    stdio: [
-      0, // use parents stdin for child
-      "pipe", // pipe child's stdout to parent
-      fs.openSync("/home/jimbob/.pm2/logs/4gProxyAPI-error.log", "w") // direct child's stderr to a file
-    ]
-  });
-
-  child.exec(`ssh pi@${host} "sudo reboot"`, (error, stdout) => {
+  child_process.exec(`ssh pi@${host} "sudo reboot"`, (error, stdout) => {
     if (error) {
       console.error(`exec error: ${error}`);
       res.send(
@@ -110,15 +95,7 @@ app.get("/proxy/reset/clear-cache", function(req, res) {
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
 
-  child = child_process.spawn("ls", {
-    stdio: [
-      0, // use parents stdin for child
-      "pipe", // pipe child's stdout to parent
-      fs.openSync("/home/jimbob/.pm2/logs/4gProxyAPI-error.log", "w") // direct child's stderr to a file
-    ]
-  });
-
-  child.exec(
+  child_process.exec(
     `ssh pi@${host} "sudo /usr/local/bin/clearAndHardReset.sh"`,
     (error, stdout) => {
       if (error) {
