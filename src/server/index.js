@@ -39,15 +39,17 @@ app.get("/proxy/reset", function(req, res) {
       (error, stdout) => {
         if (error) {
           console.error(`exec error: ${error}`);
-          res.send(
-            `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
-          );
+          // res.send(
+          //   `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
+          // );
+          res.sendFile(path.join(__dirname + "/resetIndex.html"));
+          console.log(`Connection to ${host}: ${stdout}`);
           return;
         } else {
-          res.send(
-            `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
-          );
-          // res.sendFile(path.join(__dirname + "/resetIndex.html"));
+          // res.send(
+          //   `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
+          // );
+          res.sendFile(path.join(__dirname + "/resetIndex.html"));
           console.log(`Connection to ${host}: ${stdout}`);
         }
       }
