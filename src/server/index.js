@@ -11,6 +11,7 @@ const shell = require("shelljs");
 const requestIp = require("request-ip");
 const child_process = require("child_process");
 const moment = require("moment-timezone");
+const exec = require("child_process").exec;
 
 const app = express();
 
@@ -34,7 +35,7 @@ app.get("/proxy/reset", function(req, res) {
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
   try {
-    child_process.exec(
+    exec(
       `ssh pi@${host} "sudo nmcli connection up ${network}"`,
       (error, stdout) => {
         if (error) {
@@ -67,7 +68,7 @@ app.get("/proxy/reset/hard", function(req, res) {
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
 
-  child_process.exec(`ssh pi@${host} "sudo reboot"`, (error, stdout) => {
+  exec(`ssh pi@${host} "sudo reboot"`, (error, stdout) => {
     if (error) {
       console.error(`exec error: ${error}`);
       res.send(
@@ -93,7 +94,7 @@ app.get("/proxy/reset/clear-cache", function(req, res) {
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
 
-  child_process.exec(
+  exec(
     `ssh pi@${host} "sudo /usr/local/bin/clearAndHardReset.sh"`,
     (error, stdout) => {
       if (error) {
