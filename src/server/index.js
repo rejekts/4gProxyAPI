@@ -47,9 +47,9 @@ app.get("/proxy/reset", async function(req, res) {
       .catch(err => {
         console.log("err in the catch => ", err);
         // console.log(`Connection to ${host}: ${stdout}`);
-        res.send(
-          `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
-        );
+        // res.send(
+        //   `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
+        // );
       });
 
     // exec(
