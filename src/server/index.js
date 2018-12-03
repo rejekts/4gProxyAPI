@@ -48,30 +48,7 @@ app.get("/proxy/reset", async function(req, res) {
       })
       .catch(err => {
         console.log("err in the catch => ", err);
-        // console.log(`Connection to ${host}: ${stdout}`);
-        // res.send(
-        //   `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
-        // );
       });
-
-    // exec(
-    //   `ssh pi@${host} "sudo nmcli connection up ${network}"`,
-    //   (error, stdout) => {
-    //     if (error) {
-    //       console.error(`exec error: ${error}`);
-    //       res.send(
-    //         `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
-    //       );
-    //       return;
-    //     } else {
-    //       res.send(
-    //         `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
-    //       );
-    //       // res.sendFile(path.join(__dirname + "/resetIndex.html"));
-    //       console.log(`Connection to ${host}: ${stdout}`);
-    //     }
-    //   }
-    // );
   } catch (e) {
     console.log(`Error in the RESET GET request for ${host} => `, e);
   }
@@ -87,20 +64,16 @@ app.get("/proxy/reset/hard", function(req, res) {
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
 
-  exec(`ssh pi@${host} "sudo reboot"`, (error, stdout) => {
-    if (error) {
-      console.error(`exec error: ${error}`);
+  exec(`ssh pi@${host} "sudo reboot"`)
+    .then(data => {
       res.send(
         `Proxy Server Rebooting. Please allow 60-90 seconds for the network to re-establish`
       );
-      return;
-    } else {
-      console.log(`Connection to ${host}: ${stdout}`);
-      res.send(
-        `Proxy Server Rebooting. Please allow 60-90 seconds for the network to re-establish`
-      );
-    }
-  });
+      console.log(`Connection to ${host}: ${data.stdout}`);
+    })
+    .catch(err => {
+      console.log("err in the catch => ", err);
+    });
 });
 
 app.get("/proxy/reset/clear-cache", function(req, res) {
@@ -113,21 +86,14 @@ app.get("/proxy/reset/clear-cache", function(req, res) {
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
 
-  exec(
-    `ssh pi@${host} "sudo /usr/local/bin/clearAndHardReset.sh"`,
-    (error, stdout) => {
-      if (error) {
-        console.error(`exec error: ${error}`);
-        res.send(
-          `Proxy Server Clearing Cache, Rebuilding and Rebooting. Please allow 60-90 seconds for the network to re-establish`
-        );
-        return;
-      } else {
-        console.log(`Connection to ${host}: ${stdout}`);
-        res.send(
-          `Proxy Server Clearing Cache, Rebuilding and Rebooting. Please allow 60-90 seconds for the network to re-establish`
-        );
-      }
-    }
-  );
+  exec(`ssh pi@${host} "sudo /usr/local/bin/clearAndHardReset.sh""`)
+    .then(data => {
+      res.send(
+        `Proxy Server Clearing Cache, Rebuilding and Rebooting. Please allow 60-90 seconds for the network to re-establish`
+      );
+      console.log(`Connection to ${host}: ${data.stdout}`);
+    })
+    .catch(err => {
+      console.log("err in the catch => ", err);
+    });
 });
