@@ -89,7 +89,7 @@ app.get("/proxy/reset/clear-cache", function(req, res) {
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
 
-  exec(`ssh pi@${host} "sudo /usr/local/bin/clearAndHardReset.sh""`)
+  exec(`ssh pi@${host} "sudo /usr/local/bin/clearAndHardReset.sh"`)
     .then(data => {
       res.send(
         `Proxy Server Clearing Cache, Rebuilding and Rebooting. Please allow 60-90 seconds for the network to re-establish`
