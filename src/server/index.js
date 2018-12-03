@@ -20,7 +20,7 @@ app.enable("trust proxy");
 
 const server = app.listen(8080, () => console.log("Listening on port 8080!"));
 
-app.get("/proxy/reset", function(req, res) {
+app.get("/proxy/reset", async function(req, res) {
   const host = req.param("host");
   const network = req.param("network");
 
@@ -33,7 +33,7 @@ app.get("/proxy/reset", function(req, res) {
     "Time => ",
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
-  child = child_process.spawn("ls", {
+  child = await child_process.spawn("ls", {
     stdio: [
       0, // use parents stdin for child
       "pipe", // pipe child's stdout to parent
