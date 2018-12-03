@@ -40,11 +40,11 @@ app.get("/proxy/reset", async function(req, res) {
     exec(
       `ssh pi@${host} "sudo nmcli connection down ${network} && sudo nmcli connection up ${network}"`
     )
-      .then(() => {
+      .then(data => {
         res.send(
           `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
         );
-        console.log(`Connection to ${host}: ${stdout}`);
+        console.log(`Connection to ${host}: ${data.stdout}`);
       })
       .catch(err => {
         console.log("err in the catch => ", err);
