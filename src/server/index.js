@@ -11,7 +11,9 @@ const shell = require("shelljs");
 const requestIp = require("request-ip");
 const child_process = require("child_process");
 const moment = require("moment-timezone");
-const exec = require("child_process").exec;
+const childExec = require("child_process").exec;
+let util = require("util");
+let exec = util.promisify(childExec);
 
 const app = express();
 
@@ -21,7 +23,7 @@ app.enable("trust proxy");
 
 const server = app.listen(8080, () => console.log("Listening on port 8080!"));
 
-app.get("/proxy/reset", function(req, res) {
+app.get("/proxy/reset", async function(req, res) {
   const host = req.param("host");
   const network = req.param("network");
 
@@ -35,24 +37,35 @@ app.get("/proxy/reset", function(req, res) {
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
   try {
-    exec(
-      `ssh pi@${host} "sudo nmcli connection up ${network}"`,
-      (error, stdout) => {
-        if (error) {
-          console.error(`exec error: ${error}`);
-          res.send(
-            `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
-          );
-          return;
-        } else {
-          res.send(
-            `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
-          );
-          // res.sendFile(path.join(__dirname + "/resetIndex.html"));
-          console.log(`Connection to ${host}: ${stdout}`);
-        }
-      }
-    );
+    exec(`ssh pi@${host} "sudo nmcli connection up ${network}"`)
+      .then(data => {
+        res.send(
+          `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
+        );
+        console.log("Data in the promise exec .then => ", data);
+      })
+      .catch(err => {
+        console.log("err in the catch => ", err);
+      });
+
+    // exec(
+    //   `ssh pi@${host} "sudo nmcli connection up ${network}"`,
+    //   (error, stdout) => {
+    //     if (error) {
+    //       console.error(`exec error: ${error}`);
+    //       res.send(
+    //         `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
+    //       );
+    //       return;
+    //     } else {
+    //       res.send(
+    //         `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
+    //       );
+    //       // res.sendFile(path.join(__dirname + "/resetIndex.html"));
+    //       console.log(`Connection to ${host}: ${stdout}`);
+    //     }
+    //   }
+    // );
   } catch (e) {
     console.log(`Error in the RESET GET request for ${host} => `, e);
   }
