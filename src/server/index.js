@@ -38,7 +38,7 @@ app.get("/proxy/reset", async function(req, res) {
   );
   try {
     exec(
-      `ssh pi@${host} "sudo nmcli connection down ${network} && sudo nmcli connection up ${network}"`
+      `ssh pi@${host} "sudo nmcli connection down ${network} && sleep 20 && sudo nmcli connection up ${network}"`
     )
       .then(data => {
         res.send(

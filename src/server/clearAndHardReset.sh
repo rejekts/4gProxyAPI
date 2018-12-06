@@ -13,5 +13,5 @@ squid -z
 echo "ran squid -z to setup thr cache again and calling sudo reboot next"
 sleep 5
 systemctl restart squid
-sleep 2
+sleep 5
 reboot
