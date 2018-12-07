@@ -37,9 +37,7 @@ app.get("/proxy/reset", async function(req, res) {
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
   try {
-    exec(
-      `ssh pi@${host} "sudo nmcli connection down ${network} && sleep 20 && sudo nmcli connection up ${network}"`
-    )
+    exec(`ssh pi@${host} "sudo nmcli connection up ${network}"`)
       .then(data => {
         res.send(
           `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
