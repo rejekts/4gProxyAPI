@@ -53,7 +53,10 @@ app.get("/proxy/reset", async function(req, res) {
 });
 //`ssh pi@${host} "/usr/bin/squid -k shutdown && echo "" > /var/spool/squid/swap.state && sudo reboot"`
 app.get("/proxy/reset/hard", function(req, res) {
-  const host = req.param("host");
+  const host = req.query["host"];
+  const network = req.query["network"];
+  const apn = req.query["apn"];
+
   console.log(
     "Hard Reset API Endpoint getting hit!",
     "host => ",
@@ -62,7 +65,9 @@ app.get("/proxy/reset/hard", function(req, res) {
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
 
-  exec(`ssh pi@${host} "sudo reboot"`)
+  exec(
+    `ssh pi@${host} " sudo nmcli con down ${network} && sudo rm /etc/NetworkManager/system-connections/${network} && sudo nmcli con add con-name ${network} ifname cdc-wdm0 type gsm connection.id ${network} connection.autoconnect-priority 999 gsm.apn ${apn} gsm.number *99# && sudo reboot"`
+  )
     .then(data => {
       res.send(
         `Proxy Server Rebooting. Please allow 60-90 seconds for the network to re-establish`
