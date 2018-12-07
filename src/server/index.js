@@ -66,7 +66,7 @@ app.get("/proxy/reset/hard", function(req, res) {
   );
 
   exec(
-    `ssh pi@${host} " sudo nmcli con down ${network} && sudo rm /etc/NetworkManager/system-connections/${network} && sudo nmcli con add con-name ${network} ifname cdc-wdm0 type gsm connection.id ${network} connection.autoconnect-priority 999 gsm.apn ${apn} gsm.number *99# && sudo reboot"`
+    `ssh pi@${host} "sudo rm /etc/NetworkManager/system-connections/${network} && echo "Removing and Re-Adding the connection profile for ${network} on ${host}" && sudo nmcli con add con-name ${network} ifname cdc-wdm0 type gsm connection.id ${network} connection.autoconnect-priority 999 gsm.apn ${apn} gsm.number *99# && sudo reboot"`
   )
     .then(data => {
       res.send(
