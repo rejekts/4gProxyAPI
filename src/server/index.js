@@ -24,8 +24,8 @@ app.enable("trust proxy");
 const server = app.listen(8080, () => console.log("Listening on port 8080!"));
 
 app.get("/proxy/reset", async function(req, res) {
-  const host = req.param("host");
-  const network = req.param("network");
+  const host = req.query["host"];
+  const network = req.query["network"];
 
   console.log(
     "Reset API Endpoint getting hit!",
@@ -83,7 +83,7 @@ app.get("/proxy/reset/hard", function(req, res) {
 });
 
 app.get("/proxy/reset/clear-cache", function(req, res) {
-  const host = req.param("host");
+  const host = req.query["host"];
   console.log(
     "Clear Cache API Endpoint getting hit!",
     "host => ",
