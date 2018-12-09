@@ -112,6 +112,7 @@ app.post("/api/cookies", function(req, res) {
   } catch (err) {
     if (err) {
       console.error(err);
+      res.send(err);
     }
   }
 
