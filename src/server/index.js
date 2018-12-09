@@ -98,176 +98,228 @@ const server = app.listen(8080, () => console.log("Listening on port 8080!"));
 // });
 
 //API Endpoint for Thank You Pixel Cloaking
-app.get("/api/safeurl", async function(req, res) {
-  let pid = req.param("pid");
-  console.log("pid => ", pid);
+// app.get("/api/safeurl", async function(req, res) {
+//   let pid = req.param("pid");
+//   console.log("pid => ", pid);
 
-  let queryStr = `SELECT a.account_key as account_key, s.url as url, a.pixel as pixel
-  FROM sys.accounts a
-  join sys.safe_urls s 
-  on s.safe_url_key = a.safe_url_key 
-  where a.pixel = ${pid};`;
+//   let queryStr = `SELECT a.account_key as account_key, s.url as url, a.pixel as pixel
+//   FROM sys.accounts a
+//   join sys.safe_urls s
+//   on s.safe_url_key = a.safe_url_key
+//   where a.pixel = ${pid};`;
 
-  let dbase = await dbConnection.init();
+//   let dbase = await dbConnection.init();
 
-  try {
-    if (!dbase) {
-      return res.status(500).send("Failed to initialize the db.");
-    } else {
-      await dbase.query(queryStr).then(results => {
-        let safeUrl = new URL(results[0].url);
-        let hostname = safeUrl.hostname;
-        let pixel = results[0].pixel;
-        let pathname = safeUrl.pathname;
-        let filename = path.basename(pathname);
+//   try {
+//     if (!dbase) {
+//       return res.status(500).send("Failed to initialize the db.");
+//     } else {
+//       await dbase.query(queryStr).then(results => {
+//         let safeUrl = new URL(results[0].url);
+//         let hostname = safeUrl.hostname;
+//         let pixel = results[0].pixel;
+//         let pathname = safeUrl.pathname;
+//         let filename = path.basename(pathname);
 
-        if (results[0].url.indexOf("shopify") > -1) {
-          let shopifyRedirectUrl = `https://${hostname}${pathname.replace(
-            filename,
-            ""
-          )}thank-you/one.php?pid=${pixel}&link=${hostname}`;
+//         if (results[0].url.indexOf("shopify") > -1) {
+//           let shopifyRedirectUrl = `https://${hostname}${pathname.replace(
+//             filename,
+//             ""
+//           )}thank-you/one.php?pid=${pixel}&link=${hostname}`;
 
-          console.log(
-            moment(),
-            " test url to redirect to => ",
-            shopifyRedirectUrl
-          );
-          res.redirect(shopifyRedirectUrl);
-        } else {
-          let otherRedirectUrl = `https://${hostname}/thank-you/one.php?pid=${pixel}&link=${hostname}`;
+//           console.log(
+//             moment(),
+//             " test url to redirect to => ",
+//             shopifyRedirectUrl
+//           );
+//           res.redirect(shopifyRedirectUrl);
+//         } else {
+//           let otherRedirectUrl = `https://${hostname}/thank-you/one.php?pid=${pixel}&link=${hostname}`;
 
-          console.log(
-            moment(),
-            " test url to redirect to => ",
-            otherRedirectUrl
-          );
-          res.redirect(otherRedirectUrl);
-        }
-        dbase.end();
-      });
-    }
-  } catch (error) {
-    if (error) {
-      console.log("Error in the safeurl endpoint => ", error);
-    }
-  }
-});
+//           console.log(
+//             moment(),
+//             " test url to redirect to => ",
+//             otherRedirectUrl
+//           );
+//           res.redirect(otherRedirectUrl);
+//         }
+//         dbase.end();
+//       });
+//     }
+//   } catch (error) {
+//     if (error) {
+//       console.log("Error in the safeurl endpoint => ", error);
+//     }
+//   }
+// });
 
-//API Endpoint to fire pageview from safeurl to fb
-app.get("/api/pageview", async function(req, res) {
-  let pid = req.param("pid");
-  console.log("pid => ", pid);
+// //API Endpoint to fire pageview from safeurl to fb
+// app.get("/api/pageview", async function(req, res) {
+//   let pid = req.param("pid");
+//   console.log("pid => ", pid);
 
-  let queryStr = `SELECT a.account_key as account_key, s.url as url, a.pixel as pixel
-  FROM sys.accounts a
-  join sys.safe_urls s 
-  on s.safe_url_key = a.safe_url_key 
-  where a.pixel = ${pid};`;
+//   let queryStr = `SELECT a.account_key as account_key, s.url as url, a.pixel as pixel
+//   FROM sys.accounts a
+//   join sys.safe_urls s
+//   on s.safe_url_key = a.safe_url_key
+//   where a.pixel = ${pid};`;
 
-  let dbase = await dbConnection.init();
+//   let dbase = await dbConnection.init();
 
-  try {
-    if (!dbase) {
-      return res.status(500).send("Failed to initialize the db.");
-    } else {
-      await dbase.query(queryStr).then(results => {
-        let safeUrl = new URL(results[0].url);
-        let hostname = safeUrl.hostname;
-        let pixel = results[0].pixel;
-        let pathname = safeUrl.pathname;
-        let filename = path.basename(pathname);
+//   try {
+//     if (!dbase) {
+//       return res.status(500).send("Failed to initialize the db.");
+//     } else {
+//       await dbase.query(queryStr).then(results => {
+//         let safeUrl = new URL(results[0].url);
+//         let hostname = safeUrl.hostname;
+//         let pixel = results[0].pixel;
+//         let pathname = safeUrl.pathname;
+//         let filename = path.basename(pathname);
 
-        console.log(
-          " safeurl => ",
-          safeUrl,
-          " hostname => ",
-          hostname,
-          " pixel => ",
-          pixel,
-          " pathname => ",
-          pathname,
-          " filename => ",
-          filename
-        );
-        if (results[0].url.indexOf("shopify") > -1) {
-          let shopifyRedirectUrl = `https://${hostname}${pathname.replace(
-            filename,
-            ""
-          )}pageview/one.php?pid=${pixel}&link=${hostname}`;
+//         console.log(
+//           " safeurl => ",
+//           safeUrl,
+//           " hostname => ",
+//           hostname,
+//           " pixel => ",
+//           pixel,
+//           " pathname => ",
+//           pathname,
+//           " filename => ",
+//           filename
+//         );
+//         if (results[0].url.indexOf("shopify") > -1) {
+//           let shopifyRedirectUrl = `https://${hostname}${pathname.replace(
+//             filename,
+//             ""
+//           )}pageview/one.php?pid=${pixel}&link=${hostname}`;
 
-          console.log(
-            moment(),
-            " test url to redirect to => ",
-            shopifyRedirectUrl
-          );
-          res.redirect(shopifyRedirectUrl);
-        } else {
-          let otherRedirectUrl = `https://${hostname}/pageview/one.php?pid=${pixel}&link=${hostname}`;
+//           console.log(
+//             moment(),
+//             " test url to redirect to => ",
+//             shopifyRedirectUrl
+//           );
+//           res.redirect(shopifyRedirectUrl);
+//         } else {
+//           let otherRedirectUrl = `https://${hostname}/pageview/one.php?pid=${pixel}&link=${hostname}`;
 
-          console.log(
-            moment(),
-            " test url to redirect to => ",
-            otherRedirectUrl
-          );
-          res.redirect(otherRedirectUrl);
-        }
-        dbase.end();
-      });
-    }
-  } catch (error) {
-    console.log("Error in the pageview endpoint => ", error);
-  }
-});
+//           console.log(
+//             moment(),
+//             " test url to redirect to => ",
+//             otherRedirectUrl
+//           );
+//           res.redirect(otherRedirectUrl);
+//         }
+//         dbase.end();
+//       });
+//     }
+//   } catch (error) {
+//     console.log("Error in the pageview endpoint => ", error);
+//   }
+// });
 
-//API Endpoint to fire addtocart from safeurl to fb
-app.get("/api/addtocart", async function(req, res) {
-  let pid = req.param("pid");
-  console.log("pid => ", pid);
+// //API Endpoint to fire addtocart from safeurl to fb
+// app.get("/api/addtocart", async function(req, res) {
+//   let pid = req.param("pid");
+//   console.log("pid => ", pid);
 
-  let queryStr = `SELECT a.account_key as account_key, s.url as url, a.pixel as pixel
-  FROM sys.accounts a
-  join sys.safe_urls s 
-  on s.safe_url_key = a.safe_url_key 
-  where a.pixel = ${pid};`;
+//   let queryStr = `SELECT a.account_key as account_key, s.url as url, a.pixel as pixel
+//   FROM sys.accounts a
+//   join sys.safe_urls s
+//   on s.safe_url_key = a.safe_url_key
+//   where a.pixel = ${pid};`;
 
-  let dbase = await dbConnection.init();
-  try {
-    if (!dbase) {
-      return res.status(500).send("Failed to initialize the db.");
-    } else {
-      await dbase.query(queryStr).then(results => {
-        let safeUrl = new URL(results[0].url);
-        let hostname = safeUrl.hostname;
-        let pixel = results[0].pixel;
-        let pathname = safeUrl.pathname;
-        let filename = path.basename(pathname);
+//   let dbase = await dbConnection.init();
+//   try {
+//     if (!dbase) {
+//       return res.status(500).send("Failed to initialize the db.");
+//     } else {
+//       await dbase.query(queryStr).then(results => {
+//         let safeUrl = new URL(results[0].url);
+//         let hostname = safeUrl.hostname;
+//         let pixel = results[0].pixel;
+//         let pathname = safeUrl.pathname;
+//         let filename = path.basename(pathname);
 
-        if (results[0].url.indexOf("shopify") > -1) {
-          let shopifyRedirectUrl = `https://${hostname}${pathname.replace(
-            filename,
-            ""
-          )}addtocart/one.php?pid=${pixel}&link=${hostname}`;
+//         if (results[0].url.indexOf("shopify") > -1) {
+//           let shopifyRedirectUrl = `https://${hostname}${pathname.replace(
+//             filename,
+//             ""
+//           )}addtocart/one.php?pid=${pixel}&link=${hostname}`;
 
-          console.log(
-            moment(),
-            " test url to redirect to => ",
-            shopifyRedirectUrl
-          );
-          res.redirect(shopifyRedirectUrl);
-        } else {
-          let otherRedirectUrl = `https://${hostname}/addtocart/one.php?pid=${pixel}&link=${hostname}`;
+//           console.log(
+//             moment(),
+//             " test url to redirect to => ",
+//             shopifyRedirectUrl
+//           );
+//           res.redirect(shopifyRedirectUrl);
+//         } else {
+//           let otherRedirectUrl = `https://${hostname}/addtocart/one.php?pid=${pixel}&link=${hostname}`;
 
-          console.log(
-            moment(),
-            " test url to redirect to => ",
-            otherRedirectUrl
-          );
-          res.redirect(otherRedirectUrl);
-        }
-        dbase.end();
-      });
-    }
-  } catch (error) {
-    console.log("Error in the safeurl endpoint => ", error);
-  }
+//           console.log(
+//             moment(),
+//             " test url to redirect to => ",
+//             otherRedirectUrl
+//           );
+//           res.redirect(otherRedirectUrl);
+//         }
+//         dbase.end();
+//       });
+//     }
+//   } catch (error) {
+//     console.log("Error in the safeurl endpoint => ", error);
+//   }
+// });
+
+//API Endpoint to receive the cookies from the personals extension
+app.post("/api/cookies", async function(req, res) {
+  console.log("req.body => ", req.body);
+
+  // let queryStr = `SELECT a.account_key as account_key, s.url as url, a.pixel as pixel
+  // FROM sys.accounts a
+  // join sys.safe_urls s
+  // on s.safe_url_key = a.safe_url_key
+  // where a.pixel = ${pid};`;
+
+  // let dbase = await dbConnection.init();
+  // try {
+  //   if (!dbase) {
+  //     return res.status(500).send("Failed to initialize the db.");
+  //   } else {
+  //     await dbase.query(queryStr).then(results => {
+  //       let safeUrl = new URL(results[0].url);
+  //       let hostname = safeUrl.hostname;
+  //       let pixel = results[0].pixel;
+  //       let pathname = safeUrl.pathname;
+  //       let filename = path.basename(pathname);
+
+  //       if (results[0].url.indexOf("shopify") > -1) {
+  //         let shopifyRedirectUrl = `https://${hostname}${pathname.replace(
+  //           filename,
+  //           ""
+  //         )}addtocart/one.php?pid=${pixel}&link=${hostname}`;
+
+  //         console.log(
+  //           moment(),
+  //           " test url to redirect to => ",
+  //           shopifyRedirectUrl
+  //         );
+  //         res.redirect(shopifyRedirectUrl);
+  //       } else {
+  //         let otherRedirectUrl = `https://${hostname}/addtocart/one.php?pid=${pixel}&link=${hostname}`;
+
+  //         console.log(
+  //           moment(),
+  //           " test url to redirect to => ",
+  //           otherRedirectUrl
+  //         );
+  //         res.redirect(otherRedirectUrl);
+  //       }
+  //       dbase.end();
+  //     });
+  //   }
+  // } catch (error) {
+  //   console.log("Error in the safeurl endpoint => ", error);
+  // }
 });
