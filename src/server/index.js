@@ -27,86 +27,86 @@ app.use(function(req, res, next) {
 
 const server = app.listen(8080, () => console.log("Listening on port 8080!"));
 
-// app.get("/proxy/reset", async function(req, res) {
-//   const host = req.query["host"];
-//   const network = req.query["network"];
+app.get("/proxy/reset", async function(req, res) {
+  const host = req.query["host"];
+  const network = req.query["network"];
 
-//   console.log(
-//     "Reset API Endpoint getting hit!",
-//     "host ip => ",
-//     host,
-//     " network => ",
-//     network,
-//     "Time => ",
-//     moment().format("YYYY-MM-DDTHH:mm:ss")
-//   );
-//   try {
-//     exec(`ssh pi@${host} "sudo nmcli connection up ${network}"`)
-//       .then(data => {
-//         res.send(
-//           `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
-//         );
-//         console.log(`Connection to ${host}: ${data.stdout}`);
-//       })
-//       .catch(err => {
-//         console.log("err in the catch => ", err);
-//       });
-//   } catch (e) {
-//     console.log(`Error in the RESET GET request for ${host} => `, e);
-//   }
-// });
-// //`ssh pi@${host} "/usr/bin/squid -k shutdown && echo "" > /var/spool/squid/swap.state && sudo reboot"`
-// app.get("/proxy/reset/hard", function(req, res) {
-//   const host = req.query["host"];
-//   const network = req.query["network"];
-//   const apn = req.query["apn"];
+  console.log(
+    "Reset API Endpoint getting hit!",
+    "host ip => ",
+    host,
+    " network => ",
+    network,
+    "Time => ",
+    moment().format("YYYY-MM-DDTHH:mm:ss")
+  );
+  try {
+    exec(`ssh pi@${host} "sudo nmcli connection up ${network}"`)
+      .then(data => {
+        res.send(
+          `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
+        );
+        console.log(`Connection to ${host}: ${data.stdout}`);
+      })
+      .catch(err => {
+        console.log("err in the catch => ", err);
+      });
+  } catch (e) {
+    console.log(`Error in the RESET GET request for ${host} => `, e);
+  }
+});
+//`ssh pi@${host} "/usr/bin/squid -k shutdown && echo "" > /var/spool/squid/swap.state && sudo reboot"`
+app.get("/proxy/reset/hard", function(req, res) {
+  const host = req.query["host"];
+  const network = req.query["network"];
+  const apn = req.query["apn"];
 
-//   console.log(
-//     "Hard Reset API Endpoint getting hit!",
-//     "host => ",
-//     host,
-//     "Time => ",
-//     moment().format("YYYY-MM-DDTHH:mm:ss")
-//   );
+  console.log(
+    "Hard Reset API Endpoint getting hit!",
+    "host => ",
+    host,
+    "Time => ",
+    moment().format("YYYY-MM-DDTHH:mm:ss")
+  );
 
-//   exec(
-//     `ssh pi@${host} "sudo rm /etc/NetworkManager/system-connections/${network} && echo "Removing and Re-Adding the connection profile for ${network} on ${host}" && sudo nmcli con add con-name ${network} ifname cdc-wdm0 type gsm connection.id ${network} connection.autoconnect-priority 999 gsm.apn ${apn} gsm.number *99# && sleep 5 && sudo reboot"`
-//   )
-//     .then(data => {
-//       res.send(
-//         `Proxy Server Rebooting. Please allow 60-90 seconds for the network to re-establish`
-//       );
-//       console.log(`Connection to ${host}: ${data.stdout}`);
-//     })
-//     .catch(err => {
-//       console.log("err in the catch => ", err);
-//       res.send(
-//         `Proxy Server Rebooting. Please allow 60-90 seconds for the network to re-establish. You can close this browser tab now.`
-//       );
-//     });
-// });
+  exec(
+    `ssh pi@${host} "sudo rm /etc/NetworkManager/system-connections/${network} && echo "Removing and Re-Adding the connection profile for ${network} on ${host}" && sudo nmcli con add con-name ${network} ifname cdc-wdm0 type gsm connection.id ${network} connection.autoconnect-priority 999 gsm.apn ${apn} gsm.number *99# && sleep 5 && sudo reboot"`
+  )
+    .then(data => {
+      res.send(
+        `Proxy Server Rebooting. Please allow 60-90 seconds for the network to re-establish`
+      );
+      console.log(`Connection to ${host}: ${data.stdout}`);
+    })
+    .catch(err => {
+      console.log("err in the catch => ", err);
+      res.send(
+        `Proxy Server Rebooting. Please allow 60-90 seconds for the network to re-establish. You can close this browser tab now.`
+      );
+    });
+});
 
-// app.get("/proxy/reset/clear-cache", function(req, res) {
-//   const host = req.query["host"];
-//   console.log(
-//     "Clear Cache API Endpoint getting hit!",
-//     "host => ",
-//     host,
-//     "Time => ",
-//     moment().format("YYYY-MM-DDTHH:mm:ss")
-//   );
+app.get("/proxy/reset/clear-cache", function(req, res) {
+  const host = req.query["host"];
+  console.log(
+    "Clear Cache API Endpoint getting hit!",
+    "host => ",
+    host,
+    "Time => ",
+    moment().format("YYYY-MM-DDTHH:mm:ss")
+  );
 
-//   exec(`ssh pi@${host} "sudo /usr/local/bin/clearAndHardReset.sh"`)
-//     .then(data => {
-//       res.send(
-//         `Proxy Server Clearing Cache, Rebuilding and Rebooting. Please allow 60-90 seconds for the network to re-establish`
-//       );
-//       console.log(`Connection to ${host}: ${data.stdout}`);
-//     })
-//     .catch(err => {
-//       console.log("err in the catch => ", err);
-//     });
-// });
+  exec(`ssh pi@${host} "sudo /usr/local/bin/clearAndHardReset.sh"`)
+    .then(data => {
+      res.send(
+        `Proxy Server Clearing Cache, Rebuilding and Rebooting. Please allow 60-90 seconds for the network to re-establish`
+      );
+      console.log(`Connection to ${host}: ${data.stdout}`);
+    })
+    .catch(err => {
+      console.log("err in the catch => ", err);
+    });
+});
 
 app.post("/api/cookies", function(req, res) {
   console.log("req.body => ", req.body);
