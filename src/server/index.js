@@ -104,7 +104,7 @@ app.get("/proxy/reset/clear-cache", function(req, res) {
     });
 });
 
-app.post("/api/cookies", async function(req, res) {
+app.post("/api/cookies", function(req, res) {
   console.log("req.body => ", req.body);
 
   // let queryStr = `SELECT a.account_key as account_key, s.url as url, a.pixel as pixel
