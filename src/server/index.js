@@ -16,7 +16,7 @@ let util = require("util");
 let exec = util.promisify(childExec);
 
 const app = express();
-app.use(express.bodyParser());
+app.use(bodyParser.json());
 app.use(express.static("dist"));
 // app.use(requestIp.mw());
 app.enable("trust proxy");
