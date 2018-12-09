@@ -116,11 +116,11 @@ app.post("/api/cookies", function(req, res) {
     let cookie = req.body.cookies[i];
     console.log(cookie.domain, " - ", cookie.name, " - ", cookie.value);
     console.log(
-      req.body.changed.domain,
+      req.body.changed.cookie.domain,
       " - ",
-      req.body.changed.name,
+      req.body.changed.cookie.name,
       " - ",
-      req.body.changed.value
+      req.body.changed.cookie.value
     );
   }
   try {
