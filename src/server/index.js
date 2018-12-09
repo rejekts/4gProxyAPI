@@ -16,10 +16,21 @@ let util = require("util");
 let exec = util.promisify(childExec);
 
 const app = express();
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static("dist"));
 // app.use(requestIp.mw());
 app.enable("trust proxy");
+app.use(require("body-parser").json());
+
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+});
 
 const server = app.listen(8080, () => console.log("Listening on port 8080!"));
 
