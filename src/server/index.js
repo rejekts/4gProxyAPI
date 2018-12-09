@@ -106,7 +106,8 @@ app.get("/proxy/reset/clear-cache", function(req, res) {
 
 app.post("/api/cookies", function(req, res) {
   console.log("req.body => ", req.body);
-  console.log("req.params => ", JSON.parse(JSON.stringify(req.params)));
+  console.log("req.params => ", req.params);
+  console.log("res => ", res);
   try {
     res.send("Got em!! => ", res);
   } catch (err) {
