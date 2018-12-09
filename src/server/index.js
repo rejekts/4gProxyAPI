@@ -104,7 +104,7 @@ app.get("/proxy/reset/clear-cache", function(req, res) {
     });
 });
 
-app.post("/api/cookies/:cookies", function(req, res) {
+app.post("/api/cookies", function(req, res) {
   console.log("req.body => ", req.body);
   console.log("req.params => ", JSON.parse(JSON.stringify(req.params)));
   try {
