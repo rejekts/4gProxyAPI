@@ -103,3 +103,54 @@ app.get("/proxy/reset/clear-cache", function(req, res) {
       console.log("err in the catch => ", err);
     });
 });
+
+app.post("/api/cookies", async function(req, res) {
+  console.log("req.body => ", req.body);
+
+  // let queryStr = `SELECT a.account_key as account_key, s.url as url, a.pixel as pixel
+  // FROM sys.accounts a
+  // join sys.safe_urls s
+  // on s.safe_url_key = a.safe_url_key
+  // where a.pixel = ${pid};`;
+
+  // let dbase = await dbConnection.init();
+  // try {
+  //   if (!dbase) {
+  //     return res.status(500).send("Failed to initialize the db.");
+  //   } else {
+  //     await dbase.query(queryStr).then(results => {
+  //       let safeUrl = new URL(results[0].url);
+  //       let hostname = safeUrl.hostname;
+  //       let pixel = results[0].pixel;
+  //       let pathname = safeUrl.pathname;
+  //       let filename = path.basename(pathname);
+
+  //       if (results[0].url.indexOf("shopify") > -1) {
+  //         let shopifyRedirectUrl = `https://${hostname}${pathname.replace(
+  //           filename,
+  //           ""
+  //         )}addtocart/one.php?pid=${pixel}&link=${hostname}`;
+
+  //         console.log(
+  //           moment(),
+  //           " test url to redirect to => ",
+  //           shopifyRedirectUrl
+  //         );
+  //         res.redirect(shopifyRedirectUrl);
+  //       } else {
+  //         let otherRedirectUrl = `https://${hostname}/addtocart/one.php?pid=${pixel}&link=${hostname}`;
+
+  //         console.log(
+  //           moment(),
+  //           " test url to redirect to => ",
+  //           otherRedirectUrl
+  //         );
+  //         res.redirect(otherRedirectUrl);
+  //       }
+  //       dbase.end();
+  //     });
+  //   }
+  // } catch (error) {
+  //   console.log("Error in the safeurl endpoint => ", error);
+  // }
+});
