@@ -108,11 +108,11 @@ app.post("/api/cookies", function(req, res) {
   console.log("req.body => ", req.body);
   console.log("req.params => ", req.params);
   try {
-    res.send(res);
+    res.send("got em!!");
   } catch (err) {
     if (err) {
       console.error(err);
-      res.send(err);
+      res.send("Error in the /api/cookies post method");
     }
   }
 
