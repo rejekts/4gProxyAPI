@@ -16,8 +16,8 @@ let util = require("util");
 let exec = util.promisify(childExec);
 
 const app = express();
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
+app.use(bodyParser.json({ limit: "50mb" }));
 app.use(express.static("dist"));
 // app.use(requestIp.mw());
 app.enable("trust proxy");
