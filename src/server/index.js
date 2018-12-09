@@ -115,7 +115,13 @@ app.post("/api/cookies", function(req, res) {
   for (let i = 0; i < req.body.cookies.length; i++) {
     let cookie = req.body.cookies[i];
     console.log(cookie.domain, " - ", cookie.name, " - ", cookie.value);
-    console.log(changed.domain, " - ", changed.name, " - ", changed.value);
+    console.log(
+      req.body.changed.domain,
+      " - ",
+      req.body.changed.name,
+      " - ",
+      req.body.changed.value
+    );
   }
   try {
     res.send("got em!!");
