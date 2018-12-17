@@ -26,6 +26,7 @@ app.use(function(req, res, next) {
 });
 
 const server = app.listen(8080, () => console.log("Listening on port 8080!"));
+app.timeout = 360000;
 
 app.get("/proxy/reset", function(req, res) {
   const host = req.query["host"];
@@ -45,13 +46,16 @@ app.get("/proxy/reset", function(req, res) {
   )
     .then(data => {
       res.send(
-        `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish. Your new IP is => ${
-          data.stdout
-        }`
+        `Proxy connection resetting. Please allow up to 30-60 seconds for the network to re-establish. Your IP is => ${data.stdout
+          .split(")")[1]
+          .trim()}`
       );
       console.log(`Connection to ${host}: ${data.stdout}`);
     })
     .catch(err => {
+      res.send(
+        `Proxy connection had trouble resetting. Please retry after 30 seconds.`
+      );
       console.log(`Error in the RESET GET request for ${host} => `, err);
     });
 });
