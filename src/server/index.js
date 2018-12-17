@@ -42,7 +42,7 @@ app.get("/proxy/reset", function(req, res) {
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
   exec(
-    `ssh pi@${host} "sudo nmcli connection up ${network} && curl https://api.ipify.org"`
+    `ssh pi@${host} "sudo nmcli connection up ${network} && curl http://api.ipify.org"`
   )
     .then(data => {
       res.send(
