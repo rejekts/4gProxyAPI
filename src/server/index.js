@@ -40,10 +40,14 @@ app.get("/proxy/reset", function(req, res) {
     "Time => ",
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
-  exec(`ssh pi@${host} "sudo nmcli connection up ${network}"`)
+  exec(
+    `ssh pi@${host} "sudo nmcli connection up ${network} && curl https://api.ipify.org"`
+  )
     .then(data => {
       res.send(
-        `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
+        `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish. Your new IP is => ${
+          data.stdout
+        }`
       );
       console.log(`Connection to ${host}: ${data.stdout}`);
     })
