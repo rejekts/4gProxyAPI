@@ -361,20 +361,40 @@ app.get("/proxy/reset", function(req, res) {
 
   grabClientIP(host)
     .then(ip => {
-      console.log("Return of grabClientIP in the main endpoint => ", ip);
+      console.log("Return of oldIP in the /proxy/reset endpoint => ", ip);
       oldIP = ip.trim();
       return oldIP;
     })
     .then(oldIP => {
-      return resetClientIPAddress(host, network, oldIP).then(
-        resetClientResponse => {
-          console.log("resetClientResponse => ", resetClientResponse);
-        }
-      );
+      resetClientIPAddress(host, network, oldIP)
+        .then(resetClientResponseIP => {
+          console.log(
+            "New IP from resetClientIPAddress method in the /proxy/reset endpoint => ",
+            resetClientResponseIP
+          );
+          res.send(
+            `Your IP address has been successfully reset. Your new IP address is ${resetClientResponseIP.trim()}`
+          );
+        })
+        .catch(err => {
+          if (err) {
+            console.log(
+              "We have an error in the main /proxy/reset endpoint when calling the resetClientIpAddress method. err => ",
+              err
+            );
+            res.send(
+              "There was an issue when trying to reset the proxy IP address. please wait 30 - 60 seconds and try again. if the problem persists please contact your system administrator and provide them with the following error code. => ",
+              err
+            );
+          }
+        });
     })
     .catch(err => {
       if (err) {
-        console.log("We have an error in the main endpoint => ", err);
+        console.log(
+          "We have an error in the main /proxy/reset endpoint => ",
+          err
+        );
       }
     });
 });
