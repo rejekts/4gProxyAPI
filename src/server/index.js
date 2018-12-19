@@ -40,7 +40,12 @@ const rebootClient = function(host) {
     })
     .catch(err => {
       if (err) {
-        console.log("Error in the rebootClient method => ", err);
+        console.log(
+          "Error in the rebootClient method. Error details: cmd => ",
+          err.cmd,
+          "; err => ",
+          err.stderr
+        );
         return err;
       }
     });
@@ -53,18 +58,20 @@ const grabClientIP = async function(host) {
   const wrapper = function() {
     return exec(`ssh pi@${host} "curl https://api.ipify.org -s -S"`)
       .then(returnedIP => {
-        console.log(
-          "Successfully grabbed the client IP => ",
-          returnedIP.stdout
-        );
+        // console.log(
+        //   "Successfully grabbed the client IP => ",
+        //   returnedIP.stdout
+        // );
         return returnedIP.stdout;
       })
       .catch(err => {
         if (err) {
           timesCalled++;
           console.log(
-            `Error in the grabClientIP method. Calling recursively now for the ${timesCalled}th time. => `,
-            err
+            `Error in the grabClientIP method. Calling recursively now for the ${timesCalled}th time. Error details: cmd => `,
+            err.cmd,
+            "; err => ",
+            err.stderr
           );
           if (timesCalled >= 5) {
             return err;
@@ -88,10 +95,12 @@ const connectionUp = async function(host, network) {
         if (err) {
           timesCalled++;
           console.log(
-            `Error in the connectionUp method. Calling recursively now for the ${timesCalled}th time. => `,
-            err
+            `Error in the connectionUp method. Calling recursively now for the ${timesCalled}th time. Error details: cmd => `,
+            err.cmd,
+            "; err => ",
+            err.stderr
           );
-          if (timesCalled >= 3) {
+          if (timesCalled >= 1) {
             return err;
           } else {
             return wrapper();
@@ -115,10 +124,12 @@ const interfaceDownUp = async function(host, network) {
         if (err) {
           timesCalled++;
           console.log(
-            `Error in the connectionUp method. Calling recursively now for the ${timesCalled}th time. => `,
-            err
+            `Error in the interfaceDownUp method. Calling recursively now for the ${timesCalled}th time. Error details: cmd => `,
+            err.cmd,
+            "; err => ",
+            err.stderr
           );
-          if (timesCalled >= 3) {
+          if (timesCalled >= 1) {
             return err;
           } else {
             return wrapper();
@@ -142,10 +153,12 @@ const deviceDisconnectAndReconnect = async function(host) {
         if (err) {
           timesCalled++;
           console.log(
-            `Error in the deviceDisconnectAndReconnect method. Calling recursively now for the ${timesCalled}th time. => `,
-            err
+            `Error in the deviceDisconnectAndReconnect method. Calling recursively now for the ${timesCalled}th time. Error details: cmd => `,
+            err.cmd,
+            "; err => ",
+            err.stderr
           );
-          if (timesCalled >= 3) {
+          if (timesCalled >= 1) {
             return err;
           } else {
             return wrapper();
@@ -167,8 +180,10 @@ const resetClientIPAddress = async function(host, network, oldIP) {
 
   const wrapper = function() {
     timesWrapperCalled++;
+    console.log("timesWrapperCalled => ", timesWrapperCalled);
 
     if (timesConnectionUpCalled < 1) {
+      console.log("Running the connectionUp method for the first time");
       connectionUp(host, network)
         .then(connectionUpResponse => {
           timesConnectionUpCalled++;
@@ -192,7 +207,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
                     "Issue with matching IP's or an undefined response after calling connectionUp method ip => ",
                     ip
                   );
-                  return wrapper();
+                  // return wrapper();
                 }
               })
               .catch(err => {
@@ -218,7 +233,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
         });
     }
 
-    if (timesInterfaceDownUpCalled < 1) {
+    if (timesConnectionUpCalled >= 1 && timesInterfaceDownUpCalled < 1) {
       console.log(
         "Connection did not activate successfully OR the ip is not reset using the connectionUp method. Trying the interfaceDownUp now"
       );
@@ -244,7 +259,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
                     "Issue with matching IP's or an undefined response after calling interfaceDownUp method ip => ",
                     ip
                   );
-                  return wrapper();
+                  // return wrapper();
                 }
               })
               .catch(err => {
@@ -270,7 +285,10 @@ const resetClientIPAddress = async function(host, network, oldIP) {
         });
     }
 
-    if (timesdeviceDisconnectAndReconnectCalled < 1) {
+    if (
+      timesInterfaceDownUpCalled >= 1 &&
+      timesdeviceDisconnectAndReconnectCalled < 1
+    ) {
       console.log(
         "Connection did not activate successfully OR the ip is not reset using the interfaceDownUp method. Trying the deviceDisconnectAndReconnect method now"
       );
@@ -299,7 +317,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
                     "Issue with matching IP's or an undefined response after calling deviceDisconnectAndReconnect method ip => ",
                     ip
                   );
-                  return wrapper();
+                  // return wrapper();
                 }
               })
               .catch(err => {
@@ -325,7 +343,10 @@ const resetClientIPAddress = async function(host, network, oldIP) {
         });
     }
 
-    if (timesWrapperCalled >= 5) {
+    if (
+      timesdeviceDisconnectAndReconnectCalled >= 1 &&
+      timesWrapperCalled >= 4
+    ) {
       rebootClient(host)
         .then(rebootResponse => rebootResponse)
         .catch(err => {
@@ -337,7 +358,8 @@ const resetClientIPAddress = async function(host, network, oldIP) {
           }
         });
     } else {
-      return wrapper();
+      console.log("timesWrapperCalled is < 4 ", timesWrapperCalled);
+      // return wrapper();
     }
   };
   return await wrapper();
@@ -372,9 +394,14 @@ app.get("/proxy/reset", function(req, res) {
             "New IP from resetClientIPAddress method in the /proxy/reset endpoint => ",
             resetClientResponseIP
           );
-          res.send(
-            `Your IP address has been successfully reset. Your new IP address is ${resetClientResponseIP.trim()}`
-          );
+          if (resetClientResponseIP !== undefined) {
+            res
+              .status(status)
+              .send(
+                `Your IP address has been successfully reset. Your new IP address is ${resetClientResponseIP}`,
+                ` && res.body => ${body}`
+              );
+          }
         })
         .catch(err => {
           if (err) {
