@@ -29,90 +29,7 @@ const server = app.listen(8080, () => console.log("Listening on port 8080!"));
 app.timeout = 360000;
 //return new Promise((resolve, reject) => {})
 
-//function for grabbing proxy server external IP
-const grabClientIP = function(host) {
-  return exec(`ssh pi@${host} "curl https://api.ipify.org -s -S"`)
-    .then(returnedIP => {
-      console.log("Successfully grabbed the client IP => ", returnedIP.stdout);
-      return returnedIP.stdout;
-    })
-    .catch(err => {
-      if (err) {
-        console.log("Error in the grabClientIP method err => ", err);
-        return false;
-      }
-    });
-};
-
-const resetClientIPAddress = function(host, network, oldIP) {
-  return exec(`ssh pi@${host} "sudo nmcli connection up ${network}"`)
-    .then(resetData => {
-      console.log("resetData => ", resetData);
-      let successfulConnectionActivation =
-        resetData.stdout.indexOf("Connection successfully activated") >= 0
-          ? true
-          : false;
-      console.log(
-        "successfulConnectionActivation try 1 => ",
-        successfulConnectionActivation
-      );
-      if (successfulConnectionActivation) {
-        return true;
-        // grabClientIP(host)
-        //   .then(ip => ip)
-        //   .catch(err =>
-        //     console.log(
-        //       "error in the resetClientIPAddress method AFTER successful activation => ",
-        //       err
-        //     )
-        //   );
-      } else {
-        console.log(
-          "Trying the nmcli connection up command a second time in five seconds"
-        );
-        setTimeout(function() {
-          exec(`ssh pi@${host} "sudo nmcli connection up ${network}"`).then(
-            connData => {
-              let successfulConnectionActivation2 =
-                connData.stdout.indexOf("Connection successfully activated") >=
-                0
-                  ? true
-                  : false;
-              console.log(
-                "successfulConnectionActivation try 2 => ",
-                successfulConnectionActivation2
-              );
-
-              if (successfulConnectionActivation2) {
-                return true;
-                // grabClientIP(host)
-                //   .then(ip => ip)
-                //   .catch(err =>
-                //     console.log(
-                //       "error in the 2nd try in the resetClientIPAddress method after Failed activation => ",
-                //       err
-                //     )
-                //   );
-              } else {
-                return false;
-              }
-            },
-            5000
-          );
-        });
-      }
-    })
-    .catch(err => {
-      if (err) {
-        console.log(
-          `Error running the reset command on the first try. Current IP is ${oldIP}, Err => ${err}`
-        );
-        return false;
-      }
-    });
-};
-
-//function for grabbing proxy server external IP
+//reboot client machine
 const rebootClient = function(host) {
   return exec(`ssh pi@${host} "sudo reboot"`)
     .then(rebootRes => {
@@ -128,6 +45,241 @@ const rebootClient = function(host) {
         return false;
       }
     });
+};
+
+//function for grabbing proxy server external IP
+const grabClientIP = async function(host) {
+  let timesCalled = 0;
+
+  const wrapper = function() {
+    return exec(`ssh pi@${host} "curl https://api.ipify.org -s -S"`)
+      .then(returnedIP => {
+        console.log(
+          "Successfully grabbed the client IP => ",
+          returnedIP.stdout
+        );
+        return returnedIP.stdout;
+      })
+      .catch(err => {
+        if (err) {
+          timesCalled++;
+          console.log(
+            `Error in the grabClientIP method. Calling recursively now for the ${timesCalled}th time. => `,
+            err
+          );
+          if (timesCalled >= 4) {
+            return err;
+          } else {
+            return wrapper();
+          }
+        }
+      });
+  };
+  return await wrapper();
+};
+
+const connectionUp = async function(host, network) {
+  let timesCalled = 0;
+
+  const wrapper = function() {
+    return exec(`ssh pi@${host} "sudo nmcli connection up ${network}"`)
+      .then(connectionData => connectionData)
+      .catch(err => {
+        if (err) {
+          timesCalled++;
+          console.log(
+            `Error in the connectionUp method. Calling recursively now for the ${timesCalled}th time. => `,
+            err
+          );
+          if (timesCalled >= 4) {
+            return err;
+          } else {
+            return wrapper();
+          }
+        }
+      });
+  };
+  return await wrapper();
+};
+
+const interfaceDownUp = async function(host, network) {
+  let timesCalled = 0;
+
+  const wrapper = function() {
+    return exec(
+      `ssh pi@${host} "sudo nmcli connection down ${network}; sleep 5; sudo nmcli connection up ${network};"`
+    )
+      .then(connectionData => connectionData)
+      .catch(err => {
+        if (err) {
+          timesCalled++;
+          console.log(
+            `Error in the connectionUp method. Calling recursively now for the ${timesCalled}th time. => `,
+            err
+          );
+          if (timesCalled >= 4) {
+            return err;
+          } else {
+            return wrapper();
+          }
+        }
+      });
+  };
+  return await wrapper();
+};
+
+const deviceDisconnectAndReconnect = async function(host) {
+  let timesCalled = 0;
+
+  const wrapper = function() {
+    return exec(
+      `ssh pi@${host} "sudo nmcli device disconnect cdc-wdm0; sleep 5; sudo nmcli device connect cdc-wdm0;"`
+    )
+      .then(connectionData => connectionData)
+      .catch(err => {
+        if (err) {
+          timesCalled++;
+          console.log(
+            `Error in the deviceDisconnectAndReconnect method. Calling recursively now for the ${timesCalled}th time. => `,
+            err
+          );
+          if (timesCalled >= 4) {
+            return err;
+          } else {
+            return wrapper();
+          }
+        }
+      });
+  };
+  return await wrapper();
+};
+
+const resetClientIPAddress = async function(host, network, oldIP) {
+  let timesWrapperCalled = 0;
+  let timesConnectionUpCalled = 0;
+  let timesInterfaceDownUpCalled = 0;
+  let timesdeviceDisconnectAndReconnectCalled = 0;
+
+  let newIP;
+
+  const wrapper = function() {
+    return connectionUp(host, network)
+      .then(connectionUpResponse => {
+        console.log("connectionUpResponse => ", connectionUpResponse);
+        let successfulConnectionActivationTry1 =
+          connectionUpResponse.stdout.indexOf(
+            "Connection successfully activated"
+          ) >= 0
+            ? true
+            : false;
+
+        if (successfulConnectionActivationTry1) {
+          grabClientIP(host)
+            .then(ip => {
+              newIP = ip.trim();
+              console.log("newIP => ", newIP);
+              if (newIP !== undefined && newIP !== oldIP) {
+                return newIP;
+              } else {
+                console.log(
+                  "Issue with matching IP's or an undefined response after calling connectionUp method ip => ",
+                  ip
+                );
+              }
+            })
+            .catch(err => {
+              if (err) {
+                console.log(
+                  "Error trying to grab the client ip after trying connectionUp method => ",
+                  err
+                );
+                return err;
+              }
+            });
+        } else {
+          console.log(
+            "connection not successfully activated. Trying the interfaceDownUp now"
+          );
+          interfaceDownUp(host, network).then(interfaceDownUpResponse => {
+            let successfulConnectionActivationTry2 =
+              interfaceDownUpResponse.stdout.indexOf(
+                "Connection successfully activated"
+              ) >= 0
+                ? true
+                : false;
+            if (successfulConnectionActivationTry2) {
+              grabClientIP(host)
+                .then(ip => {
+                  newIP = ip.trim();
+                  console.log("newIP => ", newIP);
+                  if (newIP !== undefined && newIP !== oldIP) {
+                    return newIP;
+                  } else {
+                    console.log(
+                      "Issue with matching IP's or an undefined response after calling interfaceDownUp method ip => ",
+                      ip
+                    );
+                  }
+                })
+                .catch(err => {
+                  if (err) {
+                    console.log(
+                      "Error trying to grab the client ip after trying interfaceDownUp method => ",
+                      err
+                    );
+                    return err;
+                  }
+                });
+            } else {
+              deviceDisconnectAndReconnect(host).then(
+                deviceDisconnectAndReconnectResponse => {
+                  let successfulConnectionActivationTry3 =
+                    deviceDisconnectAndReconnectResponse.stdout.indexOf(
+                      "successfully activated"
+                    ) >= 0
+                      ? true
+                      : false;
+                  if (successfulConnectionActivationTry3) {
+                    grabClientIP(host)
+                      .then(ip => {
+                        newIP = ip.trim();
+                        console.log("newIP => ", newIP);
+                        if (newIP !== undefined && newIP !== oldIP) {
+                          return newIP;
+                        } else {
+                          console.log(
+                            "Issue with matching IP's or an undefined response after calling deviceDisconnectAndReconnect method ip => ",
+                            ip
+                          );
+                        }
+                      })
+                      .catch(err => {
+                        if (err) {
+                          console.log(
+                            "Error trying to grab the client ip after trying interfaceDownUp method => ",
+                            err
+                          );
+                          return err;
+                        }
+                      });
+                  }
+                }
+              );
+            }
+          });
+          // return resetClientIPAddress(host, network, oldIP);
+        }
+      })
+      .catch(err => {
+        if (err) {
+          console.log(
+            `Error running the reset command on the first try. Current IP is ${oldIP}, Err => ${err}`
+          );
+          return err;
+        }
+      });
+  };
+  return await wrapper();
 };
 
 app.get("/proxy/reset", function(req, res) {
@@ -149,7 +301,23 @@ app.get("/proxy/reset", function(req, res) {
   grabClientIP(host)
     .then(ip => {
       console.log("Return of grabClientIP in the main endpoint => ", ip);
-      if (ip && ip !== undefined) {
+      oldIP = ip.trim();
+      return oldIP;
+    })
+    .then(oldIP => {
+      resetClientIPAddress(host, network, oldIP).then(resetClientResponse => {
+        console.log("resetClientResponse => ", resetClientResponse);
+      });
+    })
+    .catch(err => {
+      if (err) {
+        console.log("We have an error in the main endpoint => ", err);
+      }
+    });
+});
+
+/*
+if (ip && ip !== undefined) {
         oldIP = ip.trim();
       } else {
         grabClientIP(host)
@@ -256,16 +424,7 @@ app.get("/proxy/reset", function(req, res) {
             );
           }
         });
-    })
-    .catch(err => {
-      if (err) {
-        console.log(
-          "We have an error in the main ednpoint while trying to grab the client ip => ",
-          err
-        );
-      }
-    });
-});
+*/
 //`ssh pi@${host} "/usr/bin/squid -k shutdown && echo "" > /var/spool/squid/swap.state && sudo reboot"`
 //ssh pi@${host} "sudo rm /etc/NetworkManager/system-connections/${network} && echo "Removing and Re-Adding the connection profile for ${network} on ${host}" && sudo nmcli con add con-name ${network} ifname cdc-wdm0 type gsm connection.id ${network} connection.autoconnect-priority 999 gsm.apn ${apn} gsm.number *99# && sleep 5 &&
 app.get("/proxy/reset/hard", function(req, res) {
