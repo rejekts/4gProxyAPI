@@ -196,29 +196,31 @@ const resetClientIPAddress = async function(host, network, oldIP) {
               : false;
 
           if (successfulConnectionActivationTry1) {
-            grabClientIP(host)
-              .then(ip => {
-                newIP = ip.trim();
-                console.log("newIP in the connectionUp method => ", newIP);
-                if (newIP !== undefined && newIP !== oldIP) {
-                  return newIP;
-                } else {
-                  console.log(
-                    "Issue with matching IP's or an undefined response after calling connectionUp method ip => ",
-                    ip
-                  );
-                  return wrapper();
-                }
-              })
-              .catch(err => {
-                if (err) {
-                  console.log(
-                    "Error trying to grab the client ip after trying connectionUp method => ",
-                    err
-                  );
-                  return err;
-                }
-              });
+            setTimeout(function() {
+              grabClientIP(host)
+                .then(ip => {
+                  newIP = ip;
+                  console.log("newIP in the connectionUp method => ", newIP);
+                  if (newIP !== undefined && newIP !== oldIP) {
+                    return newIP;
+                  } else {
+                    console.log(
+                      "Issue with matching IP's or an undefined response after calling connectionUp method ip => ",
+                      ip
+                    );
+                    return wrapper();
+                  }
+                })
+                .catch(err => {
+                  if (err) {
+                    console.log(
+                      "Error trying to grab the client ip after trying connectionUp method => ",
+                      err
+                    );
+                    return err;
+                  }
+                });
+            }, 3000);
           } else {
             return wrapper();
           }
@@ -248,29 +250,31 @@ const resetClientIPAddress = async function(host, network, oldIP) {
               ? true
               : false;
           if (successfulConnectionActivationTry2) {
-            grabClientIP(host)
-              .then(ip => {
-                newIP = ip.trim();
-                console.log("newIP in the interfaceDownUp method => ", newIP);
-                if (newIP !== undefined && newIP !== oldIP) {
-                  return newIP;
-                } else {
-                  console.log(
-                    "Issue with matching IP's or an undefined response after calling interfaceDownUp method ip => ",
-                    ip
-                  );
-                  // return wrapper();
-                }
-              })
-              .catch(err => {
-                if (err) {
-                  console.log(
-                    "Error trying to grab the client ip after trying interfaceDownUp method => ",
-                    err
-                  );
-                  return err;
-                }
-              });
+            setTimeout(function() {
+              grabClientIP(host)
+                .then(ip => {
+                  newIP = ip.trim();
+                  console.log("newIP in the interfaceDownUp method => ", newIP);
+                  if (newIP !== undefined && newIP !== oldIP) {
+                    return newIP;
+                  } else {
+                    console.log(
+                      "Issue with matching IP's or an undefined response after calling interfaceDownUp method ip => ",
+                      ip
+                    );
+                    // return wrapper();
+                  }
+                })
+                .catch(err => {
+                  if (err) {
+                    console.log(
+                      "Error trying to grab the client ip after trying interfaceDownUp method => ",
+                      err
+                    );
+                    return err;
+                  }
+                });
+            }, 3000);
           } else {
             return wrapper();
           }
@@ -300,32 +304,34 @@ const resetClientIPAddress = async function(host, network, oldIP) {
               ? true
               : false;
           if (successfulConnectionActivationTry3) {
-            grabClientIP(host)
-              .then(ip => {
-                newIP = ip.trim();
-                console.log(
-                  "newIP in the deviceDisconnectAndReconnect method => ",
-                  newIP
-                );
-                if (newIP !== undefined && newIP !== oldIP) {
-                  return newIP;
-                } else {
+            setTimeout(function() {
+              grabClientIP(host)
+                .then(ip => {
+                  newIP = ip.trim();
                   console.log(
-                    "Issue with matching IP's or an undefined response after calling deviceDisconnectAndReconnect method ip => ",
-                    ip
+                    "newIP in the deviceDisconnectAndReconnect method => ",
+                    newIP
                   );
-                  // return wrapper();
-                }
-              })
-              .catch(err => {
-                if (err) {
-                  console.log(
-                    "Error trying to grab the client ip after trying interfaceDownUp method => ",
-                    err
-                  );
-                  return err;
-                }
-              });
+                  if (newIP !== undefined && newIP !== oldIP) {
+                    return newIP;
+                  } else {
+                    console.log(
+                      "Issue with matching IP's or an undefined response after calling deviceDisconnectAndReconnect method ip => ",
+                      ip
+                    );
+                    // return wrapper();
+                  }
+                })
+                .catch(err => {
+                  if (err) {
+                    console.log(
+                      "Error trying to grab the client ip after trying interfaceDownUp method => ",
+                      err
+                    );
+                    return err;
+                  }
+                });
+            }, 3000);
           } else {
             return wrapper();
           }
@@ -385,16 +391,16 @@ app.get("/proxy/reset", function(req, res) {
   grabClientIP(host)
     .then(ip => {
       console.log("Return of oldIP in the /proxy/reset endpoint => ", ip);
-      if (ip.stderr.length) {
-        return grabClientIP(host).then(ip => {
-          if (ip.stderr.length) {
+      if (!ip) {
+        grabClientIP(host).then(ip2 => {
+          if (ip2) {
             rebootClient(host)
               .then(rebootRes => rebootRes)
               .catch(err => {});
           }
         });
       } else {
-        oldIP = ip.stdout.trim();
+        oldIP = ip;
         return oldIP;
       }
     })
