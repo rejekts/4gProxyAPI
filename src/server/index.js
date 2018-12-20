@@ -413,7 +413,7 @@ app.get("/proxy/reset", function(req, res) {
               );
           } else {
             res
-              .status(200)
+              .status(255)
               .send(
                 "There was an issue when trying to reset the proxy IP address. please wait 30 - 60 seconds and try again. if the problem persists please contact your system administrator and provide them with the following error code. => ",
                 err
