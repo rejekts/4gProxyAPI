@@ -178,13 +178,13 @@ const resetClientIPAddress = async function(host, network, oldIP) {
   let timesRebootClientCalled = 0;
   let newIP;
 
-  const wrapper = function() {
+  const wrapper = async function() {
     timesWrapperCalled++;
     console.log("timesWrapperCalled => ", timesWrapperCalled);
 
     if (timesWrapperCalled === 1) {
       console.log("Running the connectionUp method");
-      connectionUp(host, network)
+      await connectionUp(host, network)
         .then(connectionUpResponse => {
           timesConnectionUpCalled++;
           console.log("connectionUpResponse => ", connectionUpResponse);
@@ -199,12 +199,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
             grabClientIP(host)
               .then(ip => {
                 newIP = ip.trim();
-                console.log(
-                  "newIP in the connectionUp method => ",
-                  newIP,
-                  " oldIP => ",
-                  oldIP
-                );
+                console.log("newIP in the connectionUp method => ", newIP);
                 if (newIP !== undefined && newIP !== oldIP) {
                   return newIP;
                 } else {
@@ -243,7 +238,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
         "Connection did not activate successfully OR the ip is not reset using the connectionUp method. Trying the interfaceDownUp now"
       );
 
-      interfaceDownUp(host, network)
+      await interfaceDownUp(host, network)
         .then(interfaceDownUpResponse => {
           timesInterfaceDownUpCalled++;
           let successfulConnectionActivationTry2 =
@@ -256,12 +251,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
             grabClientIP(host)
               .then(ip => {
                 newIP = ip;
-                console.log(
-                  "newIP in the interfaceDownUp method => ",
-                  newIP,
-                  " oldIP => ",
-                  oldIP
-                );
+                console.log("newIP in the interfaceDownUp method => ", newIP);
                 if (newIP !== undefined && newIP !== oldIP) {
                   return newIP;
                 } else {
@@ -269,7 +259,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
                     "Issue with matching IP's or an undefined response after calling interfaceDownUp method ip => ",
                     ip
                   );
-                  return wrapper();
+                  // return wrapper();
                 }
               })
               .catch(err => {
@@ -300,7 +290,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
         "Connection did not activate successfully OR the ip is not reset using the interfaceDownUp method. Trying the deviceDisconnectAndReconnect method now"
       );
 
-      deviceDisconnectAndReconnect(host)
+      await deviceDisconnectAndReconnect(host)
         .then(deviceDisconnectAndReconnectResponse => {
           timesdeviceDisconnectAndReconnectCalled++;
           let successfulConnectionActivationTry3 =
@@ -315,9 +305,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
                 newIP = ip.trim();
                 console.log(
                   "newIP in the deviceDisconnectAndReconnect method => ",
-                  newIP,
-                  " oldIP => ",
-                  oldIP
+                  newIP
                 );
                 if (newIP !== undefined && newIP !== oldIP) {
                   return newIP;
@@ -326,7 +314,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
                     "Issue with matching IP's or an undefined response after calling deviceDisconnectAndReconnect method ip => ",
                     ip
                   );
-                  return wrapper();
+                  // return wrapper();
                 }
               })
               .catch(err => {
@@ -358,23 +346,21 @@ const resetClientIPAddress = async function(host, network, oldIP) {
       "timesdeviceDisconnectAndReconnectCalled => ",
       timesdeviceDisconnectAndReconnectCalled
     );
-    // console.log("timesRebootClientCalled => ", timesRebootClientCalled);
+    console.log("timesRebootClientCalled => ", timesRebootClientCalled);
     console.log("timesWrapperCalled => ", timesWrapperCalled);
 
     if (timesWrapperCalled === 4) {
-      // timesRebootClientCalled++;
-      return false;
-      // rebootClient(host)
-      //   .then(rebootResponse => rebootResponse)
-      //   .catch(err => {
-      //     if (err) {
-      //       console.log(
-      //         `Error in the rebootClient method. Current IP is ${oldIP}, and the Err is => ${err}`
-      //       );
-      //       return err;
-      //     }
-      //   })
-      //   .then(data => data);
+      timesRebootClientCalled++;
+      await rebootClient(host)
+        .then(rebootResponse => rebootResponse)
+        .catch(err => {
+          if (err) {
+            console.log(
+              `Error in the rebootClient method. Current IP is ${oldIP}, and the Err is => ${err}`
+            );
+            return err;
+          }
+        });
     }
   };
   return await wrapper();
@@ -400,7 +386,7 @@ app.get("/proxy/reset", function(req, res) {
     .then(ip => {
       console.log("Return of oldIP in the /proxy/reset endpoint => ", ip);
       if (!ip) {
-        grabClientIP(host).then(ip2 => {
+        return grabClientIP(host).then(ip2 => {
           if (!ip2) {
             rebootClient(host)
               .then(rebootRes => rebootRes)
@@ -421,45 +407,19 @@ app.get("/proxy/reset", function(req, res) {
       }
     })
     .then(oldIP => {
-      console.log("oldIP in the main /proxy/reset endpoint => ", oldIP);
       resetClientIPAddress(host, network, oldIP)
         .then(resetClientResponseIP => {
           console.log(
             "New IP from resetClientIPAddress method in the /proxy/reset endpoint => ",
             resetClientResponseIP
           );
-          if (resetClientResponseIP) {
+          if (resetClientResponseIP !== undefined) {
             res
               .status(200)
               .send(
                 `Your IP address has been successfully reset. Your oldIP is ${oldIP} and the newIP is ${resetClientResponseIP}`,
                 ` && the res.body => ${body}`
               );
-          } else {
-            console.log(
-              "we are still not getting the ip back into the main endpoint even if it changes. This message is in the else after checking the ip response"
-            );
-            // rebootClient(host)
-            //   .then(rebootResponse => {
-            //     console.log(" rebootResponse => ", rebootResponse);
-            //     res
-            //       .status(200)
-            //       .send(
-            //         `We could not successfully reset the ip after 3 tries so we are rebooting the machine now. Please allow 60 - 90 seconds for the connection to re-establish and then check your new IP address. Your oldIP address is ${oldIP} `
-            //       );
-            //   })
-            //   .catch(err => {
-            //     if (err) {
-            //       console.log(
-            //         `Error in the rebootClient method. Current IP is ${oldIP}, and the Err is => ${err}`
-            //       );
-            //       res
-            //         .status(200)
-            //         .send(
-            //           `We could not successfully reset the ip after 3 tries so we are rebooting the machine now. Please allow 60 - 90 seconds for the connection to re-establish and then check your new IP address. Your oldIP address is ${oldIP}. If the problem persists please contact the system administrator.`
-            //         );
-            //     }
-            //   })
           }
         })
         .catch(err => {
