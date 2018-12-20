@@ -172,10 +172,6 @@ const deviceDisconnectAndReconnect = async function(host) {
 //function to run all the methods until ip is reset on client machine
 const resetClientIPAddress = async function(host, network, oldIP) {
   let timesWrapperCalled = 0;
-  let timesConnectionUpCalled = 0;
-  let timesInterfaceDownUpCalled = 0;
-  let timesdeviceDisconnectAndReconnectCalled = 0;
-  let timesRebootClientCalled = 0;
   let newIP;
 
   const wrapper = async function() {
@@ -357,15 +353,6 @@ const resetClientIPAddress = async function(host, network, oldIP) {
           }
         });
     }
-
-    console.log("timesConnectionUpCalled => ", timesConnectionUpCalled);
-    console.log("timesInterfaceDownUpCalled => ", timesInterfaceDownUpCalled);
-    console.log(
-      "timesdeviceDisconnectAndReconnectCalled => ",
-      timesdeviceDisconnectAndReconnectCalled
-    );
-    console.log("timesRebootClientCalled => ", timesRebootClientCalled);
-    console.log("timesWrapperCalled => ", timesWrapperCalled);
 
     if (timesWrapperCalled === 4) {
       timesRebootClientCalled++;
