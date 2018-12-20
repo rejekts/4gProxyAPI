@@ -170,7 +170,7 @@ const deviceDisconnectAndReconnect = async function(host) {
 };
 
 //function to run all the methods until ip is reset on client machine
-const resetClientIPAddress = async function(host, network, oldIP) {
+const resetClientIPAddress = async function(host, network, oldIP, cb) {
   let timesWrapperCalled = 0;
   let newIP;
 
@@ -201,7 +201,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
                       "Made it into the condition of - newIP !== undefined && newIP !== oldIP - in the connectionUp. newIP => ",
                       newIP
                     );
-                    return newIP;
+                    cb(newIP);
                   } else {
                     console.log(
                       "Issue with matching IP's or an undefined response after calling connectionUp method ip => ",
@@ -258,7 +258,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
                       "Made it into the condition of - newIP !== undefined && newIP !== oldIP - in the interfaceDownUp method . newIP => ",
                       newIP
                     );
-                    return newIP;
+                    cb(newIP);
                   } else {
                     console.log(
                       "Issue with matching IP's or an undefined response after calling interfaceDownUp method ip => ",
@@ -318,7 +318,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
                       "Made it into the condition of - newIP !== undefined && newIP !== oldIP - in the deviceDisconnectAndReconnect method. newIP => ",
                       newIP
                     );
-                    return newIP;
+                    cb(newIP);
                   } else {
                     console.log(
                       "Issue with matching IP's or an undefined response after calling deviceDisconnectAndReconnect method ip => ",
@@ -379,7 +379,7 @@ app.get("/proxy/reset", function(req, res) {
     host,
     " network => ",
     network,
-    "Time => ",
+    " Time => ",
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
 
@@ -403,33 +403,27 @@ app.get("/proxy/reset", function(req, res) {
       }
     })
     .then(oldIP => {
-      resetClientIPAddress(host, network, oldIP)
-        .then(resetClientResponseIP => {
+      resetClientIPAddress(host, network, oldIP, ip => {
+        console.log("newIP in the endpoint!! => ", ip);
+        if (ip !== undefined) {
+          res
+            .status(200)
+            .send(
+              `Your IP address has been successfully reset. Your oldIP is ${oldIP} and the newIP is ${ip}`
+            );
+        }
+      }).catch(err => {
+        if (err) {
           console.log(
-            "New IP from resetClientIPAddress method in the /proxy/reset endpoint => ",
-            resetClientResponseIP
+            "We have an error in the main /proxy/reset endpoint when calling the resetClientIpAddress method. err => ",
+            err
           );
-          if (resetClientResponseIP !== undefined) {
-            res
-              .status(200)
-              .send(
-                `Your IP address has been successfully reset. Your oldIP is ${oldIP} and the newIP is ${resetClientResponseIP}`,
-                ` && the res.body => ${body}`
-              );
-          }
-        })
-        .catch(err => {
-          if (err) {
-            console.log(
-              "We have an error in the main /proxy/reset endpoint when calling the resetClientIpAddress method. err => ",
-              err
-            );
-            res.send(
-              "There was an issue when trying to reset the proxy IP address. please wait 30 - 60 seconds and try again. if the problem persists please contact your system administrator and provide them with the following error code. => ",
-              err
-            );
-          }
-        });
+          res.send(
+            "There was an issue when trying to reset the proxy IP address. please wait 30 - 60 seconds and try again. if the problem persists please contact your system administrator and provide them with the following error code. => ",
+            err
+          );
+        }
+      });
     })
     .catch(err => {
       if (err) {
