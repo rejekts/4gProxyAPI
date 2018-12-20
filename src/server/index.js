@@ -46,7 +46,7 @@ const rebootClient = function(host) {
           "; err => ",
           err.stderr
         );
-        return err;
+        throw err;
       }
     });
 };
@@ -58,23 +58,19 @@ const grabClientIP = async function(host) {
   const wrapper = function() {
     return exec(`ssh pi@${host} "curl https://api.ipify.org -s -S"`)
       .then(returnedIP => {
-        // console.log(
-        //   "Successfully grabbed the client IP => ",
-        //   returnedIP.stdout
-        // );
         return returnedIP.stdout;
       })
       .catch(err => {
         if (err) {
           timesCalled++;
-          console.log(
-            `Error in the grabClientIP method. Calling recursively now for the ${timesCalled}th time. Error details: cmd => `,
-            err.cmd,
-            "; err => ",
-            err.stderr
-          );
           if (timesCalled >= 5) {
-            return err;
+            console.log(
+              `Error in the grabClientIP method. Calling recursively now for the ${timesCalled}th time. Error details: cmd => `,
+              err.cmd,
+              "; err => ",
+              err.stderr
+            );
+            throw err;
           } else {
             return wrapper();
           }
@@ -197,11 +193,7 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
                   newIP = ip;
                   console.log("newIP in the connectionUp method => ", newIP);
                   if (newIP !== undefined && !newIP.stderr && newIP !== oldIP) {
-                    console.log(
-                      "Made it into the condition of - newIP !== undefined && newIP !== oldIP - in the connectionUp. newIP => ",
-                      newIP
-                    );
-                    cb(newIP);
+                    cb(null, newIP);
                   } else {
                     console.log(
                       "Issue with matching IP's or an undefined response after calling connectionUp method ip => ",
@@ -216,7 +208,7 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
                       "Error trying to grab the client ip after trying connectionUp method => ",
                       err
                     );
-                    return err;
+                    cb(err);
                   }
                 });
             }, 3000);
@@ -254,11 +246,7 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
                   newIP = ip;
                   console.log("newIP in the interfaceDownUp method => ", newIP);
                   if (newIP !== undefined && !newIP.stderr && newIP !== oldIP) {
-                    console.log(
-                      "Made it into the condition of - newIP !== undefined && newIP !== oldIP - in the interfaceDownUp method . newIP => ",
-                      newIP
-                    );
-                    cb(newIP);
+                    cb(null, newIP);
                   } else {
                     console.log(
                       "Issue with matching IP's or an undefined response after calling interfaceDownUp method ip => ",
@@ -273,7 +261,7 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
                       "Error trying to grab the client ip after trying interfaceDownUp method => ",
                       err
                     );
-                    return err;
+                    cb(err);
                   }
                 });
             }, 3000);
@@ -314,17 +302,13 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
                     newIP
                   );
                   if (newIP !== undefined && !newIP.stderr && newIP !== oldIP) {
-                    console.log(
-                      "Made it into the condition of - newIP !== undefined && newIP !== oldIP - in the deviceDisconnectAndReconnect method. newIP => ",
-                      newIP
-                    );
-                    cb(newIP);
+                    cb(null, newIP);
                   } else {
                     console.log(
                       "Issue with matching IP's or an undefined response after calling deviceDisconnectAndReconnect method ip => ",
                       ip
                     );
-                    // return wrapper();
+                    return wrapper();
                   }
                 })
                 .catch(err => {
@@ -333,7 +317,7 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
                       "Error trying to grab the client ip after trying interfaceDownUp method => ",
                       err
                     );
-                    return err;
+                    cb(err);
                   }
                 });
             }, 3000);
@@ -346,22 +330,15 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
             console.log(
               `Error in the deviceDisconnectAndReconnect method. Current IP is ${oldIP}, and the Err is => ${err}`
             );
-            return err;
+            cb(err);
           }
         });
     }
 
     if (timesWrapperCalled === 4) {
-      await rebootClient(host)
-        .then(rebootResponse => rebootResponse)
-        .catch(err => {
-          if (err) {
-            console.log(
-              `Error in the rebootClient method. Current IP is ${oldIP}, and the Err is => ${err}`
-            );
-            return err;
-          }
-        });
+      await rebootClient(host).then(res => {
+        cb(res);
+      });
     }
   };
   return await wrapper();
@@ -390,8 +367,26 @@ app.get("/proxy/reset", function(req, res) {
         grabClientIP(host).then(ip2 => {
           if (!ip2) {
             rebootClient(host)
-              .then(rebootRes => rebootRes)
-              .catch(err => {});
+              .then(rebootRes => {
+                res
+                  .status(200)
+                  .send(
+                    "We were not able to successfully reset your IP Address after 4 tries. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address.",
+                    rebootRes
+                  );
+              })
+              .catch(err => {
+                console.log(
+                  "Error in the 2nd try at grabbing the oldIP in the endpooint. Error: ",
+                  err
+                );
+                res
+                  .status(255)
+                  .send(
+                    "We were not able to successfully reset your IP Address after 4 tries. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address.",
+                    err
+                  );
+              });
           } else {
             oldIP = ip;
             return oldIP;
@@ -403,25 +398,34 @@ app.get("/proxy/reset", function(req, res) {
       }
     })
     .then(oldIP => {
-      resetClientIPAddress(host, network, oldIP, ip => {
-        console.log("newIP in the endpoint!! => ", ip);
-        if (ip !== undefined) {
-          res
-            .status(200)
-            .send(
-              `Your IP address has been successfully reset. Your oldIP is ${oldIP} and the newIP is ${ip}`
-            );
-        }
-      }).catch(err => {
+      resetClientIPAddress(host, network, oldIP, (err, ip) => {
         if (err) {
           console.log(
             "We have an error in the main /proxy/reset endpoint when calling the resetClientIpAddress method. err => ",
             err
           );
-          res.send(
-            "There was an issue when trying to reset the proxy IP address. please wait 30 - 60 seconds and try again. if the problem persists please contact your system administrator and provide them with the following error code. => ",
-            err
-          );
+          if (err.stderr.indexOf("closed by remote host") >= 0) {
+            res
+              .status(255)
+              .send(
+                "We were not able to successfully reset your IP Address after 4 tries. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address.",
+                err
+              );
+          } else {
+            res
+              .status(200)
+              .send(
+                "There was an issue when trying to reset the proxy IP address. please wait 30 - 60 seconds and try again. if the problem persists please contact your system administrator and provide them with the following error code. => ",
+                err
+              );
+          }
+        } else {
+          console.log("Success!! newIP in the endpoint!! => ", ip);
+          res
+            .status(200)
+            .send(
+              `Your IP address has been successfully reset. Your oldIP is ${oldIP} and the newIP is ${ip}`
+            );
         }
       });
     })
