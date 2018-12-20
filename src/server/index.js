@@ -30,25 +30,27 @@ app.timeout = 360000;
 
 //function to reboot client machine
 const rebootClient = function(host) {
-  return exec(`ssh pi@${host} "sudo reboot"`)
-    .then(rebootRes => {
-      console.log(
-        `Successfully rebooting the machine @ ${host} => `,
-        rebootRes.stdout
-      );
-      return rebootRes.stdout;
-    })
-    .catch(err => {
-      if (err) {
+  return new Promise((resolve, reject) => {
+    return exec(`ssh pi@${host} "sudo reboot"`)
+      .then(rebootRes => {
         console.log(
-          "Error in the rebootClient method. Error details: cmd => ",
-          err.cmd,
-          "; err => ",
-          err.stderr
+          `Successfully rebooting the machine @ ${host} => `,
+          rebootRes.stdout
         );
-        return err;
-      }
-    });
+        resolve(rebootRes.stdout);
+      })
+      .catch(err => {
+        if (err) {
+          console.log(
+            "Error in the rebootClient method. Error details: cmd => ",
+            err.cmd,
+            "; err => ",
+            err.stderr
+          );
+          reject(err);
+        }
+      });
+  });
 };
 
 //function for grabbing proxy server external IP
