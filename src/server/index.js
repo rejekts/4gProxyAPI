@@ -26,10 +26,329 @@ app.use(function(req, res, next) {
 });
 
 const server = app.listen(8080, () => console.log("Listening on port 8080!"));
+app.timeout = 360000;
+
+//function to reboot client machine
+const rebootClient = function(host) {
+  return exec(`ssh pi@${host} "sudo reboot"`)
+    .then(rebootRes => {
+      console.log(
+        `Successfully rebooting the machine @ ${host} => `,
+        rebootRes.stdout
+      );
+      return rebootRes.stdout;
+    })
+    .catch(err => {
+      if (err) {
+        console.log(
+          "Error in the rebootClient method. Error details: cmd => ",
+          err.cmd,
+          "; err => ",
+          err.stderr
+        );
+        throw err;
+      }
+    });
+};
+
+//function for grabbing proxy server external IP
+const grabClientIP = async function(host) {
+  let timesCalled = 0;
+
+  const wrapper = function() {
+    return exec(`ssh pi@${host} "curl https://api.ipify.org -s -S"`)
+      .then(returnedIP => {
+        return returnedIP.stdout;
+      })
+      .catch(err => {
+        if (err) {
+          timesCalled++;
+          if (timesCalled >= 5) {
+            console.log(
+              `Error in the grabClientIP method. Calling recursively now for the ${timesCalled}th time. Error details: cmd => `,
+              err.cmd,
+              "; err => ",
+              err.stderr
+            );
+            throw err;
+          } else {
+            return wrapper();
+          }
+        }
+      });
+  };
+  return await wrapper();
+};
+
+//function to reset ip on client machine using the connection up method
+const connectionUp = async function(host, network) {
+  let timesCalled = 0;
+
+  const wrapper = function() {
+    return exec(`ssh pi@${host} "sudo nmcli connection up ${network}"`)
+      .then(connectionData => connectionData)
+      .catch(err => {
+        if (err) {
+          timesCalled++;
+          console.log(
+            `Error in the connectionUp method. Calling recursively now for the ${timesCalled}th time. Error details: cmd => `,
+            err.cmd,
+            "; err => ",
+            err.stderr
+          );
+          if (timesCalled >= 1) {
+            return err;
+          } else {
+            return wrapper();
+          }
+        }
+      });
+  };
+  return await wrapper();
+};
+
+//function to reset ip on client machine by cycling the interface down then up
+const interfaceDownUp = async function(host, network) {
+  let timesCalled = 0;
+
+  const wrapper = function() {
+    return exec(
+      `ssh pi@${host} "sudo nmcli connection down ${network}; sleep 5; sudo nmcli connection up ${network};"`
+    )
+      .then(connectionData => connectionData)
+      .catch(err => {
+        if (err) {
+          timesCalled++;
+          console.log(
+            `Error in the interfaceDownUp method. Calling recursively now for the ${timesCalled}th time. Error details: cmd => `,
+            err.cmd,
+            "; err => ",
+            err.stderr
+          );
+          if (timesCalled >= 1) {
+            return err;
+          } else {
+            return wrapper();
+          }
+        }
+      });
+  };
+  return await wrapper();
+};
+
+//function to reset ip on client machine by disconnecting the modem and reconnecting it
+const deviceDisconnectAndReconnect = async function(host) {
+  let timesCalled = 0;
+
+  const wrapper = function() {
+    return exec(
+      `ssh pi@${host} "sudo nmcli device disconnect cdc-wdm0; sleep 5; sudo nmcli device connect cdc-wdm0;"`
+    )
+      .then(connectionData => connectionData)
+      .catch(err => {
+        if (err) {
+          timesCalled++;
+          console.log(
+            `Error in the deviceDisconnectAndReconnect method. Calling recursively now for the ${timesCalled}th time. Error details: cmd => `,
+            err.cmd,
+            "; err => ",
+            err.stderr
+          );
+          if (timesCalled >= 1) {
+            return err;
+          } else {
+            return wrapper();
+          }
+        }
+      });
+  };
+  return await wrapper();
+};
+
+//function to run all the methods until ip is reset on client machine
+const resetClientIPAddress = async function(host, network, oldIP, cb) {
+  let timesWrapperCalled = 0;
+  let newIP;
+
+  const wrapper = async function() {
+    timesWrapperCalled++;
+    console.log("timesWrapperCalled => ", timesWrapperCalled);
+
+    if (timesWrapperCalled === 1) {
+      console.log("Running the connectionUp method");
+      await connectionUp(host, network)
+        .then(connectionUpResponse => {
+          console.log("connectionUpResponse => ", connectionUpResponse);
+          let successfulConnectionActivationTry1 =
+            connectionUpResponse.stdout.indexOf(
+              "Connection successfully activated"
+            ) >= 0
+              ? true
+              : false;
+
+          if (successfulConnectionActivationTry1) {
+            setTimeout(function() {
+              grabClientIP(host)
+                .then(ip => {
+                  newIP = ip;
+                  console.log("newIP in the connectionUp method => ", newIP);
+                  if (newIP !== undefined && !newIP.stderr && newIP !== oldIP) {
+                    cb(null, newIP);
+                  } else {
+                    console.log(
+                      "Issue with matching IP's or an undefined response after calling connectionUp method ip => ",
+                      ip
+                    );
+                    return wrapper();
+                  }
+                })
+                .catch(err => {
+                  if (err) {
+                    console.log(
+                      "Error trying to grab the client ip after trying connectionUp method => ",
+                      err
+                    );
+                    cb(err);
+                  }
+                });
+            }, 3000);
+          } else {
+            return wrapper();
+          }
+        })
+        .catch(err => {
+          if (err) {
+            console.log(
+              `Error in the connectionUp method. Current IP is ${oldIP}, and the Err is => ${err}`
+            );
+            return err;
+          }
+        });
+    }
+
+    if (timesWrapperCalled === 2) {
+      console.log(
+        "The connectionUp method didnt work. Trying the interfaceDownUp now"
+      );
+
+      await interfaceDownUp(host, network)
+        .then(interfaceDownUpResponse => {
+          let successfulConnectionActivationTry2 =
+            interfaceDownUpResponse.stdout.indexOf(
+              "Connection successfully activated"
+            ) >= 0
+              ? true
+              : false;
+          if (successfulConnectionActivationTry2) {
+            setTimeout(function() {
+              grabClientIP(host)
+                .then(ip => {
+                  newIP = ip;
+                  console.log("newIP in the interfaceDownUp method => ", newIP);
+                  if (newIP !== undefined && !newIP.stderr && newIP !== oldIP) {
+                    cb(null, newIP);
+                  } else {
+                    console.log(
+                      "Issue with matching IP's or an undefined response after calling interfaceDownUp method ip => ",
+                      ip
+                    );
+                    return wrapper();
+                  }
+                })
+                .catch(err => {
+                  if (err) {
+                    console.log(
+                      "Error trying to grab the client ip after trying interfaceDownUp method => ",
+                      err
+                    );
+                    cb(err);
+                  }
+                });
+            }, 3000);
+          } else {
+            return wrapper();
+          }
+        })
+        .catch(err => {
+          if (err) {
+            console.log(
+              `Error in the interfaceDownUp method. Current IP is ${oldIP}, and the Err is => ${err}`
+            );
+            return err;
+          }
+        });
+    }
+
+    if (timesWrapperCalled === 3) {
+      console.log(
+        "The interfaceDownUp method didnt work. Trying the deviceDisconnectAndReconnect method now"
+      );
+
+      await deviceDisconnectAndReconnect(host)
+        .then(deviceDisconnectAndReconnectResponse => {
+          let successfulConnectionActivationTry3 =
+            deviceDisconnectAndReconnectResponse.stdout.indexOf(
+              "successfully activated"
+            ) >= 0
+              ? true
+              : false;
+          if (successfulConnectionActivationTry3) {
+            setTimeout(function() {
+              grabClientIP(host)
+                .then(ip => {
+                  newIP = ip;
+                  console.log(
+                    "newIP in the deviceDisconnectAndReconnect method => ",
+                    newIP
+                  );
+                  if (newIP !== undefined && !newIP.stderr && newIP !== oldIP) {
+                    cb(null, newIP);
+                  } else {
+                    console.log(
+                      "Issue with matching IP's or an undefined response after calling deviceDisconnectAndReconnect method ip => ",
+                      ip
+                    );
+                    return wrapper();
+                  }
+                })
+                .catch(err => {
+                  if (err) {
+                    console.log(
+                      "Error trying to grab the client ip after trying interfaceDownUp method => ",
+                      err
+                    );
+                    cb(err);
+                  }
+                });
+            }, 3000);
+          } else {
+            return wrapper();
+          }
+        })
+        .catch(err => {
+          if (err) {
+            console.log(
+              `Error in the deviceDisconnectAndReconnect method. Current IP is ${oldIP}, and the Err is => ${err}`
+            );
+            cb(err);
+          }
+        });
+    }
+
+    if (timesWrapperCalled === 4) {
+      await rebootClient(host).then(res => {
+        cb(res);
+      });
+    }
+  };
+  return await wrapper();
+};
 
 app.get("/proxy/reset", function(req, res) {
   const host = req.query["host"];
   const network = req.query["network"];
+  let oldIP;
+  let newIP;
 
   console.log(
     "Reset API Endpoint getting hit!",
@@ -37,21 +356,89 @@ app.get("/proxy/reset", function(req, res) {
     host,
     " network => ",
     network,
-    "Time => ",
+    " Time => ",
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
-  exec(`ssh pi@${host} "sudo nmcli connection up ${network}"`)
-    .then(data => {
-      res.send(
-        `Proxy connection resetting. Please allow 30-60 seconds for the network to re-establish`
-      );
-      console.log(`Connection to ${host}: ${data.stdout}`);
+
+  grabClientIP(host)
+    .then(ip => {
+      console.log("Return of oldIP in the /proxy/reset endpoint => ", ip);
+      if (!ip) {
+        grabClientIP(host).then(ip2 => {
+          if (!ip2) {
+            rebootClient(host)
+              .then(rebootRes => {
+                res
+                  .status(200)
+                  .send(
+                    "We were not able to successfully reset your IP Address after 4 tries. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address.",
+                    rebootRes
+                  );
+              })
+              .catch(err => {
+                console.log(
+                  "Error in the 2nd try at grabbing the oldIP in the endpooint. Error: ",
+                  err
+                );
+                res
+                  .status(255)
+                  .send(
+                    "We were not able to successfully reset your IP Address after 4 tries. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address.",
+                    err
+                  );
+              });
+          } else {
+            oldIP = ip;
+            return oldIP;
+          }
+        });
+      } else {
+        oldIP = ip;
+        return oldIP;
+      }
+    })
+    .then(oldIP => {
+      resetClientIPAddress(host, network, oldIP, (err, ip) => {
+        if (err) {
+          console.log(
+            "We have an error in the main /proxy/reset endpoint when calling the resetClientIpAddress method. err => ",
+            err
+          );
+          if (err.stderr.indexOf("closed by remote host") >= 0) {
+            res
+              .status(255)
+              .send(
+                "We were not able to successfully reset your IP Address after 4 tries. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address.",
+                err
+              );
+          } else {
+            res
+              .status(200)
+              .send(
+                "There was an issue when trying to reset the proxy IP address. please wait 30 - 60 seconds and try again. if the problem persists please contact your system administrator and provide them with the following error code. => ",
+                err
+              );
+          }
+        } else {
+          console.log("Success!! newIP in the endpoint!! => ", ip);
+          res
+            .status(200)
+            .send(
+              `Your IP address has been successfully reset. Your oldIP is ${oldIP} and the newIP is ${ip}`
+            );
+        }
+      });
     })
     .catch(err => {
-      console.log(`Error in the RESET GET request for ${host} => `, err);
+      if (err) {
+        console.log(
+          "We have an error in the main /proxy/reset endpoint => ",
+          err
+        );
+      }
     });
 });
-//`ssh pi@${host} "/usr/bin/squid -k shutdown && echo "" > /var/spool/squid/swap.state && sudo reboot"`
+
 app.get("/proxy/reset/hard", function(req, res) {
   const host = req.query["host"];
   const network = req.query["network"];
