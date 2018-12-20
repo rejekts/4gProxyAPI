@@ -27,7 +27,6 @@ app.use(function(req, res, next) {
 
 const server = app.listen(8080, () => console.log("Listening on port 8080!"));
 app.timeout = 360000;
-<<<<<<< HEAD
 
 //function to reboot client machine
 const rebootClient = function(host) {
@@ -380,8 +379,6 @@ const resetClientIPAddress = async function(host, network, oldIP) {
   };
   return await wrapper();
 };
-=======
->>>>>>> 1b3ad17cdaf1dd3a372a118e322cb2e083a4f807
 
 app.get("/proxy/reset", function(req, res) {
   const host = req.query["host"];
@@ -398,7 +395,6 @@ app.get("/proxy/reset", function(req, res) {
     "Time => ",
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
-<<<<<<< HEAD
 
   grabClientIP(host)
     .then(ip => {
@@ -489,34 +485,6 @@ app.get("/proxy/reset", function(req, res) {
     });
 });
 
-=======
-  exec(
-    `ssh pi@${host} "sudo nmcli connection up ${network}; curl https://api.ipify.org -s -S"`
-  )
-    .then(data => {
-      res.send(
-        `Proxy connection resetting. Please allow up to 30-60 seconds for the network to re-establish. Your IP is => ${data.stdout
-          .split(")")[1]
-          .trim()}`
-      );
-      console.log(`Connection to ${host}: ${data.stdout}`);
-    })
-    .catch(err => {
-      if (err.stdout.indexOf("Connection successfully activated") >= 0) {
-        res.send(
-          "Connection reset successfully. Please allow 20 - 30 seconds for the network to re-establish."
-        );
-      } else {
-        res.send(
-          `Proxy connection had trouble resetting. Please retry after 30 seconds.`
-        );
-        console.log(`Error in the RESET GET request for ${host} => `, err);
-      }
-    });
-});
-//`ssh pi@${host} "/usr/bin/squid -k shutdown && echo "" > /var/spool/squid/swap.state && sudo reboot"`
-//ssh pi@${host} "sudo rm /etc/NetworkManager/system-connections/${network} && echo "Removing and Re-Adding the connection profile for ${network} on ${host}" && sudo nmcli con add con-name ${network} ifname cdc-wdm0 type gsm connection.id ${network} connection.autoconnect-priority 999 gsm.apn ${apn} gsm.number *99# && sleep 5 &&
->>>>>>> 1b3ad17cdaf1dd3a372a118e322cb2e083a4f807
 app.get("/proxy/reset/hard", function(req, res) {
   const host = req.query["host"];
   const network = req.query["network"];
