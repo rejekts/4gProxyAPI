@@ -182,7 +182,6 @@ const resetClientIPAddress = async function(host, network, oldIP) {
       console.log("Running the connectionUp method");
       await connectionUp(host, network)
         .then(connectionUpResponse => {
-          timesConnectionUpCalled++;
           console.log("connectionUpResponse => ", connectionUpResponse);
           let successfulConnectionActivationTry1 =
             connectionUpResponse.stdout.indexOf(
@@ -242,7 +241,6 @@ const resetClientIPAddress = async function(host, network, oldIP) {
 
       await interfaceDownUp(host, network)
         .then(interfaceDownUpResponse => {
-          timesInterfaceDownUpCalled++;
           let successfulConnectionActivationTry2 =
             interfaceDownUpResponse.stdout.indexOf(
               "Connection successfully activated"
@@ -300,7 +298,6 @@ const resetClientIPAddress = async function(host, network, oldIP) {
 
       await deviceDisconnectAndReconnect(host)
         .then(deviceDisconnectAndReconnectResponse => {
-          timesdeviceDisconnectAndReconnectCalled++;
           let successfulConnectionActivationTry3 =
             deviceDisconnectAndReconnectResponse.stdout.indexOf(
               "successfully activated"
@@ -355,7 +352,6 @@ const resetClientIPAddress = async function(host, network, oldIP) {
     }
 
     if (timesWrapperCalled === 4) {
-      timesRebootClientCalled++;
       await rebootClient(host)
         .then(rebootResponse => rebootResponse)
         .catch(err => {
