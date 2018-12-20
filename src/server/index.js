@@ -49,10 +49,6 @@ app.get("/proxy/reset", function(req, res) {
     })
     .catch(err => {
       console.log(`Error in the RESET GET request for ${host} => `, err);
-      res.send(
-        `Proxy connection didnt work. Please wait 30-60 seconds and try again. Error: `,
-        err
-      );
     });
 });
 //`ssh pi@${host} "/usr/bin/squid -k shutdown && echo "" > /var/spool/squid/swap.state && sudo reboot"`
