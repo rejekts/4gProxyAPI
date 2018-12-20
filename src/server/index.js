@@ -397,6 +397,16 @@ app.get("/proxy/reset", function(req, res) {
         return oldIP;
       }
     })
+    .catch(err => {
+      if (err) {
+        res
+          .status(255)
+          .send(
+            "We were not able to successfully reset your IP Address after 4 tries. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address.",
+            err
+          );
+      }
+    })
     .then(oldIP => {
       resetClientIPAddress(host, network, oldIP, (err, ip) => {
         if (err) {
