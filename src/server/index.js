@@ -58,6 +58,7 @@ const grabClientIP = async function(host) {
   const wrapper = function() {
     return exec(`ssh pi@${host} "curl https://api.ipify.org -s -S"`)
       .then(returnedIP => {
+        timesCalled++;
         return returnedIP.stdout;
       })
       .catch(err => {
@@ -69,7 +70,7 @@ const grabClientIP = async function(host) {
             "; err => ",
             err.stderr
           );
-          if (timesCalled >= 3) {
+          if (timesCalled >= 2) {
             throw err;
           } else {
             return wrapper();
