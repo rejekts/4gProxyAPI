@@ -371,8 +371,7 @@ app.get("/proxy/reset", function(req, res) {
                 res
                   .status(200)
                   .send(
-                    "We were not able to successfully reset your IP Address after 4 tries. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address.",
-                    rebootRes
+                    `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${rebootRes}`
                   );
               })
               .catch(err => {
@@ -383,8 +382,7 @@ app.get("/proxy/reset", function(req, res) {
                 res
                   .status(255)
                   .send(
-                    "We were not able to successfully reset your IP Address after 4 tries. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address.",
-                    err
+                    `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${err}`
                   );
               });
           } else {
@@ -402,8 +400,7 @@ app.get("/proxy/reset", function(req, res) {
         res
           .status(255)
           .send(
-            "We were not able to successfully reset your IP Address after 4 tries. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address.",
-            err
+            `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${err}`
           );
       }
     })
@@ -418,16 +415,34 @@ app.get("/proxy/reset", function(req, res) {
             res
               .status(255)
               .send(
-                "We were not able to successfully reset your IP Address after 4 tries. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address.",
-                err
+                `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${err}`
               );
           } else {
-            res
-              .status(255)
-              .send(
-                "There was an issue when trying to reset the proxy IP address. please wait 30 - 60 seconds and try again. if the problem persists please contact your system administrator and provide them with the following error code. => ",
-                err
-              );
+            rebootClient(host)
+              .then(rebootRes => {
+                res
+                  .status(200)
+                  .send(
+                    `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${rebootRes}`
+                  );
+              })
+              .catch(err => {
+                console.log(
+                  "Error trying to reset the ip in the main endpoint. Error: ",
+                  err
+                );
+                res
+                  .status(255)
+                  .send(
+                    `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${err}`
+                  );
+              });
+            // res
+            //   .status(500)
+            //   .send(
+            //     "There was an issue when trying to reset the proxy IP address. please wait 30 - 60 seconds and try again. if the problem persists please contact your system administrator and provide them with the following error code. => ",
+            //     err
+            //   );
           }
         } else {
           console.log("Success!! newIP in the endpoint!! => ", ip);
