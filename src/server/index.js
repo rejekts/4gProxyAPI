@@ -70,7 +70,7 @@ const grabClientIP = async function(host) {
             "; err => ",
             err.stderr
           );
-          if (timesCalled >= 2) {
+          if (timesCalled >= 3) {
             throw err;
           } else {
             return wrapper();
