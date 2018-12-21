@@ -60,7 +60,7 @@ const grabClientIP = async function(host) {
 
   const wrapper = function() {
     return exec(
-      `ssh pi@${host} "dig +short myip.opendns.com @resolver1.opendns.com"`
+      `ssh pi@${host} "dig +short myip.opendns.com @resolver1.opendns.com || sleep 10 && dig +short myip.opendns.com @resolver1.opendns.com"`
     )
       .then(returnedIP => {
         timesCalled++;
