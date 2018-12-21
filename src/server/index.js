@@ -53,32 +53,34 @@ const rebootClient = function(host) {
 
 //function for grabbing proxy server external IP
 const grabClientIP = async function(host) {
-  let timesCalled = 0;
+  // let timesCalled = 0;
 
-  const wrapper = function() {
-    return exec(`ssh pi@${host} "curl https://api.ipify.org -s -S"`)
-      .then(returnedIP => {
-        timesCalled++;
-        return returnedIP.stdout;
-      })
-      .catch(err => {
-        if (err) {
-          timesCalled++;
-          console.log(
-            `Error in the grabClientIP method. Calling recursively now for the ${timesCalled}th time. Error details: cmd => `,
-            err.cmd,
-            "; err => ",
-            err.stderr
-          );
-          if (timesCalled >= 3) {
-            throw err;
-          } else {
-            return wrapper();
-          }
-        }
-      });
-  };
-  return await wrapper();
+  // const wrapper = function() {
+  return exec(`ssh pi@${host} "curl https://api.ipify.org -s -S"`)
+    .then(returnedIP => {
+      timesCalled++;
+      return returnedIP.stdout;
+    })
+    .catch(err => {
+      if (err) {
+        // timesCalled++;
+        console.log(
+          `Error in the grabClientIP method. Error details: cmd => `,
+          err.cmd,
+          "; err => ",
+          err.stderr
+        );
+        throw err;
+
+        // if (timesCalled >= 2) {
+        //   throw err;
+        // } else {
+        //   return wrapper();
+        // }
+      }
+    });
+  // };
+  // return await wrapper();
 };
 
 //function to reset ip on client machine using the connection up method
