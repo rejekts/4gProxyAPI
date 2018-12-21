@@ -63,13 +63,13 @@ const grabClientIP = async function(host) {
       .catch(err => {
         if (err) {
           timesCalled++;
-          if (timesCalled >= 5) {
-            console.log(
-              `Error in the grabClientIP method. Calling recursively now for the ${timesCalled}th time. Error details: cmd => `,
-              err.cmd,
-              "; err => ",
-              err.stderr
-            );
+          console.log(
+            `Error in the grabClientIP method. Calling recursively now for the ${timesCalled}th time. Error details: cmd => `,
+            err.cmd,
+            "; err => ",
+            err.stderr
+          );
+          if (timesCalled >= 3) {
             throw err;
           } else {
             return wrapper();
@@ -211,7 +211,7 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
                     cb(err);
                   }
                 });
-            }, 3000);
+            }, 1500);
           } else {
             return wrapper();
           }
@@ -264,7 +264,7 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
                     cb(err);
                   }
                 });
-            }, 3000);
+            }, 1500);
           } else {
             return wrapper();
           }
@@ -320,7 +320,7 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
                     cb(err);
                   }
                 });
-            }, 3000);
+            }, 1500);
           } else {
             return wrapper();
           }
