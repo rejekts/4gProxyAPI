@@ -53,17 +53,12 @@ const rebootClient = function(host) {
 
 //function for grabbing proxy server external IP
 const grabClientIP = async function(host) {
-  // let timesCalled = 0;
-
-  // const wrapper = function() {
   return exec(`ssh pi@${host} "curl https://api.ipify.org -s -S"`)
     .then(returnedIP => {
-      timesCalled++;
       return returnedIP.stdout;
     })
     .catch(err => {
       if (err) {
-        // timesCalled++;
         console.log(
           `Error in the grabClientIP method. Error details: cmd => `,
           err.cmd,
@@ -71,16 +66,8 @@ const grabClientIP = async function(host) {
           err.stderr
         );
         throw err;
-
-        // if (timesCalled >= 2) {
-        //   throw err;
-        // } else {
-        //   return wrapper();
-        // }
       }
     });
-  // };
-  // return await wrapper();
 };
 
 //function to reset ip on client machine using the connection up method
@@ -421,25 +408,13 @@ app.get("/proxy/reset", function(req, res) {
                 `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${err}`
               );
           } else {
-            rebootClient(host)
-              .then(rebootRes => {
-                res
-                  .status(200)
-                  .send(
-                    `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${rebootRes}`
-                  );
-              })
-              .catch(err => {
-                console.log(
-                  "Error trying to reset the ip in the main endpoint. Error: ",
-                  err
+            rebootClient(host).then(rebootRes => {
+              res
+                .status(200)
+                .send(
+                  `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${rebootRes}`
                 );
-                res
-                  .status(255)
-                  .send(
-                    `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${err}`
-                  );
-              });
+            });
           }
         } else {
           console.log("Success!! newIP in the endpoint!! => ", ip);
