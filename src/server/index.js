@@ -478,9 +478,7 @@ app.get("/proxy/reset/hard", function(req, res) {
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
 
-  exec(
-    `ssh pi@${host} "sudo rm /etc/NetworkManager/system-connections/${network} && echo "Removing and Re-Adding the connection profile for ${network} on ${host}" && sudo nmcli con add con-name ${network} ifname cdc-wdm0 type gsm connection.id ${network} connection.autoconnect-priority 999 gsm.apn ${apn} gsm.number *99# && sleep 5 && sudo reboot"`
-  )
+  exec(`ssh pi@${host} "sudo reboot"`)
     .then(data => {
       res.send(
         `Proxy Server Rebooting. Please allow 60-90 seconds for the network to re-establish`
