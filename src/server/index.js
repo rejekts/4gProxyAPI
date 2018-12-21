@@ -176,6 +176,10 @@ const deviceDisconnectAndReconnect = async function(host) {
 //function to run all the methods until ip is reset on client machine
 const resetClientIPAddress = async function(host, network, oldIP, cb) {
   let timesWrapperCalled = 0;
+  let timesConnectionUpCalled = 0;
+  let timesInterfaceDownUpCalled = 0;
+  let timesDeviceDisconnectAndReconnectCalled = 0;
+  let timesRebootClientCalled = 0;
   let newIPTry1;
   let newIPTry2;
   let newIPTry3;
@@ -184,10 +188,11 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
     timesWrapperCalled++;
     console.log("timesWrapperCalled => ", timesWrapperCalled);
 
-    if (timesWrapperCalled === 1) {
+    if (timesConnectionUpCalled === 0 && timesWrapperCalled === 1) {
       console.log("Running the connectionUp method");
       await connectionUp(host, network)
         .then(connectionUpResponse => {
+          timesConnectionUpCalled++;
           console.log("connectionUpResponse => ", connectionUpResponse);
           let successfulConnectionActivationTry1 =
             connectionUpResponse.stdout.indexOf(
@@ -214,7 +219,7 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
                     !newIPTry1.stderr &&
                     newIPTry1 !== oldIP
                   ) {
-                    cb(null, newIP);
+                    cb(null, newIPTry1);
                   } else {
                     console.log(
                       "Issue with matching IP's or an undefined response after calling connectionUp method ip => ",
@@ -247,13 +252,14 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
         });
     }
 
-    if (timesWrapperCalled === 2) {
+    if (timesInterfaceDownUpCalled === 0 && timesWrapperCalled === 2) {
       console.log(
         "The connectionUp method didnt work. Trying the interfaceDownUp now"
       );
 
       await interfaceDownUp(host, network)
         .then(interfaceDownUpResponse => {
+          timesInterfaceDownUpCalled++;
           let successfulConnectionActivationTry2 =
             interfaceDownUpResponse.stdout.indexOf(
               "Connection successfully activated"
@@ -311,13 +317,17 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
         });
     }
 
-    if (timesWrapperCalled === 3) {
+    if (
+      timesDeviceDisconnectAndReconnectCalled === 0 &&
+      timesWrapperCalled === 3
+    ) {
       console.log(
         "The interfaceDownUp method didnt work. Trying the deviceDisconnectAndReconnect method now"
       );
 
       await deviceDisconnectAndReconnect(host)
         .then(deviceDisconnectAndReconnectResponse => {
+          timesDeviceDisconnectAndReconnectCalled++;
           let successfulConnectionActivationTry3 =
             deviceDisconnectAndReconnectResponse.stdout.indexOf(
               "successfully activated"
@@ -375,7 +385,7 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
         });
     }
 
-    if (timesWrapperCalled === 4) {
+    if (timesRebootClientCalled === 0 && timesWrapperCalled === 4) {
       await rebootClient(host).then(res => {
         cb(res);
       });
