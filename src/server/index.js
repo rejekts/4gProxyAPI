@@ -92,7 +92,7 @@ const connectionUp = async function(host, network) {
 
   const wrapper = function() {
     return exec(
-      `ssh pi@${host} "sudo nmcli connection up ${network} || sleep 5; && sudo nmcli connection up ${network}"`
+      `ssh pi@${host} "sudo nmcli connection up ${network} || sleep 5 && sudo nmcli connection up ${network}"`
     )
       .then(connectionData => connectionData)
       .catch(err => {
