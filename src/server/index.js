@@ -53,14 +53,14 @@ const rebootClient = async function(host) {
   };
   return await wrapper();
 };
-
+//dig +short myip.opendns.com @resolver1.opendns.com || sleep 5; dig +short myip.opendns.com @resolver1.opendns.com
 //function for grabbing proxy server external IP
 const grabClientIP = async function(host) {
   let timesCalled = 0;
 
   const wrapper = function() {
     return exec(
-      `ssh pi@${host} "dig +short myip.opendns.com @resolver1.opendns.com || sleep 10 && dig +short myip.opendns.com @resolver1.opendns.com"`
+      `ssh pi@${host} "curl api.ipify.org || sleep 5; curl api.ipify.org"`
     )
       .then(returnedIP => {
         timesCalled++;
@@ -92,7 +92,7 @@ const connectionUp = async function(host, network) {
 
   const wrapper = function() {
     return exec(
-      `ssh pi@${host} "sudo nmcli connection up ${network} || sleep 10 && sudo nmcli connection up ${network}"`
+      `ssh pi@${host} "sudo nmcli connection up ${network} || sleep 5; && sudo nmcli connection up ${network}"`
     )
       .then(connectionData => connectionData)
       .catch(err => {
@@ -121,7 +121,7 @@ const interfaceDownUp = async function(host, network) {
 
   const wrapper = function() {
     return exec(
-      `ssh pi@${host} "sudo nmcli connection down ${network} && sleep 10 && sudo nmcli connection up ${network} || sudo nmcli connection down ${network}; sleep 10 && sudo nmcli connection up ${network}"`
+      `ssh pi@${host} "sudo nmcli connection down ${network} && sleep 5; sudo nmcli connection up ${network} || sudo nmcli connection down ${network}; sleep 10 && sudo nmcli connection up ${network}"`
     )
       .then(connectionData => connectionData)
       .catch(err => {
