@@ -59,9 +59,7 @@ const grabClientIP = async function(host) {
   let timesCalled = 0;
 
   const wrapper = function() {
-    return exec(
-      `ssh pi@${host} "curl api.ipify.org -s -S || sleep 5; curl api.ipify.org -s -S"`
-    )
+    return exec(`ssh pi@${host} "curl api.ipify.org -s -S;"`)
       .then(returnedIP => {
         timesCalled++;
         return returnedIP.stdout.trim();
