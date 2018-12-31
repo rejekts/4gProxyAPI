@@ -492,7 +492,7 @@ app.get("/proxy/reset", function(req, res) {
           res
             .status(200)
             .send(
-              `Your IP address is being reset. Your oldIP is ${oldIP}. Please allow 60 - 90 seconds for the machine to reset and check the new IP address at https://ipfingerprints.com`
+              `Your IP address is being reset. Your oldIP is ${oldIP}. Please allow up to 3 - 5 minutes for the machine to reset and check the new IP address at https://ipfingerprints.com`
             );
         }
       });
@@ -568,7 +568,7 @@ app.get("/proxy/reset", function(req, res) {
       res
         .status(200)
         .send(
-          `Your IP address is being reset. Your oldIP is ${oldIP}. Please allow 60 - 90 seconds for the machine to reset and check the new IP address at https://ipfingerprints.com`
+          `Your IP address is being reset. Your oldIP is ${oldIP}. Please allow up to 3 - 5 minutes for the machine to reset and check the new IP address at https://ipfingerprints.com`
         );
     }
   });
