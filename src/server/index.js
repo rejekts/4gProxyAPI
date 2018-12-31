@@ -409,7 +409,12 @@ app.get("/proxy/reset", function(req, res) {
   );
 
   grabClientIP(host).then(ip => {
-    console.log("Return of oldIP in the /proxy/reset endpoint => ", ip);
+    console.log(
+      "Return of oldIP in the /proxy/reset endpoint => ",
+      ip,
+      " For ",
+      host
+    );
     if (!ip) {
       grabClientIP(host).then(ip2 => {
         if (!ip2) {
@@ -426,7 +431,9 @@ app.get("/proxy/reset", function(req, res) {
             if (err) {
               console.log(
                 "We have an error in the main /proxy/reset endpoint when calling the resetClientIpAddress method. err => ",
-                err
+                err,
+                " For ",
+                host
               );
               rebootClient(host)
                 .then(rebootRes => {
@@ -439,7 +446,9 @@ app.get("/proxy/reset", function(req, res) {
                 .catch(err => {
                   console.log(
                     "Error trying to reset the ip in the main endpoint. Error: ",
-                    err
+                    err,
+                    " For ",
+                    host
                   );
                   // res
                   //   .status(255)
@@ -475,7 +484,12 @@ app.get("/proxy/reset", function(req, res) {
               //     });
               // }
             } else {
-              console.log("Success!! newIP in the endpoint!! => ", ip);
+              console.log(
+                "Success!! newIP in the endpoint!! => ",
+                ip,
+                " For ",
+                host
+              );
               // res
               //   .status(200)
               //   .send(
@@ -502,7 +516,9 @@ app.get("/proxy/reset", function(req, res) {
         if (err) {
           console.log(
             "We have an error in the main /proxy/reset endpoint when calling the resetClientIpAddress method. err => ",
-            err
+            err,
+            " For ",
+            host
           );
           rebootClient(host)
             .then(rebootRes => {
@@ -515,7 +531,9 @@ app.get("/proxy/reset", function(req, res) {
             .catch(err => {
               console.log(
                 "Error trying to reset the ip in the main endpoint. Error: ",
-                err
+                err,
+                " For ",
+                host
               );
               // res
               //   .status(255)
