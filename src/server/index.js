@@ -428,51 +428,72 @@ app.get("/proxy/reset", function(req, res) {
                 "We have an error in the main /proxy/reset endpoint when calling the resetClientIpAddress method. err => ",
                 err
               );
-              if (err.stderr.indexOf("closed by remote host") >= 0) {
-                res
-                  .status(255)
-                  .send(
-                    `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${err}`
+              rebootClient(host)
+                .then(rebootRes => {
+                  // res
+                  //   .status(200)
+                  //   .send(
+                  //     `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${rebootRes}`
+                  //   );
+                })
+                .catch(err => {
+                  console.log(
+                    "Error trying to reset the ip in the main endpoint. Error: ",
+                    err
                   );
-              } else {
-                rebootClient(host)
-                  .then(rebootRes => {
-                    res
-                      .status(200)
-                      .send(
-                        `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${rebootRes}`
-                      );
-                  })
-                  .catch(err => {
-                    console.log(
-                      "Error trying to reset the ip in the main endpoint. Error: ",
-                      err
-                    );
-                    res
-                      .status(255)
-                      .send(
-                        `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${err}`
-                      );
-                  });
-              }
+                  // res
+                  //   .status(255)
+                  //   .send(
+                  //     `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${err}`
+                  //   );
+                });
+              // if (err.stderr.indexOf("closed by remote host") >= 0) {
+              //   res
+              //     .status(255)
+              //     .send(
+              //       `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${err}`
+              //     );
+              // } else {
+              //   rebootClient(host)
+              //     .then(rebootRes => {
+              //       res
+              //         .status(200)
+              //         .send(
+              //           `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${rebootRes}`
+              //         );
+              //     })
+              //     .catch(err => {
+              //       console.log(
+              //         "Error trying to reset the ip in the main endpoint. Error: ",
+              //         err
+              //       );
+              //       res
+              //         .status(255)
+              //         .send(
+              //           `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${err}`
+              //         );
+              //     });
+              // }
             } else {
               console.log("Success!! newIP in the endpoint!! => ", ip);
-              res
-                .status(200)
-                .send(
-                  `Your IP address has been successfully reset. Your oldIP is ${oldIP} and the newIP is ${ip}`
-                );
+              // res
+              //   .status(200)
+              //   .send(
+              //     `Your IP address has been successfully reset. Your oldIP is ${oldIP} and the newIP is ${ip}`
+              //   );
             }
           });
-          res
-            .status(200)
-            .send(
-              `Your IP address has been successfully reset. Your oldIP is ${oldIP} and the newIP is ${ip}`
-            );
+          // res
+          //   .status(200)
+          //   .send(
+          //     `Your IP address has been successfully reset. Your oldIP is ${oldIP} and the newIP is ${ip}`
+          //   );
           // return oldIP;
           res
             .status(200)
-            .send(`Your IP address is being reset. Your oldIP is ${oldIP}.`);
+            .send(
+              `Your IP address is being reset. Your oldIP is ${oldIP}. Please allow 60 - 90 seconds for the machine to reset and check the new IP address at https://ipfingerprints.com`
+            );
         }
       });
     } else {
@@ -483,46 +504,72 @@ app.get("/proxy/reset", function(req, res) {
             "We have an error in the main /proxy/reset endpoint when calling the resetClientIpAddress method. err => ",
             err
           );
-          if (err.stderr.indexOf("closed by remote host") >= 0) {
-            res
-              .status(255)
-              .send(
-                `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${err}`
+          rebootClient(host)
+            .then(rebootRes => {
+              // res
+              //   .status(200)
+              //   .send(
+              //     `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${rebootRes}`
+              //   );
+            })
+            .catch(err => {
+              console.log(
+                "Error trying to reset the ip in the main endpoint. Error: ",
+                err
               );
-          } else {
-            rebootClient(host)
-              .then(rebootRes => {
-                res
-                  .status(200)
-                  .send(
-                    `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${rebootRes}`
-                  );
-              })
-              .catch(err => {
-                console.log(
-                  "Error trying to reset the ip in the main endpoint. Error: ",
-                  err
-                );
-                res
-                  .status(255)
-                  .send(
-                    `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${err}`
-                  );
-              });
-          }
+              // res
+              //   .status(255)
+              //   .send(
+              //     `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${err}`
+              //   );
+            });
+          // if (err.stderr.indexOf("closed by remote host") >= 0) {
+          //   res
+          //     .status(255)
+          //     .send(
+          //       `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${err}`
+          //     );
+          // } else {
+          //   rebootClient(host)
+          //     .then(rebootRes => {
+          //       // res
+          //       //   .status(200)
+          //       //   .send(
+          //       //     `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${rebootRes}`
+          //       //   );
+          //     })
+          //     .catch(err => {
+          //       console.log(
+          //         "Error trying to reset the ip in the main endpoint. Error: ",
+          //         err
+          //       );
+          //       // res
+          //       //   .status(255)
+          //       //   .send(
+          //       //     `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${err}`
+          //       //   );
+          //     });
+          // }
         } else {
-          console.log("Success!! newIP in the endpoint!! => ", ip);
-          res
-            .status(200)
-            .send(
-              `Your IP address has been successfully reset. Your oldIP is ${oldIP} and the newIP is ${ip}`
-            );
+          console.log(
+            "Success!! newIP in the endpoint!! => ",
+            ip,
+            " For ",
+            host
+          );
+          // res
+          //   .status(200)
+          //   .send(
+          //     `Your IP address has been successfully reset. Your oldIP is ${oldIP} and the newIP is ${ip}`
+          //   );
         }
       });
       // return oldIP;
       res
         .status(200)
-        .send(`Your IP address is being reset. Your oldIP is ${oldIP}.`);
+        .send(
+          `Your IP address is being reset. Your oldIP is ${oldIP}. Please allow 60 - 90 seconds for the machine to reset and check the new IP address at https://ipfingerprints.com`
+        );
     }
   });
   // .then(oldIP => {
