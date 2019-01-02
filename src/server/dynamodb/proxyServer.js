@@ -13,7 +13,7 @@ class ProxyServer {
       region: data.region
     });
 
-    this.proxy = this.dynamo.define("ProxyServer", {
+    this.pr = this.dynamo.define("ProxyServer", {
       hashKey: "uuid",
       // add the timestamp attributes (updatedAt, createdAt)
       timestamps: true,
@@ -34,7 +34,7 @@ class ProxyServer {
         logger.error("Error creating tables: ", JSON.stringify(err, null, 2));
       } else {
         cb(this);
-        logger.info("Tables has been created");
+        logger.info("Tables have been created");
       }
     });
     return this;
@@ -43,16 +43,16 @@ class ProxyServer {
   create(data) {
     let uuid = uuidv1();
     return new Promise((resolve, reject) => {
-      this.proxy.create(
+      this.pr.create(
         {
-          uuid: this.dynamo.types.uuid(),
-          lan_ip: Joi.string(),
-          vpn_ip: Joi.string(),
-          proxy_ip: Joi.string(),
-          port: Joi.string(),
-          carrier: Joi.string(),
-          apn: Joi.string(),
-          status: Joi.string()
+          uuid: uuid,
+          lan_ip: data.lan_ip,
+          vpn_ip: data.vpn_ip,
+          proxy_ip: data.proxy_ip,
+          port: data.port,
+          carrier: data.carrier,
+          apn: data.apn,
+          status: data.status
         },
         (err, res) => {
           if (err) {
@@ -62,6 +62,7 @@ class ProxyServer {
           logger.info(
             `Proxy data was written in dynamoDB: ${JSON.stringify(res, 4, "")}`
           );
+          // console.log("Creating proxies in DynamoDb => ", res);
           resolve(res);
         }
       );
@@ -70,7 +71,7 @@ class ProxyServer {
 
   update(uuid, data) {
     return new Promise((resolve, reject) => {
-      this.proxy.update(
+      this.pr.update(
         {
           uuid: this.dynamo.types.uuid(),
           lan_ip: Joi.string(),
@@ -95,7 +96,7 @@ class ProxyServer {
 
   get(uuid) {
     return new Promise((resolve, reject) => {
-      this.proxy.get(
+      this.pr.get(
         uuid,
         {
           ConsistentRead: true,
@@ -120,7 +121,7 @@ class ProxyServer {
 
   getAll() {
     return new Promise((resolve, reject) => {
-      this.proxy
+      this.pr
         .scan()
         .loadAll()
         .exec((err, res) => {
@@ -131,4 +132,4 @@ class ProxyServer {
   }
 }
 
-module.exports = Proxy;
+module.exports = ProxyServer;

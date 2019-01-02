@@ -10,8 +10,11 @@ const exec = util.promisify(childExec);
 const mysql = require("promise-mysql");
 const DynamoDb = require("./dynamodb");
 const app = express();
+const AWS = require("aws-sdk");
+const config = require("./config/config.js");
+const isDev = process.env.NODE_ENV !== "production";
 
-const ProxyServer = require("./dynamodb/proxyServer");
+const PrS = require("./dynamodb/proxyServer");
 const grabClientIP = require("./functions/grabClientIP");
 const rebootClient = require("./functions/rebootClient");
 const resetClientIPAddress = require("./functions/resetClientIPAddress");
@@ -102,34 +105,69 @@ app.post("/api/proxy", (req, res, next) => {
   } else {
     AWS.config.update(config.aws_remote_config);
   }
-  const { type, color } = req.body;
-  // Not actually unique and can create problems.
-  const proxyId = (Math.random() * 1000).toString();
-  const docClient = new AWS.DynamoDB.DocumentClient();
-  const params = {
-    TableName: config.aws_table_name,
-    Item: {
-      proxyId: proxyId,
-      proxyType: type,
-      coor: color
+
+  const { lan_ip, vpn_ip, proxy_ip, port, carrier, apn, status } = req.body;
+  let proxyServer = new PrS(
+    {
+      accessKeyId: "AKIAJJD5Q2EKMTD5LKHQ",
+      secretAccessKey: "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",
+      region: "us-east-1"
+    },
+    function(re) {
+      console.log(
+        "respnse after creating dynamodb record with new proxy => ",
+        re
+      );
     }
-  };
-  docClient.put(params, function(err, data) {
-    if (err) {
-      res.send({
-        success: false,
-        message: "Error: Server error"
-      });
-    } else {
-      console.log("data", data);
-      const { Items } = data;
-      res.send({
-        success: true,
-        message: "Added proxy",
-        proxyId: proxyId
-      });
-    }
-  });
+  );
+
+  proxyServer
+    .create({
+      lan_ip: lan_ip,
+      vpn_ip: vpn_ip,
+      proxy_ip: proxy_ip,
+      port: port,
+      carrier: carrier,
+      apn: apn,
+      status: status
+    })
+    .then(res => {
+      console.log(
+        "res in the api/proxy POST endpoint after making proxy in dynamodb => ",
+        res
+      );
+      res.status(200).send(res);
+    });
+
+  // const { type, color } = req.body;
+  // // Not actually unique and can create problems.
+  // const proxyId = (Math.random() * 1000).toString();
+  // const docClient = new AWS.DynamoDB.DocumentClient();
+  // const params = {
+  //   TableName: config.aws_table_name,
+  //   Item: {
+  //     proxyId: proxyId,
+  //     proxyType: type,
+  //     coor: color
+  //   }
+  // };
+
+  // docClient.put(params, function(err, data) {
+  //   if (err) {
+  //     res.send({
+  //       success: false,
+  //       message: "Error: Server error"
+  //     });
+  //   } else {
+  //     console.log("data", data);
+  //     const { Items } = data;
+  //     res.send({
+  //       success: true,
+  //       message: "Added proxy",
+  //       proxyId: proxyId
+  //     });
+  //   }
+  // });
 });
 
 app.get("/proxy/reset", function(req, res) {
