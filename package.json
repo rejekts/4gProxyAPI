@@ -15,8 +15,10 @@
   "dependencies": {
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
+    "dynamodb": "^1.1.2",
     "express": "^4.16.3",
     "fs-extra": "^7.0.0",
+    "joi": "^14.3.1",
     "moment-timezone": "^0.5.23",
     "node-ssh": "^5.1.2",
     "os": "^0.1.1",
@@ -27,7 +29,8 @@
     "request-ip": "^2.1.1",
     "shelljs": "^0.8.2",
     "simple-ssh": "^1.0.0",
-    "url": "^0.11.0"
+    "url": "^0.11.0",
+    "winston": "^3.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

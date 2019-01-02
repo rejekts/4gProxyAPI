@@ -5,17 +5,20 @@ const bodyParser = require("body-parser");
 const child_process = require("child_process");
 const moment = require("moment-timezone");
 const childExec = require("child_process").exec;
-let util = require("util");
-let exec = util.promisify(childExec);
+const util = require("util");
+const exec = util.promisify(childExec);
 const mysql = require("promise-mysql");
-let dbConnection = require("./services/dbconnector");
+const DynamoDb = require("./dynamodb");
 const app = express();
+const ProxyServer = require("./dynamodb/proxyServer");
+
+let dynamoDb = new DynamoDb();
+
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(express.static("dist"));
 // app.use(requestIp.mw());
 app.enable("trust proxy");
-
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
@@ -53,6 +56,7 @@ const rebootClient = async function(host) {
   };
   return await wrapper();
 };
+
 //dig +short myip.opendns.com @resolver1.opendns.com || sleep 5; dig +short myip.opendns.com @resolver1.opendns.com
 //function for grabbing proxy server external IP
 const grabClientIP = async function(host) {
@@ -201,7 +205,7 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
 
           if (successfulConnectionActivationTry1) {
             console.log(
-              "successfulConnectionActivationTry1 => ",
+              "successfulConnectionActivationTry1 - connectionUp => ",
               successfulConnectionActivationTry1
             );
             setTimeout(function() {
@@ -266,7 +270,7 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
               : false;
           if (successfulConnectionActivationTry2) {
             console.log(
-              "successfulConnectionActivationTry2 => ",
+              "successfulConnectionActivationTry2 - interfaceDownUp => ",
               successfulConnectionActivationTry2
             );
             setTimeout(function() {
@@ -334,7 +338,7 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
               : false;
           if (successfulConnectionActivationTry3) {
             console.log(
-              "successfulConnectionActivationTry3 => ",
+              "successfulConnectionActivationTry3 - deviceDisconnectAndReconnect => ",
               successfulConnectionActivationTry3
             );
             setTimeout(function() {
@@ -391,6 +395,24 @@ const resetClientIPAddress = async function(host, network, oldIP, cb) {
   };
   return await wrapper();
 };
+
+app.get("/proxy/add", function(req, res) {
+  const host = req.query["host"];
+  const network = req.query["network"];
+  let oldIP;
+  let newIP;
+
+  console.log(
+    "/add API Endpoint getting hit!",
+    "host ip => ",
+    host,
+    " network => ",
+    proxynetwork,
+    " Time => ",
+    moment().format("YYYY-MM-DDTHH:mm:ss")
+  );
+  dynamoDb.getAll
+});
 
 app.get("/proxy/reset", function(req, res) {
   const host = req.query["host"];
