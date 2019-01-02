@@ -10,7 +10,11 @@ const exec = util.promisify(childExec);
 const mysql = require("promise-mysql");
 const DynamoDb = require("./dynamodb");
 const app = express();
+
 const ProxyServer = require("./dynamodb/proxyServer");
+const grabClientIP = require("./functions/grabClientIP");
+const rebootClient = require("./functions/rebootClient");
+const resetClientIPAddress = require("./functions/resetClientIPAddress");
 
 let dynamoDb = new DynamoDb();
 
@@ -31,387 +35,101 @@ app.use(function(req, res, next) {
 const server = app.listen(8080, () => console.log("Listening on port 8080!"));
 app.timeout = 360000;
 
-//function to reboot client machine
-const rebootClient = async function(host) {
-  const wrapper = function() {
-    return exec(`ssh pi@${host} "sudo reboot"`)
-      .then(rebootRes => {
-        console.log(
-          `Successfully rebooting the machine @ ${host} => `,
-          rebootRes.stdout
-        );
-        return rebootRes.stdout;
-      })
-      .catch(err => {
-        if (err) {
-          console.log(
-            "Error in the rebootClient method. Error details: cmd => ",
-            err.cmd,
-            "; err => ",
-            err.stderr
-          );
-          throw err;
-        }
-      });
+app.get("/api/proxies", function(req, res) {
+  if (isDev) {
+    AWS.config.update(config.aws_local_config);
+  } else {
+    AWS.config.update(config.aws_remote_config);
+  }
+  const docClient = new AWS.DynamoDB.DocumentClient();
+  const params = {
+    TableName: config.aws_table_name
   };
-  return await wrapper();
-};
-
-//dig +short myip.opendns.com @resolver1.opendns.com || sleep 5; dig +short myip.opendns.com @resolver1.opendns.com
-//function for grabbing proxy server external IP
-const grabClientIP = async function(host) {
-  let timesCalled = 0;
-
-  const wrapper = function() {
-    return exec(`ssh pi@${host} "curl api.ipify.org -s -S;"`)
-      .then(returnedIP => {
-        timesCalled++;
-        return returnedIP.stdout.trim();
-      })
-      .catch(err => {
-        if (err) {
-          timesCalled++;
-          console.log(
-            `Error in the grabClientIP method. Calling recursively now for the ${timesCalled}th time. Error details: cmd => `,
-            err.cmd,
-            "; err => ",
-            err.stderr
-          );
-          if (timesCalled >= 1) {
-            throw err;
-          } else {
-            return wrapper();
-          }
-        }
+  docClient.scan(params, function(err, data) {
+    if (err) {
+      res.send({
+        success: false,
+        message: "Error: Server error"
       });
-  };
-  return await wrapper();
-};
-
-//function to reset ip on client machine using the connection up method
-const connectionUp = async function(host, network) {
-  let timesCalled = 0;
-
-  const wrapper = function() {
-    return exec(
-      `ssh pi@${host} "sudo nmcli connection up ${network} || sleep 5 && sudo nmcli connection up ${network}"`
-    )
-      .then(connectionData => connectionData)
-      .catch(err => {
-        if (err) {
-          timesCalled++;
-          console.log(
-            `Error in the connectionUp method. Calling recursively now for the ${timesCalled}th time. Error details: cmd => `,
-            err.cmd,
-            "; err => ",
-            err.stderr
-          );
-          if (timesCalled >= 1) {
-            return err;
-          } else {
-            return wrapper();
-          }
-        }
-      });
-  };
-  return await wrapper();
-};
-
-//function to reset ip on client machine by cycling the interface down then up
-const interfaceDownUp = async function(host, network) {
-  let timesCalled = 0;
-
-  const wrapper = function() {
-    return exec(
-      `ssh pi@${host} "sudo nmcli connection down ${network} && sleep 5; sudo nmcli connection up ${network} || sudo nmcli connection down ${network}; sleep 10 && sudo nmcli connection up ${network}"`
-    )
-      .then(connectionData => connectionData)
-      .catch(err => {
-        if (err) {
-          timesCalled++;
-          console.log(
-            `Error in the interfaceDownUp method. Calling recursively now for the ${timesCalled}th time. Error details: cmd => `,
-            err.cmd,
-            "; err => ",
-            err.stderr
-          );
-          if (timesCalled >= 1) {
-            return err;
-          } else {
-            return wrapper();
-          }
-        }
-      });
-  };
-  return await wrapper();
-};
-
-//function to reset ip on client machine by disconnecting the modem and reconnecting it
-const deviceDisconnectAndReconnect = async function(host) {
-  let timesCalled = 0;
-
-  const wrapper = function() {
-    return exec(
-      `ssh pi@${host} "sudo nmcli device disconnect cdc-wdm0 && sleep 10 && sudo nmcli device connect cdc-wdm0 || sleep 5; sudo nmcli device disconnect cdc-wdm0; sleep 10; sudo nmcli device connect cdc-wdm0"`
-    )
-      .then(connectionData => connectionData)
-      .catch(err => {
-        if (err) {
-          timesCalled++;
-          console.log(
-            `Error in the deviceDisconnectAndReconnect method. Calling recursively now for the ${timesCalled}th time. Error details: cmd => `,
-            err.cmd,
-            "; err => ",
-            err.stderr
-          );
-          if (timesCalled >= 1) {
-            return err;
-          } else {
-            return wrapper();
-          }
-        }
-      });
-  };
-  return await wrapper();
-};
-
-//function to run all the methods until ip is reset on client machine
-const resetClientIPAddress = async function(host, network, oldIP, cb) {
-  let timesWrapperCalled = 0;
-  let timesConnectionUpCalled = 0;
-  let timesInterfaceDownUpCalled = 0;
-  let timesDeviceDisconnectAndReconnectCalled = 0;
-  let timesRebootClientCalled = 0;
-  let newIPTry1;
-  let newIPTry2;
-  let newIPTry3;
-
-  const wrapper = async function() {
-    timesWrapperCalled++;
-    console.log("timesWrapperCalled => ", timesWrapperCalled);
-
-    if (timesConnectionUpCalled === 0 && timesWrapperCalled === 1) {
-      console.log("Running the connectionUp method");
-      await connectionUp(host, network)
-        .then(connectionUpResponse => {
-          timesConnectionUpCalled++;
-          console.log("connectionUpResponse => ", connectionUpResponse);
-          let successfulConnectionActivationTry1 =
-            connectionUpResponse.stdout.indexOf(
-              "Connection successfully activated"
-            ) >= 0
-              ? true
-              : false;
-
-          if (successfulConnectionActivationTry1) {
-            console.log(
-              "successfulConnectionActivationTry1 - connectionUp => ",
-              successfulConnectionActivationTry1
-            );
-            setTimeout(function() {
-              grabClientIP(host)
-                .then(ip => {
-                  newIPTry1 = ip;
-                  console.log(
-                    "newIP in the connectionUp method => ",
-                    newIPTry1
-                  );
-                  if (
-                    newIPTry1 !== undefined &&
-                    !newIPTry1.stderr &&
-                    newIPTry1 !== oldIP
-                  ) {
-                    cb(null, newIPTry1);
-                  } else {
-                    console.log(
-                      "Issue with matching IP's or an undefined response after calling connectionUp method ip => ",
-                      ip
-                    );
-                    return wrapper();
-                  }
-                })
-                .catch(err => {
-                  if (err) {
-                    console.log(
-                      "Error trying to grab the client ip after trying connectionUp method => ",
-                      err
-                    );
-                    cb(err);
-                  }
-                });
-            }, 3000);
-          } else {
-            return wrapper();
-          }
-        })
-        .catch(err => {
-          if (err) {
-            console.log(
-              `Error in the connectionUp method. Current IP is ${oldIP}, and the Err is => ${err}`
-            );
-            return err;
-          }
-        });
-    }
-
-    if (timesInterfaceDownUpCalled === 0 && timesWrapperCalled === 2) {
-      console.log(
-        "The connectionUp method didnt work. Trying the interfaceDownUp now"
-      );
-
-      await interfaceDownUp(host, network)
-        .then(interfaceDownUpResponse => {
-          timesInterfaceDownUpCalled++;
-          let successfulConnectionActivationTry2 =
-            interfaceDownUpResponse.stdout.indexOf(
-              "Connection successfully activated"
-            ) >= 0
-              ? true
-              : false;
-          if (successfulConnectionActivationTry2) {
-            console.log(
-              "successfulConnectionActivationTry2 - interfaceDownUp => ",
-              successfulConnectionActivationTry2
-            );
-            setTimeout(function() {
-              grabClientIP(host)
-                .then(ip => {
-                  newIPTry2 = ip;
-                  console.log(
-                    "newIP in the interfaceDownUp method => ",
-                    newIPTry2
-                  );
-                  if (
-                    newIPTry2 !== undefined &&
-                    !newIPTry2.stderr &&
-                    newIPTry2 !== oldIP
-                  ) {
-                    cb(null, newIPTry2);
-                  } else {
-                    console.log(
-                      "Issue with matching IP's or an undefined response after calling interfaceDownUp method ip => ",
-                      ip
-                    );
-                    return wrapper();
-                  }
-                })
-                .catch(err => {
-                  if (err) {
-                    console.log(
-                      "Error trying to grab the client ip after trying interfaceDownUp method => ",
-                      err
-                    );
-                    cb(err);
-                  }
-                });
-            }, 3000);
-          } else {
-            return wrapper();
-          }
-        })
-        .catch(err => {
-          if (err) {
-            console.log(
-              `Error in the interfaceDownUp method. Current IP is ${oldIP}, and the Err is => ${err}`
-            );
-            return err;
-          }
-        });
-    }
-
-    if (
-      timesDeviceDisconnectAndReconnectCalled === 0 &&
-      timesWrapperCalled === 3
-    ) {
-      console.log(
-        "The interfaceDownUp method didnt work. Trying the deviceDisconnectAndReconnect method now"
-      );
-
-      await deviceDisconnectAndReconnect(host)
-        .then(deviceDisconnectAndReconnectResponse => {
-          timesDeviceDisconnectAndReconnectCalled++;
-          let successfulConnectionActivationTry3 =
-            deviceDisconnectAndReconnectResponse.stdout.indexOf(
-              "successfully activated"
-            ) >= 0
-              ? true
-              : false;
-          if (successfulConnectionActivationTry3) {
-            console.log(
-              "successfulConnectionActivationTry3 - deviceDisconnectAndReconnect => ",
-              successfulConnectionActivationTry3
-            );
-            setTimeout(function() {
-              grabClientIP(host)
-                .then(ip => {
-                  newIPTry3 = ip;
-                  console.log(
-                    "newIP in the deviceDisconnectAndReconnect method => ",
-                    newIPTry3
-                  );
-                  if (
-                    newIPTry3 !== undefined &&
-                    !newIPTry3.stderr &&
-                    newIPTry3 !== oldIP
-                  ) {
-                    cb(null, newIPTry3);
-                  } else {
-                    console.log(
-                      "Issue with matching IP's or an undefined response after calling deviceDisconnectAndReconnect method ip => ",
-                      ip
-                    );
-                    return wrapper();
-                  }
-                })
-                .catch(err => {
-                  if (err) {
-                    console.log(
-                      "Error trying to grab the client ip after trying interfaceDownUp method => ",
-                      err
-                    );
-                    cb(err);
-                  }
-                });
-            }, 3000);
-          } else {
-            return wrapper();
-          }
-        })
-        .catch(err => {
-          if (err) {
-            console.log(
-              `Error in the deviceDisconnectAndReconnect method. Current IP is ${oldIP}, and the Err is => ${err}`
-            );
-            cb(err);
-          }
-        });
-    }
-
-    if (timesRebootClientCalled === 0 && timesWrapperCalled === 4) {
-      await rebootClient(host).then(res => {
-        cb(res);
+    } else {
+      const { Items } = data;
+      res.send({
+        success: true,
+        message: "Loaded proxies",
+        proxies: Items
       });
     }
+  });
+});
+
+// Get a single fruit by id
+app.get("/api/proxy", (req, res, next) => {
+  if (isDev) {
+    AWS.config.update(config.aws_local_config);
+  } else {
+    AWS.config.update(config.aws_remote_config);
+  }
+  const proxyId = req.query.id;
+  const docClient = new AWS.DynamoDB.DocumentClient();
+  const params = {
+    TableName: config.aws_table_name,
+    KeyConditionExpression: "fruitId = :i",
+    ExpressionAttributeValues: {
+      ":i": fruitId
+    }
   };
-  return await wrapper();
-};
+  docClient.query(params, function(err, data) {
+    if (err) {
+      res.send({
+        success: false,
+        message: "Error: Server error"
+      });
+    } else {
+      console.log("data", data);
+      const { Items } = data;
+      res.send({
+        success: true,
+        message: "Loaded proxies",
+        proxies: Items
+      });
+    }
+  });
+});
 
-app.get("/proxy/add", function(req, res) {
-  const host = req.query["host"];
-  const network = req.query["network"];
-  let oldIP;
-  let newIP;
-
-  console.log(
-    "/add API Endpoint getting hit!",
-    "host ip => ",
-    host,
-    " network => ",
-    proxynetwork,
-    " Time => ",
-    moment().format("YYYY-MM-DDTHH:mm:ss")
-  );
-  dynamoDb.getAll
+app.post("/api/proxy", (req, res, next) => {
+  if (isDev) {
+    AWS.config.update(config.aws_local_config);
+  } else {
+    AWS.config.update(config.aws_remote_config);
+  }
+  const { type, color } = req.body;
+  // Not actually unique and can create problems.
+  const proxyId = (Math.random() * 1000).toString();
+  const docClient = new AWS.DynamoDB.DocumentClient();
+  const params = {
+    TableName: config.aws_table_name,
+    Item: {
+      proxyId: proxyId,
+      proxyType: type,
+      coor: color
+    }
+  };
+  docClient.put(params, function(err, data) {
+    if (err) {
+      res.send({
+        success: false,
+        message: "Error: Server error"
+      });
+    } else {
+      console.log("data", data);
+      const { Items } = data;
+      res.send({
+        success: true,
+        message: "Added proxy",
+        proxyId: proxyId
+      });
+    }
+  });
 });
 
 app.get("/proxy/reset", function(req, res) {

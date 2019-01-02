@@ -1,5 +1,5 @@
 let uuidv1 = require("uuid/v4"),
- Dynamo = require("./dynamodb.js");
+  Dynamo = require("./dynamodb.js");
 const Joi = require("joi");
 const Logger = require("../log");
 
@@ -60,11 +60,7 @@ class ProxyServer {
             reject(err);
           }
           logger.info(
-            `Account data was written in dynamoDB: ${JSON.stringify(
-              res,
-              4,
-              ""
-            )}`
+            `Proxy data was written in dynamoDB: ${JSON.stringify(res, 4, "")}`
           );
           resolve(res);
         }
@@ -90,7 +86,7 @@ class ProxyServer {
             logger.error(err);
             reject(err);
           }
-          logger.info("Account's field was updated:", res);
+          logger.info("Proxies field was updated:", res);
           resolve(res);
         }
       );
