@@ -38,34 +38,83 @@ app.use(function(req, res, next) {
 const server = app.listen(8080, () => console.log("Listening on port 8080!"));
 app.timeout = 360000;
 
+//get all proxies from dynamodb
 app.get("/api/proxies", function(req, res) {
   if (isDev) {
     AWS.config.update(config.aws_local_config);
   } else {
     AWS.config.update(config.aws_remote_config);
   }
-  const docClient = new AWS.DynamoDB.DocumentClient();
-  const params = {
-    TableName: config.aws_table_name
-  };
-  docClient.scan(params, function(err, data) {
-    if (err) {
-      res.send({
-        success: false,
-        message: "Error: Server error"
-      });
-    } else {
-      const { Items } = data;
-      res.send({
-        success: true,
-        message: "Loaded proxies",
-        proxies: Items
-      });
-    }
+
+  let proxyServer = new ProxyServer(
+    {
+      accessKeyId: "AKIAJJD5Q2EKMTD5LKHQ",
+      secretAccessKey: "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",
+      region: "us-east-1"
+    },
+    function(re) {}
+  );
+
+  proxyServer.getAll().then(pr => {
+    console.log("Get all proxies from dynamodb => ", pr);
+    res.status(200).send(pr);
   });
 });
 
-// Get a single fruit by id
+// Update a proxy by uuid
+app.put("/api/proxy", (req, res, next) => {
+  if (isDev) {
+    AWS.config.update(config.aws_local_config);
+  } else {
+    AWS.config.update(config.aws_remote_config);
+  }
+
+  const {
+    uuid,
+    lan_ip,
+    vpn_ip,
+    proxy_ip,
+    port,
+    carrier,
+    apn,
+    status
+  } = req.body;
+
+  let proxyServer = new ProxyServer(
+    {
+      accessKeyId: "AKIAJJD5Q2EKMTD5LKHQ",
+      secretAccessKey: "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",
+      region: "us-east-1"
+    },
+    function(re) {}
+  );
+
+  proxyServer
+    .update(uuid, {
+      lan_ip: lan_ip,
+      vpn_ip: vpn_ip,
+      proxy_ip: proxy_ip,
+      port: port,
+      carrier: carrier,
+      apn: apn,
+      status: status
+    })
+    .then(rez => {
+      console.log(
+        "res in the api/proxy POST endpoint after making proxy in dynamodb => ",
+        rez.attrs
+      );
+      res
+        .status(200)
+        .send(
+          `Record was updated in the dynamodb for => ${
+            rez.attrs.uuid
+          }. New attrs are => ${JSON.stringify(rez.attrs)}`
+        );
+    });
+});
+
+// Get a single proxy by uuid
 app.get("/api/proxy", (req, res, next) => {
   if (isDev) {
     AWS.config.update(config.aws_local_config);
@@ -90,6 +139,7 @@ app.get("/api/proxy", (req, res, next) => {
   });
 });
 
+//add new proxy to the dynamo db
 app.post("/api/proxy", (req, res, next) => {
   if (isDev) {
     AWS.config.update(config.aws_local_config);
@@ -126,36 +176,6 @@ app.post("/api/proxy", (req, res, next) => {
         .status(200)
         .send(`New record created in dynamodb => ${rez.attrs.uuid}`);
     });
-
-  // const { type, color } = req.body;
-  // // Not actually unique and can create problems.
-  // const proxyId = (Math.random() * 1000).toString();
-  // const docClient = new AWS.DynamoDB.DocumentClient();
-  // const params = {
-  //   TableName: config.aws_table_name,
-  //   Item: {
-  //     proxyId: proxyId,
-  //     proxyType: type,
-  //     coor: color
-  //   }
-  // };
-
-  // docClient.put(params, function(err, data) {
-  //   if (err) {
-  //     res.send({
-  //       success: false,
-  //       message: "Error: Server error"
-  //     });
-  //   } else {
-  //     console.log("data", data);
-  //     const { Items } = data;
-  //     res.send({
-  //       success: true,
-  //       message: "Added proxy",
-  //       proxyId: proxyId
-  //     });
-  //   }
-  // });
 });
 
 app.get("/proxy/reset", function(req, res) {

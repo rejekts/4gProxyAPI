@@ -73,14 +73,14 @@ class ProxyServer {
     return new Promise((resolve, reject) => {
       this.pr.update(
         {
-          uuid: this.dynamo.types.uuid(),
-          lan_ip: Joi.string(),
-          vpn_ip: Joi.string(),
-          proxy_ip: Joi.string(),
-          port: Joi.string(),
-          carrier: Joi.string(),
-          apn: Joi.string(),
-          status: Joi.string()
+          uuid: uuid,
+          lan_ip: data.lan_ip,
+          vpn_ip: data.vpn_ip,
+          proxy_ip: data.proxy_ip,
+          port: data.port,
+          carrier: data.carrier,
+          apn: data.apn,
+          status: data.status
         },
         (err, res) => {
           if (err) {
