@@ -113,12 +113,7 @@ app.post("/api/proxy", (req, res, next) => {
       secretAccessKey: "AjLrWBhQ84B5/gkMfo4SSrNOJKsnV32P/6S8SoNd",
       region: "us-east-1"
     },
-    function(re) {
-      console.log(
-        "respnse after creating dynamodb record with new proxy => ",
-        re
-      );
-    }
+    function() {}
   );
 
   proxyServer
@@ -131,12 +126,14 @@ app.post("/api/proxy", (req, res, next) => {
       apn: apn,
       status: status
     })
-    .then(res => {
+    .then(rez => {
       console.log(
         "res in the api/proxy POST endpoint after making proxy in dynamodb => ",
-        res
+        rez.attrs
       );
-      res.status(200).send(res);
+      res
+        .status(200)
+        .send(`New record created in dynamodb => ${rez.attrs.uuid}`);
     });
 
   // const { type, color } = req.body;
