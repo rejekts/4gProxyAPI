@@ -61,67 +61,8 @@ app.get("/api/proxies", function(req, res) {
   });
 });
 
-// Update a proxy by uuid
-app.put("/api/proxy", (req, res, next) => {
-  if (isDev) {
-    AWS.config.update(config.aws_local_config);
-  } else {
-    AWS.config.update(config.aws_remote_config);
-  }
-
-  const {
-    uuid,
-    lan_ip,
-    vpn_ip,
-    proxy_ip,
-    port,
-    carrier,
-    apn,
-    status
-  } = req.body;
-
-  let proxyServer = new ProxyServer(
-    {
-      accessKeyId: "AKIAJJD5Q2EKMTD5LKHQ",
-      secretAccessKey: "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",
-      region: "us-east-1"
-    },
-    function(re) {}
-  );
-
-  proxyServer
-    .update(uuid, {
-      lan_ip: lan_ip,
-      vpn_ip: vpn_ip,
-      proxy_ip: proxy_ip,
-      port: port,
-      carrier: carrier,
-      apn: apn,
-      status: status
-    })
-    .then(rez => {
-      console.log(
-        "res in the api/proxy POST endpoint after making proxy in dynamodb => ",
-        rez.attrs
-      );
-      res
-        .status(200)
-        .send(
-          `Record was updated in the dynamodb for => ${
-            rez.attrs.uuid
-          }. New attrs are => ${JSON.stringify(rez.attrs)}`
-        );
-    });
-});
-
 // Get a single proxy by uuid
 app.get("/api/proxy", (req, res, next) => {
-  if (isDev) {
-    AWS.config.update(config.aws_local_config);
-  } else {
-    AWS.config.update(config.aws_remote_config);
-  }
-
   let uuid = req.query.uuid;
 
   let proxyServer = new ProxyServer(
@@ -175,6 +116,59 @@ app.post("/api/proxy", (req, res, next) => {
       res
         .status(200)
         .send(`New record created in dynamodb => ${rez.attrs.uuid}`);
+    });
+});
+
+// Update a proxy by uuid
+app.put("/api/proxy", (req, res, next) => {
+  if (isDev) {
+    AWS.config.update(config.aws_local_config);
+  } else {
+    AWS.config.update(config.aws_remote_config);
+  }
+
+  const {
+    uuid,
+    lan_ip,
+    vpn_ip,
+    proxy_ip,
+    port,
+    carrier,
+    apn,
+    status
+  } = req.body;
+
+  let proxyServer = new ProxyServer(
+    {
+      accessKeyId: "AKIAJJD5Q2EKMTD5LKHQ",
+      secretAccessKey: "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",
+      region: "us-east-1"
+    },
+    function(re) {}
+  );
+
+  proxyServer
+    .update(uuid, {
+      lan_ip: lan_ip,
+      vpn_ip: vpn_ip,
+      proxy_ip: proxy_ip,
+      port: port,
+      carrier: carrier,
+      apn: apn,
+      status: status
+    })
+    .then(rez => {
+      console.log(
+        "res in the api/proxy PUT endpoint after updating proxy in dynamodb => ",
+        rez.attrs
+      );
+      res
+        .status(200)
+        .send(
+          `Record was updated in the dynamodb for => ${
+            rez.attrs.uuid
+          }. New attrs are => ${JSON.stringify(rez.attrs)}`
+        );
     });
 });
 
