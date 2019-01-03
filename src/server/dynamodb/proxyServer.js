@@ -18,7 +18,7 @@ class ProxyServer {
       // add the timestamp attributes (updatedAt, createdAt)
       timestamps: true,
       schema: {
-        uuid: this.dynamo.types.uuid(),
+        uuid: "this.dynamo.types.uuid()",
         lan_ip: Joi.string(),
         vpn_ip: Joi.string(),
         proxy_ip: Joi.string(),
@@ -112,8 +112,11 @@ class ProxyServer {
           ]
         },
         (err, res) => {
-          if (err) reject(err);
-          resolve(res.toJSON());
+          if (err) {
+            reject(err);
+          } else {
+            resolve(res.toJSON());
+          }
         }
       );
     });

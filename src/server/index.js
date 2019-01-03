@@ -14,7 +14,7 @@ const AWS = require("aws-sdk");
 const config = require("./config/config.js");
 const isDev = process.env.NODE_ENV !== "production";
 
-const PrS = require("./dynamodb/proxyServer");
+const ProxyServer = require("./dynamodb/proxyServer");
 const grabClientIP = require("./functions/grabClientIP");
 const rebootClient = require("./functions/rebootClient");
 const resetClientIPAddress = require("./functions/resetClientIPAddress");
@@ -72,30 +72,21 @@ app.get("/api/proxy", (req, res, next) => {
   } else {
     AWS.config.update(config.aws_remote_config);
   }
-  const proxyId = req.query.id;
-  const docClient = new AWS.DynamoDB.DocumentClient();
-  const params = {
-    TableName: config.aws_table_name,
-    KeyConditionExpression: "fruitId = :i",
-    ExpressionAttributeValues: {
-      ":i": fruitId
-    }
-  };
-  docClient.query(params, function(err, data) {
-    if (err) {
-      res.send({
-        success: false,
-        message: "Error: Server error"
-      });
-    } else {
-      console.log("data", data);
-      const { Items } = data;
-      res.send({
-        success: true,
-        message: "Loaded proxies",
-        proxies: Items
-      });
-    }
+
+  let uuid = req.query.uuid;
+
+  let proxyServer = new ProxyServer(
+    {
+      accessKeyId: "AKIAJJD5Q2EKMTD5LKHQ",
+      secretAccessKey: "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",
+      region: "us-east-1"
+    },
+    function(re) {}
+  );
+
+  proxyServer.get(uuid).then(pr => {
+    console.log("Get a single proxy from dynamodb => ", pr);
+    res.status(200).send(pr);
   });
 });
 
@@ -107,13 +98,13 @@ app.post("/api/proxy", (req, res, next) => {
   }
 
   const { lan_ip, vpn_ip, proxy_ip, port, carrier, apn, status } = req.body;
-  let proxyServer = new PrS(
+  let proxyServer = new ProxyServer(
     {
       accessKeyId: "AKIAJJD5Q2EKMTD5LKHQ",
       secretAccessKey: "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",
       region: "us-east-1"
     },
-    function() {}
+    function(re) {}
   );
 
   proxyServer
