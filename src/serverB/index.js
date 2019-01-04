@@ -1,4 +1,4 @@
-//Need API endpoint that we can hit for the IP of the 4g modem to be reset. AKA Disconnect the device and reconnect it.
+//This is the API serverB file. It handles all threading and execution of instructions sent from serverA
 
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -9,6 +9,7 @@ const util = require("util");
 const exec = util.promisify(childExec);
 const mysql = require("promise-mysql");
 const DynamoDb = require("./dynamodb");
+const rp = require("request-promise");
 const app = express();
 const AWS = require("aws-sdk");
 const config = require("./config/config.js");
@@ -24,7 +25,6 @@ let dynamoDb = new DynamoDb();
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(express.static("dist"));
-// app.use(requestIp.mw());
 app.enable("trust proxy");
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -35,16 +35,18 @@ app.use(function(req, res, next) {
   next();
 });
 
-const server = app.listen(8080, () => console.log("Listening on port 8080!"));
-app.timeout = 360000;
+const server = app.listen(8090, () =>
+  console.log("ServerB Listening on port 8090!")
+);
+// app.timeout = 360000;
 
 //get all proxies from dynamodb
 app.get("/api/proxies", function(req, res) {
-  if (isDev) {
-    AWS.config.update(config.aws_local_config);
-  } else {
-    AWS.config.update(config.aws_remote_config);
-  }
+  // if (isDev) {
+  //   AWS.config.update(config.aws_local_config);
+  // } else {
+  // }
+  AWS.config.update(config.aws_remote_config);
 
   let proxyServer = new ProxyServer(
     {
@@ -56,7 +58,7 @@ app.get("/api/proxies", function(req, res) {
   );
 
   proxyServer.getAll().then(pr => {
-    console.log("Get all proxies from dynamodb => ", pr);
+    console.log("Get all proxies from dynamodb in serverB => ", pr);
     res.status(200).send(pr);
   });
 });
@@ -81,14 +83,26 @@ app.get("/api/proxy", (req, res, next) => {
 });
 
 //add new proxy to the dynamo db
-app.post("/api/proxy", (req, res, next) => {
-  if (isDev) {
-    AWS.config.update(config.aws_local_config);
-  } else {
-    AWS.config.update(config.aws_remote_config);
-  }
+app.post("/api/add/proxy", (req, res, next) => {
+  // if (isDev) {
+  //   AWS.config.update(config.aws_local_config);
+  // } else {
+  //   AWS.config.update(config.aws_remote_config);
+  // }
 
-  const { lan_ip, vpn_ip, proxy_ip, port, carrier, apn, status } = req.body;
+  AWS.config.update(config.aws_remote_config);
+
+  const {
+    lan_ip,
+    vpn_ip,
+    proxy_ip,
+    browser_ip,
+    port,
+    carrier,
+    apn,
+    status,
+    instructions
+  } = req.body;
   let proxyServer = new ProxyServer(
     {
       accessKeyId: "AKIAJJD5Q2EKMTD5LKHQ",
@@ -103,10 +117,12 @@ app.post("/api/proxy", (req, res, next) => {
       lan_ip: lan_ip,
       vpn_ip: vpn_ip,
       proxy_ip: proxy_ip,
+      browser_ip: browser_ip,
       port: port,
       carrier: carrier,
       apn: apn,
-      status: status
+      status: status,
+      instructions: instructions
     })
     .then(rez => {
       console.log(
@@ -115,27 +131,29 @@ app.post("/api/proxy", (req, res, next) => {
       );
       res
         .status(200)
-        .send(`New record created in dynamodb => ${rez.attrs.uuid}`);
+        .send(`New record created in dynamodb => ${JSON.stringify(rez.attrs)}`);
     });
 });
 
 // Update a proxy by uuid
-app.put("/api/proxy", (req, res, next) => {
-  if (isDev) {
-    AWS.config.update(config.aws_local_config);
-  } else {
-    AWS.config.update(config.aws_remote_config);
-  }
+app.put("/api/update/proxy", (req, res, next) => {
+  // if (isDev) {
+  //   AWS.config.update(config.aws_local_config);
+  // } else {
+  // }
+  AWS.config.update(config.aws_remote_config);
 
   const {
     uuid,
     lan_ip,
     vpn_ip,
     proxy_ip,
+    browser_ip,
     port,
     carrier,
     apn,
-    status
+    status,
+    instructions
   } = req.body;
 
   let proxyServer = new ProxyServer(
@@ -152,10 +170,12 @@ app.put("/api/proxy", (req, res, next) => {
       lan_ip: lan_ip,
       vpn_ip: vpn_ip,
       proxy_ip: proxy_ip,
+      browser_ip: browser_ip,
       port: port,
       carrier: carrier,
       apn: apn,
-      status: status
+      status: status,
+      instructions: instructions
     })
     .then(rez => {
       console.log(
