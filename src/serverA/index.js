@@ -40,12 +40,6 @@ const server = app.listen(8080, () =>
 // app.timeout = 360000;
 
 app.get("/proxy/list", function(req, res) {
-  const uuid = req.query["uuid"];
-  const host = req.query["host"];
-  const network = req.query["network"];
-  let oldIP;
-  let newIP;
-
   console.log(
     "/proxy/list API  Endpoint getting hit in serverA! Time => ",
     moment().format("YYYY-MM-DDTHH:mm:ss")
@@ -72,35 +66,31 @@ app.get("/proxy/list", function(req, res) {
 });
 
 app.get("/proxy/reset", function(req, res) {
-  const uuid = req.query["uuid"];
-  const host = req.query["host"];
-  const network = req.query["network"];
+  const uuid = req.query.uuid;
   let oldIP;
   let newIP;
 
   console.log(
-    "Reset API serverA Endpoint getting hit!",
-    "host ip => ",
-    host,
-    " network => ",
-    network,
-    " Time => ",
+    "Reset API serverA Endpoint getting hit! Time => ",
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
 
-  let options = {
+  let options1 = {
     host: "localhost",
-    port: 8090,
-    path: "/api/proxies",
+    port: "8090",
+    path: "/api/browser_ip",
+    url: "http://localhost:8090/api/browser_ip",
     method: "GET",
-    data: {
-      lan_ip: host,
-      uuid: uuid
-    },
-    headers: {
-      // headers such as "Cookie" can be extracted from req object and sent to /test
+    qs: {
+      uuid: uuid,
+      status: "Pending"
     }
   };
+  //send request to serverB to start reset procedures and update the status and grap current browser_ip
+  rp(options1).then(prx => {
+    console.log("Proxy Data in serverA => ", prx);
+    res.status(200).send(prx);
+  });
 });
 
 app.get("/proxy/reset/hard", function(req, res) {

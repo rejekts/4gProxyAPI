@@ -63,9 +63,55 @@ app.get("/api/proxies", function(req, res) {
   });
 });
 
+//get browser_ip from dynamodb
+app.get("/api/browser_ip", function(req, res) {
+  AWS.config.update(config.aws_remote_config);
+  let uuid = req.query.uuid;
+  let status = req.query.status;
+  let proxyData = {};
+
+  let proxyServer = new ProxyServer(
+    {
+      accessKeyId: "AKIAJJD5Q2EKMTD5LKHQ",
+      secretAccessKey: "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",
+      region: "us-east-1"
+    },
+    function(re) {}
+  );
+
+  proxyServer
+    .get(uuid)
+    .then(async pr => {
+      let host = pr.lan_ip;
+      proxyData = pr;
+      console.log(
+        "Get current browser_ip from dynamodb in serverB => ",
+        pr.browser_ip
+      );
+      return await grabClientIP(host);
+    })
+    .then(currentIP => {
+      let updateData = {
+        lan_ip: proxyData.lan_ip,
+        vpn_ip: proxyData.vpn_ip,
+        proxy_ip: proxyData.proxy_ip,
+        browser_ip: currentIP,
+        port: proxyData.port,
+        carrier: proxyData.carrier,
+        apn: proxyData.apn,
+        status: status,
+        instructions: proxyData.instructions
+      };
+      proxyServer.update(uuid, updateData).then(IPUpdateRez => {
+        console.log("IPUpdateRez => ", IPUpdateRez);
+        res.status(200).send(IPUpdateRez.attrs.browser_ip);
+      });
+    });
+});
+
 // Get a single proxy by uuid
 app.get("/api/proxy", (req, res, next) => {
-  let uuid = req.query.uuid;
+  let uuid = req.body.data.uuid;
 
   let proxyServer = new ProxyServer(
     {

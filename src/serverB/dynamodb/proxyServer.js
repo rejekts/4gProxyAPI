@@ -74,6 +74,7 @@ class ProxyServer {
   }
 
   update(uuid, data) {
+    // console.log("data in the update of the proxyServer class => ", data);
     return new Promise((resolve, reject) => {
       this.pr.update(
         {
