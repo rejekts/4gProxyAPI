@@ -89,7 +89,7 @@ app.get("/proxy/reset", function(req, res) {
   //send request to serverB to start reset procedures and update the status and grap current browser_ip
   rp(options1).then(prx => {
     console.log("Proxy Data in serverA => ", prx);
-    res.status(200).send(prx);
+    // res.status(200).sendFile(__dirname + `/resetIndex.html?currIP=${prx}`);
   });
 });
 

@@ -8,7 +8,6 @@ const childExec = require("child_process").exec;
 const util = require("util");
 const exec = util.promisify(childExec);
 const mysql = require("promise-mysql");
-const DynamoDb = require("./dynamodb");
 const rp = require("request-promise");
 const app = express();
 const AWS = require("aws-sdk");
@@ -20,7 +19,9 @@ const grabClientIP = require("./functions/grabClientIP");
 const rebootClient = require("./functions/rebootClient");
 const resetClientIPAddress = require("./functions/resetClientIPAddress");
 
+const DynamoDb = require("./dynamodb");
 let dynamoDb = new DynamoDb();
+const dynamodbstreams = new AWS.DynamoDBStreams({ apiVersion: "2012-08-10" });
 
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(bodyParser.json({ limit: "50mb" }));
@@ -102,6 +103,7 @@ app.get("/api/browser_ip", function(req, res) {
         status: status,
         instructions: proxyData.instructions
       };
+
       proxyServer.update(uuid, updateData).then(IPUpdateRez => {
         console.log("IPUpdateRez => ", IPUpdateRez);
         res.status(200).send(IPUpdateRez.attrs.browser_ip);
