@@ -9,7 +9,7 @@
     "client": "webpack-dev-server --mode development --devtool inline-source-map --hot",
     "serverA": "nodemon src/serverA/index.js",
     "serverB": "nodemon src/serverB/index.js",
-    "all": "concurrently \"npm run serverA\" \"npm run serverB\""
+    "all": "concurrently \"npm run serverA\" \"npm run serverB\" \"npm run client\""
   },
   "author": "justin Scribner",
   "license": "ISC",

@@ -1,22 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Proxy2</title>
+  </head>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Proxy1</title>
-</head>
-
-<body>
+  <body>
     <script type="application/javascript">
-        function getIP(json) {
-            document.write("My public IP address is: ", json.ip);
-        }
+      function getIP(json) {
+        document.write("My public IP address is: ", json.ip);
+      }
     </script>
 
-    <script type="application/javascript" src="https://api.ipify.org?format=jsonp&callback=getIP"></script>
+    <script
+      type="application/javascript"
+      src="https://api.ipify.org?format=jsonp&callback=getIP"
+    ></script>
     <div id="root"></div>
-</body>
-
+  </body>
 </html>
