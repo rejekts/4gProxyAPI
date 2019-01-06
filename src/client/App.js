@@ -1,19 +1,21 @@
 import React, { Component } from "react";
 import "./app.css";
 import ReactImage from "./react.png";
+import Axios from "axios";
 
 export default class App extends Component {
   state = { currentIP: null };
 
   componentDidMount() {
-    fetch("/proxy/reset")
+    const {
+      match: { params }
+    } = this.props;
+    Axios.get(`/proxy/reset/${params.uuid}`)
       .then(res => res.json())
       .then(proxy => this.setState({ currentIP: proxy.browser_ip }));
   }
 
-  getUUID = function() {
-
-  }
+  getUUID = function() {};
 
   render() {
     const { currentIP } = this.state;
