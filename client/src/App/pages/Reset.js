@@ -48,12 +48,14 @@ proxy.map((item, i) => {
 
     return (
       <div className="App">
-        <h1>All Proxies</h1>
-        {/* Check to see if any items are found*/}
         {proxy.browser_ip ? (
           <div>
-            {/* Render the proxy */}
-            {proxy.browser_ip}
+            <div>
+              <h4>Browser IP: {proxy.browser_ip}</h4>
+            </div>
+            <div>
+              <h4>Proxy Status: {proxy.status}</h4>
+            </div>
           </div>
         ) : (
           <div>
