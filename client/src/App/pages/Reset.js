@@ -27,7 +27,13 @@ class Reset extends Component {
         console.log("res => ", proxy);
         return proxy;
       })
-      .then(proxy => this.setState({ proxy }));
+      .then(proxy => {
+        console.log("Proxy in reset => ", proxy.data);
+        this.setState({ proxy: proxy.data });
+      })
+      .then(() => {
+        this.setState({ isLoading: false });
+      });
   };
   /*
 proxy.map((item, i) => {
@@ -44,10 +50,10 @@ proxy.map((item, i) => {
       <div className="App">
         <h1>All Proxies</h1>
         {/* Check to see if any items are found*/}
-        {proxy.length ? (
+        {proxy.browser_ip ? (
           <div>
-            {/* Render the proxy of items */}
-            {proxy}
+            {/* Render the proxy */}
+            {proxy.browser_ip}
           </div>
         ) : (
           <div>
