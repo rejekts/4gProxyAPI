@@ -1,9 +1,0 @@
-{
-  "username": "dennistouchet",
-  "password": "ccDB455455%",
-  "database": "sys",
-  "guid": "50ac9e5158824b8d929c0925081a76cd",
-  "host": "mencius-prod.c50kkl7jqor1.us-east-1.rds.amazonaws.com",
-  "env": "production",
-  "sslpath": "/etc/letsencrypt/live/piprxy.com"
-}
