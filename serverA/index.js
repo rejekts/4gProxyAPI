@@ -51,10 +51,6 @@ app.get("/proxy/list", function(req, res) {
     path: "/api/proxies",
     url: "http://localhost:8090/api/proxies",
     method: "GET",
-    data: {
-      lan_ip: host,
-      uuid: uuid
-    },
     headers: {
       // headers such as "Cookie" can be extracted from req object and sent to /test
     }

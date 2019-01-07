@@ -14,11 +14,11 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "serverA": "nodemon ../serverA/index.js",
-    "serverB": "nodemon ../serverB/index.js",
+    "serverA": "node ../serverA/index.js --ignore client",
+    "serverB": "node ../serverB/index.js --ignore client",
     "all": "concurrently \"npm run serverA\" \"npm run serverB\" \"npm run start\""
   },
-  "proxy": "http://localhost:8080",
+  "proxy": "http://127.0.0.1:8080",
   "eslintConfig": {
     "extends": "react-app"
   },
