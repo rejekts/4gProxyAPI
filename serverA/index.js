@@ -68,14 +68,16 @@ app.get("/proxy/reset", function(req, res) {
 
   console.log(
     "Reset API serverA Endpoint getting hit! Time => ",
-    moment().format("YYYY-MM-DDTHH:mm:ss")
+    moment().format("YYYY-MM-DDTHH:mm:ss"),
+    "params => ",
+    req.params
   );
 
   let options1 = {
     host: "localhost",
     port: "8090",
     path: "/api/browser_ip",
-    url: "http://localhost:8090/api/browser_ip",
+    url: "http://localhost:8090/api/proxy",
     method: "GET",
     qs: {
       uuid: uuid,
@@ -85,7 +87,7 @@ app.get("/proxy/reset", function(req, res) {
   //send request to serverB to start reset procedures and update the status and grap current browser_ip
   rp(options1).then(prx => {
     console.log("Proxy Data in serverA => ", prx);
-    // res.status(200).sendFile(__dirname + `/resetIndex.html?currIP=${prx}`);
+    res.status(200).send(prx);
   });
 });
 

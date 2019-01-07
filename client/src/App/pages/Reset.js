@@ -6,38 +6,48 @@ class Reset extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      proxies: []
+      proxy: {},
+      uuid: "",
+      isLoading: true
     };
   }
 
   // Fetch the list on first mount
   componentDidMount() {
-    this.getProxies();
+    const uuid = this.props.match.params.uuid;
+    console.log("uuid in Reset => ", uuid);
+    this.setState(() => ({ uuid }));
+    this.resetProxy(uuid);
   }
 
   // Retrieves the list of items from the Express app
-  getProxies = () => {
-    Axios.get("/proxy/list")
-      .then(rez => {
-        console.log("res => ", rez);
-        return [...rez.data.Items];
+  resetProxy = uuid => {
+    Axios.get(`/proxy/reset`, { params: { uuid } })
+      .then(proxy => {
+        console.log("res => ", proxy);
+        return proxy;
       })
-      .then(proxies => this.setState({ proxies }));
+      .then(proxy => this.setState({ proxy }));
   };
-
+  /*
+proxy.map((item, i) => {
+              return <div key={i}>{item.lan_ip}</div>;
+            })
+*/
   render() {
-    const { proxies } = this.state;
+    const { proxy, isLoading } = this.state;
+    if (isLoading) {
+      return <div>Loading...</div>;
+    }
 
     return (
       <div className="App">
         <h1>All Proxies</h1>
         {/* Check to see if any items are found*/}
-        {proxies.length ? (
+        {proxy.length ? (
           <div>
             {/* Render the proxy of items */}
-            {proxies.map((item, i) => {
-              return <div key={i}>{item.lan_ip}</div>;
-            })}
+            {proxy}
           </div>
         ) : (
           <div>

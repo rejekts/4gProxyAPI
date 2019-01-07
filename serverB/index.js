@@ -113,7 +113,8 @@ app.get("/api/browser_ip", function(req, res) {
 
 // Get a single proxy by uuid
 app.get("/api/proxy", (req, res, next) => {
-  let uuid = req.body.data.uuid;
+  console.log("UUID in serverB => ", req.query);
+  let uuid = req.query.uuid;
 
   let proxyServer = new ProxyServer(
     {
