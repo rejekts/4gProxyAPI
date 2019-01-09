@@ -53,7 +53,7 @@ class Reset extends Component {
         "IP in the checkProxyServerExternalIP method => ",
         IP.data.browser_ip
       );
-      this.setState({ currentIP: IP.data.browser_ip });
+      this.setState({ currentIP: IP.data.browser_ip, status: IP.data.status });
       // return IP;
     });
   };
