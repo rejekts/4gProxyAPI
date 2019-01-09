@@ -13,6 +13,9 @@ class Reset extends Component {
       proxy: {},
       oldIP: "",
       resetStatus: "Pending",
+      resetStatusMessage: "Your browser IP is being reset.",
+      resetStatusInstructions:
+        "Every 30 seconds you can check the status of this process by clicking the button below.",
       currentIP: "",
       uuid: "",
       isLoading: true
@@ -25,6 +28,12 @@ class Reset extends Component {
     console.log("uuid in Reset => ", uuid);
     this.setState(() => ({ uuid }));
     this.resetProxy(uuid);
+  }
+
+  componentDidUpdate() {
+    if (this.state.proxy.status !== this.state.resetStatus) {
+      this.setState({ resetStatus: this.state.proxy.status });
+    }
   }
 
   // Retrieves the list of items from the Express app
@@ -42,9 +51,6 @@ class Reset extends Component {
           currentIP: proxy.data.browser_ip
         });
       });
-    // .then(() => {
-    //   this.setState({  });
-    // });
   };
 
   checkProxyServerExternalIP = uuid => {
@@ -53,13 +59,14 @@ class Reset extends Component {
         "IP in the checkProxyServerExternalIP method => ",
         IP.data.browser_ip
       );
+
       this.setState({ currentIP: IP.data.browser_ip, status: IP.data.status });
       // return IP;
     });
   };
 
   render() {
-    const { proxy, isLoading } = this.state;
+    const { proxy, resetStatus, isLoading } = this.state;
     if (isLoading) {
       return <div>Loading...</div>;
     }
@@ -69,8 +76,8 @@ class Reset extends Component {
         {proxy.browser_ip ? (
           <div>
             <div>
-              <h1>Your browser IP is being reset.</h1>
-              <h4>Please allow 3 to 5 minutes for the process to complete.</h4>
+              <h1>{this.state.resetStatusMessage}</h1>
+              <h4>{this.state.resetStatusInstructions}</h4>
             </div>
             <img src={logo} className="App-logo" alt="logo" />
             <div>

@@ -84,7 +84,6 @@ app.get("/proxy/get_ip", function(req, res) {
       status: "Pending"
     }
   };
-  //send request to serverB to start reset procedures and update the status and grap current browser_ip
   rp(options1).then(prx => {
     console.log("Proxy Data in serverA => ", prx);
     res.status(200).send(prx);
@@ -117,6 +116,20 @@ app.get("/proxy/reset", function(req, res) {
   //send request to serverB to start reset procedures and update the status and grap current browser_ip
   rp(options1).then(prx => {
     console.log("Proxy Data in serverA => ", prx);
+    let options2 = {
+      host: "localhost",
+      port: "8090",
+      path: "/api/proxy/reset",
+      url: "http://localhost:8090/api/proxy",
+      method: "GET",
+      qs: {
+        uuid: uuid,
+        host: prx.lan_ip,
+        network: prx.network
+      }
+    };
+
+    //finally send back the proxy data from the first call to get/update the browser_ip
     res.status(200).send(prx);
   });
 });

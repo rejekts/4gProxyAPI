@@ -241,7 +241,7 @@ app.put("/api/update/proxy", (req, res, next) => {
     });
 });
 
-app.get("/proxy/reset", function(req, res) {
+app.get("/api/proxy/reset", function(req, res) {
   const host = req.query["host"];
   const network = req.query["network"];
   let oldIP;
