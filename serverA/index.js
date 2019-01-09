@@ -61,6 +61,36 @@ app.get("/proxy/list", function(req, res) {
   });
 });
 
+app.get("/proxy/get_ip", function(req, res) {
+  const uuid = req.query.uuid;
+  let oldIP;
+  let newIP;
+
+  console.log(
+    "/proxy/get_ip API serverA Endpoint getting hit! Time => ",
+    moment().format("YYYY-MM-DDTHH:mm:ss"),
+    "params => ",
+    req.params
+  );
+
+  let options1 = {
+    host: "localhost",
+    port: "8090",
+    path: "/api/browser_ip",
+    url: "http://localhost:8090/api/proxy",
+    method: "GET",
+    qs: {
+      uuid: uuid,
+      status: "Pending"
+    }
+  };
+  //send request to serverB to start reset procedures and update the status and grap current browser_ip
+  rp(options1).then(prx => {
+    console.log("Proxy Data in serverA => ", prx);
+    res.status(200).send(prx);
+  });
+});
+
 app.get("/proxy/reset", function(req, res) {
   const uuid = req.query.uuid;
   let oldIP;

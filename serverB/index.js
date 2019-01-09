@@ -100,7 +100,7 @@ app.get("/api/browser_ip", function(req, res) {
         port: proxyData.port,
         carrier: proxyData.carrier,
         apn: proxyData.apn,
-        status: status,
+        status: status !== undefined ? status : proxyData.status,
         instructions: proxyData.instructions
       };
 

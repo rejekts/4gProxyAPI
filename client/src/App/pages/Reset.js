@@ -1,5 +1,9 @@
 import React, { Component } from "react";
 import Axios from "axios";
+import CheckIPButton from "../components/CheckIPButton";
+import logo from "../logo.svg";
+
+import { Button, Icon } from "semantic-ui-react";
 
 class Reset extends Component {
   // Initialize the state
@@ -7,6 +11,9 @@ class Reset extends Component {
     super(props);
     this.state = {
       proxy: {},
+      oldIP: "",
+      resetStatus: "Pending",
+      currentIP: "",
       uuid: "",
       isLoading: true
     };
@@ -29,17 +36,28 @@ class Reset extends Component {
       })
       .then(proxy => {
         console.log("Proxy in reset => ", proxy.data);
-        this.setState({ proxy: proxy.data });
-      })
-      .then(() => {
-        this.setState({ isLoading: false });
+        this.setState({
+          proxy: proxy.data,
+          isLoading: false,
+          currentIP: proxy.data.browser_ip
+        });
       });
+    // .then(() => {
+    //   this.setState({  });
+    // });
   };
-  /*
-proxy.map((item, i) => {
-              return <div key={i}>{item.lan_ip}</div>;
-            })
-*/
+
+  checkProxyServerExternalIP = uuid => {
+    Axios.get(`/proxy/get_ip`, { params: { uuid } }).then(IP => {
+      console.log(
+        "IP in the checkProxyServerExternalIP method => ",
+        IP.data.browser_ip
+      );
+      this.setState({ currentIP: IP.data.browser_ip });
+      // return IP;
+    });
+  };
+
   render() {
     const { proxy, isLoading } = this.state;
     if (isLoading) {
@@ -47,14 +65,27 @@ proxy.map((item, i) => {
     }
 
     return (
-      <div className="App">
+      <div className="reset">
         {proxy.browser_ip ? (
           <div>
             <div>
-              <h4>Browser IP: {proxy.browser_ip}</h4>
+              <h1>Your browser IP is being reset.</h1>
+              <h4>Please allow 3 to 5 minutes for the process to complete.</h4>
             </div>
+            <img src={logo} className="App-logo" alt="logo" />
             <div>
-              <h4>Proxy Status: {proxy.status}</h4>
+              <CheckIPButton
+                onClick={() => this.checkProxyServerExternalIP(this.state.uuid)}
+              />
+            </div>
+            <div style={{ paddingBottom: 20, paddingTop: 20 }}>
+              Current Browser IP: {this.state.currentIP}
+            </div>
+            <div style={{ paddingBottom: 20, paddingTop: 20 }}>
+              Old Browser IP: {proxy.browser_ip}
+            </div>
+            <div style={{ paddingBottom: 20, paddingTop: 20 }}>
+              Proxy Reset Status: {proxy.status}
             </div>
           </div>
         ) : (
