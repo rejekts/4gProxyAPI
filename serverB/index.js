@@ -294,7 +294,13 @@ app.get("/api/proxy/reset", function(req, res) {
               if (!ip2) {
                 //Update the db that there was an error and that we are rebooting the proxy server hardware
                 proxyData.status = "REBOOTING";
-                proxyServer.update(uuid, proxyData).then(() => {});
+                console.log("proxyData => ", proxyData);
+                proxyServer.update(uuid, proxyData).then(data => {
+                  console.log(
+                    "Response from db after updating status before rebooting in the reset methid => ",
+                    data.attrs
+                  );
+                });
                 rebootClient(lan_ip)
                   .then(rebootRes => {
                     res
@@ -310,6 +316,8 @@ app.get("/api/proxy/reset", function(req, res) {
                 oldIP = ip;
                 proxyData.old_browser_ip = ip;
                 proxyData.status = "RESETTING";
+                console.log("proxyData Resetting? => ", proxyData);
+
                 //store the current IP in the db IF its different AND set the status of the proxy to running
                 proxyServer.update(uuid, proxyData).then(r => {
                   //run the reset method after updating the status and instructions in the db
@@ -323,6 +331,8 @@ app.get("/api/proxy/reset", function(req, res) {
                       );
                       proxyData.browser_ip = ip;
                       proxyData.status = "COMPLETE";
+                      console.log("proxyData Complete?=> ", proxyData);
+
                       proxyServer
                         .update(uuid, proxyData)
                         .then(successfulResetUpdateRez => {
@@ -341,6 +351,8 @@ app.get("/api/proxy/reset", function(req, res) {
                       );
                       //Update the db that there was an error and that we are rebooting the proxy server hardware
                       proxyData.status = "REBOOTING";
+                      console.log("proxyData rebooting? => ", proxyData);
+
                       proxyServer.update(uuid, proxyData).then(() => {
                         //Reboot machine
                         rebootClient(lan_ip)
@@ -373,6 +385,8 @@ app.get("/api/proxy/reset", function(req, res) {
               );
               //Update the db that there was an error and that we are rebooting the proxy server hardware
               proxyData.status = "REBOOTING";
+              console.log("proxyData Rebooting? => ", proxyData);
+
               proxyServer.update(uuid, proxyData).then(() => {
                 //Reboot machine
                 rebootClient(lan_ip)
@@ -390,7 +404,10 @@ app.get("/api/proxy/reset", function(req, res) {
         } else {
           oldIP = ip;
           proxyData.old_browser_ip = ip;
+
           proxyData.status = "RESETTING";
+          console.log("proxyData Resetting? => ", proxyData);
+
           //store the current IP in the db IF its different AND set the status of the proxy to running
           proxyServer.update(uuid, proxyData).then(x => {
             //run the reset method after updating the status and instructions in the db
@@ -422,6 +439,8 @@ app.get("/api/proxy/reset", function(req, res) {
                 );
                 //Update the db that there was an error and that we are rebooting the proxy server hardware
                 proxyData.status = "REBOOTING";
+                console.log("proxyData Rebooting? => ", proxyData);
+
                 proxyServer.update(uuid, proxyData).then(() => {
                   //Reboot machine
                   rebootClient(lan_ip)
@@ -454,6 +473,8 @@ app.get("/api/proxy/reset", function(req, res) {
         );
         //Update the db that there was an error and that we are rebooting the proxy server hardware
         proxyData.status = "REBOOTING";
+        console.log("proxyData Rebooting? => ", proxyData);
+
         proxyServer.update(uuid, proxyData).then(() => {
           //Reboot machine
           rebootClient(lan_ip)
