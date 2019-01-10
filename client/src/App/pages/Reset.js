@@ -34,7 +34,7 @@ class Reset extends Component {
     }
   }
 
-  // Retrieves the list of items from the Express app
+  // Retrieves the proxy details from the Express app and runs the reset isntructions
   resetProxy = uuid => {
     Axios.get(`/proxy/reset`, { params: { uuid } })
       .then(proxy => {

@@ -105,7 +105,7 @@ app.get("/proxy/reset", function(req, res) {
   let options1 = {
     host: "localhost",
     port: "8090",
-    path: "/api/browser_ip",
+    path: "/api/proxy",
     url: "http://localhost:8090/api/proxy",
     method: "GET",
     qs: {
@@ -120,7 +120,7 @@ app.get("/proxy/reset", function(req, res) {
       host: "localhost",
       port: "8090",
       path: "/api/proxy/reset",
-      url: "http://localhost:8090/api/proxy",
+      url: "http://localhost:8090/api/proxy/reset",
       method: "GET",
       qs: {
         uuid: uuid,

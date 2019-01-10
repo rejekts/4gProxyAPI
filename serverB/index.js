@@ -91,6 +91,7 @@ app.get("/api/browser_ip", function(req, res) {
         lan_ip: proxyData.lan_ip,
         vpn_ip: proxyData.vpn_ip,
         proxy_ip: proxyData.proxy_ip,
+        old_browser_ip: currentIP,
         browser_ip: currentIP,
         port: proxyData.port,
         carrier: proxyData.carrier,
@@ -99,9 +100,12 @@ app.get("/api/browser_ip", function(req, res) {
         instructions: proxyData.instructions
       };
       proxyServer.update(uuid, updateData).then(IPUpdateRez => {
-        console.log("IPUpdateRez => ", IPUpdateRez);
-        res.status(200).send(IPUpdateRez.attrs.browser_ip);
+        console.log("IPUpdateRez => ", IPUpdateRez.attrs);
+        res.status(200).send(IPUpdateRez.attrs);
       });
+    })
+    .catch(err => {
+      res.status(200).send(proxyData);
     });
 });
 
