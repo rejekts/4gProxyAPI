@@ -22,12 +22,12 @@ class ProxyServer {
         lan_ip: Joi.string(),
         vpn_ip: Joi.string(),
         proxy_ip: Joi.string(),
+        old_browser_ip: Joi.string(),
         browser_ip: Joi.string(),
         port: Joi.string(),
         carrier: Joi.string(),
         apn: Joi.string(),
-        status: Joi.string(),
-        instructions: Joi.string()
+        status: Joi.string()
       }
     });
 
@@ -51,12 +51,12 @@ class ProxyServer {
           lan_ip: data.lan_ip,
           vpn_ip: data.vpn_ip,
           proxy_ip: data.proxy_ip,
+          old_browser_ip: data.old_browser_ip,
           browser_ip: data.browser_ip,
           port: data.port,
           carrier: data.carrier,
           apn: data.apn,
-          status: data.status,
-          instructions: data.instructions
+          status: data.status
         },
         (err, res) => {
           if (err) {
@@ -82,12 +82,12 @@ class ProxyServer {
           lan_ip: data.lan_ip,
           vpn_ip: data.vpn_ip,
           proxy_ip: data.proxy_ip,
+          old_browser_ip: data.old_browser_ip,
           browser_ip: data.browser_ip,
           port: data.port,
           carrier: data.carrier,
           apn: data.apn,
-          status: data.status,
-          instructions: data.instructions
+          status: data.status
         },
         (err, res) => {
           if (err) {
@@ -112,12 +112,12 @@ class ProxyServer {
             "lan_ip",
             "vpn_ip",
             "proxy_ip",
+            "old_browser_ip",
             "browser_ip",
             "port",
             "carrier",
             "apn",
             "status",
-            "instructions",
             "createdAt",
             "updatedAt"
           ]
