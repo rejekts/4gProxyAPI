@@ -46,7 +46,9 @@ class Reset extends Component {
         this.setState({
           proxy: proxy.data,
           isLoading: false,
-          currentIP: proxy.data.browser_ip
+          browser_ip: proxy.data.browser_ip,
+          old_browser_ip: proxy.data.old_browser_ip,
+          status: proxy.data.status
         });
       });
   };
@@ -55,23 +57,36 @@ class Reset extends Component {
     Axios.get(`/proxy/get_ip`, { params: { uuid } }).then(IP => {
       console.log(
         "IP in the checkProxyServerExternalIP method => ",
-        IP.data.browser_ip
+        IP.data.browser_ip,
+        "status: ",
+        IP.data.status
       );
 
-      this.setState({ currentIP: IP.data.browser_ip, status: IP.data.status });
-      // return IP;
+      this.setState({
+        proxy: IP.data,
+        isLoading: false,
+        browser_ip: IP.data.browser_ip,
+        status: IP.data.status
+      });
     });
   };
 
   render() {
-    const { proxy, resetStatus, isLoading } = this.state;
+    const {
+      proxy,
+      status,
+      old_browser_ip,
+      browser_ip,
+      resetStatus,
+      isLoading
+    } = this.state;
     if (isLoading) {
       return <div>Loading...</div>;
     }
 
     return (
       <div className="reset">
-        {proxy.browser_ip ? (
+        {this.state.browser_ip ? (
           <div>
             <div>
               <h1>{this.state.resetStatusMessage}</h1>
@@ -84,13 +99,13 @@ class Reset extends Component {
               />
             </div>
             <div style={{ paddingBottom: 20, paddingTop: 20 }}>
-              Current Browser IP: {this.state.currentIP}
+              Current Browser IP: {this.state.browser_ip}
             </div>
             <div style={{ paddingBottom: 20, paddingTop: 20 }}>
-              Old Browser IP: {proxy.old_browser_ip}
+              Old Browser IP: {this.state.old_browser_ip}
             </div>
             <div style={{ paddingBottom: 20, paddingTop: 20 }}>
-              Proxy Reset Status: {proxy.status}
+              Proxy Reset Status: {this.state.status}
             </div>
           </div>
         ) : (

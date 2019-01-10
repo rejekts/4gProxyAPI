@@ -97,8 +97,7 @@ app.get("/api/browser_ip", function(req, res) {
         port: proxyData.port,
         carrier: proxyData.carrier,
         apn: proxyData.apn,
-        status: status !== undefined ? status : proxyData.status,
-        instructions: proxyData.instructions
+        status: status !== undefined ? status : proxyData.status
       };
       proxyServer.update(uuid, updateData).then(IPUpdateRez => {
         console.log("IPUpdateRez => ", IPUpdateRez.attrs);

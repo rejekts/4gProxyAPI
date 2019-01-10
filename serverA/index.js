@@ -77,11 +77,10 @@ app.get("/proxy/get_ip", function(req, res) {
     host: "localhost",
     port: "8090",
     path: "/api/browser_ip",
-    url: "http://localhost:8090/api/proxy",
+    url: "http://localhost:8090/api/browser_ip",
     method: "GET",
     qs: {
-      uuid: uuid,
-      status: "Pending"
+      uuid: uuid
     }
   };
   rp(options1).then(prx => {
