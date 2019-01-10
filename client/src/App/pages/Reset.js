@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import Axios from "axios";
 import CheckIPButton from "../components/CheckIPButton";
 import logo from "../logo.svg";
+import _ from "lodash";
 
 class Reset extends Component {
   // Initialize the state
@@ -54,21 +55,24 @@ class Reset extends Component {
   };
 
   checkProxyServerExternalIP = uuid => {
-    Axios.get(`/proxy/get_ip`, { params: { uuid } }).then(IP => {
-      console.log(
-        "IP in the checkProxyServerExternalIP method => ",
-        IP.data.browser_ip,
-        "status: ",
-        IP.data.status
-      );
+    const wrapper = uuid => {
+      Axios.get(`/proxy/get_ip`, { params: { uuid } }).then(IP => {
+        console.log(
+          "IP in the checkProxyServerExternalIP method => ",
+          IP.data.browser_ip,
+          "status: ",
+          IP.data.status
+        );
 
-      this.setState({
-        proxy: IP.data,
-        isLoading: false,
-        browser_ip: IP.data.browser_ip,
-        status: IP.data.status
+        this.setState({
+          proxy: IP.data,
+          isLoading: false,
+          browser_ip: IP.data.browser_ip,
+          status: IP.data.status
+        });
       });
-    });
+    };
+    _.debounce(wrapper, 10000);
   };
 
   render() {
