@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import logo from "./logo.svg";
 import "./App.css";
 import Reset from "./pages/Reset";
 import { BrowserRouter, Route } from "react-router-dom";
@@ -10,7 +9,7 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <BrowserRouter>
-            <Route exact path="/:uuid" component={Reset} />
+            <Route exact path="/reset/:uuid" component={Reset} />
           </BrowserRouter>
         </header>
       </div>
