@@ -23,6 +23,7 @@ const DynamoDb = require("./dynamodb");
 let dynamoDb = new DynamoDb();
 const dynamodbstreams = new AWS.DynamoDBStreams({ apiVersion: "2012-08-10" });
 
+app.timeout = 360000;
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(express.static("dist"));
@@ -236,8 +237,7 @@ app.put("/api/update/proxy", (req, res, next) => {
 app.get("/api/proxy/reset", function(req, res) {
   AWS.config.update(config.aws_remote_config);
   let uuid = req.query.uuid;
-  const host = req.query["host"];
-  const network = req.query["network"];
+  let carrier = req.query.carrier;
   let oldIP;
   let newIP;
   let proxyData = {};
@@ -253,10 +253,10 @@ app.get("/api/proxy/reset", function(req, res) {
 
   console.log(
     "Reset API Endpoint getting hit!",
-    "host ip => ",
-    host,
-    " network => ",
-    network,
+    "uuid => ",
+    uuid,
+    " carrier => ",
+    carrier,
     " Time => ",
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
@@ -279,114 +279,90 @@ app.get("/api/proxy/reset", function(req, res) {
     } = proxyData;
 
     //grab current IP from the proxy server
-    grabClientIP(lan_ip).then(ip => {
-      console.log(
-        "Return of oldIP in the /proxy/reset endpoint => ",
-        ip,
-        " For ",
-        lan_ip
-      );
-      //if no ip is returned then try the grabClientIP method one more time
-      if (!ip) {
-        grabClientIP(lan_ip).then(ip2 => {
-          if (!ip2) {
-            //Update the db that there was an error and that we are rebooting the proxy server hardware
-            proxyData.status = "REBOOTING";
-            proxyServer.update(uuid, proxyData).then(() => {});
-            rebootClient(lan_ip)
-              .then(rebootRes => {
-                res
-                  .status(200)
-                  .send(
-                    `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${rebootRes}`
-                  );
-              })
-              .catch(err => {
-                console.log("rebooting error in the reset method => ", err);
-              });
-          } else {
-            oldIP = ip;
-            proxyData.old_browser_ip = ip;
-            proxyData.status = "RESETTING";
-            //store the current IP in the db IF its different AND set the status of the proxy to running
-            proxyServer.update(uuid, proxyData).then(r => {
-              //run the reset method after updating the status and instructions in the db
-              resetClientIPAddress(lan_ip, carrier, oldIP)
-                .then(i => {
-                  console.log(
-                    "Success!! newIP in the endpoint!! => ",
-                    ip,
-                    " For ",
-                    lan_ip
-                  );
-                  proxyData.browser_ip = ip;
-                  proxyData.status = "COMPLETE";
-                  proxyServer
-                    .update(uuid, proxyData)
-                    .then(successfulResetUpdateRez => {
-                      console.log(
-                        "successfulResetUpdateRez => ",
-                        successfulResetUpdateRez
+    grabClientIP(lan_ip)
+      .then(ip => {
+        console.log(
+          "Return of oldIP in the /proxy/reset endpoint => ",
+          ip,
+          " For ",
+          lan_ip
+        );
+        //if no ip is returned then try the grabClientIP method one more time
+        if (!ip) {
+          grabClientIP(lan_ip)
+            .then(ip2 => {
+              if (!ip2) {
+                //Update the db that there was an error and that we are rebooting the proxy server hardware
+                proxyData.status = "REBOOTING";
+                proxyServer.update(uuid, proxyData).then(() => {});
+                rebootClient(lan_ip)
+                  .then(rebootRes => {
+                    res
+                      .status(200)
+                      .send(
+                        `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${rebootRes}`
                       );
-                    });
-                })
-                .catch(err => {
-                  console.log(
-                    "We have an error in the main /proxy/reset endpoint when calling the resetClientIpAddress method. err => ",
-                    err,
-                    " For ",
-                    lan_ip
-                  );
-                  //Update the db that there was an error and that we are rebooting the proxy server hardware
-                  proxyData.status = "REBOOTING";
-                  proxyServer.update(uuid, proxyData).then(() => {
-                    //Reboot machine
-                    rebootClient(lan_ip)
-                      .then(rebootRes => {})
-                      .catch(err => {
-                        console.log(
-                          "Error trying to reset the ip in the main endpoint. Error: ",
-                          err,
-                          " For ",
-                          lan_ip
-                        );
-                      });
+                  })
+                  .catch(err => {
+                    console.log("rebooting error in the reset method => ", err);
                   });
+              } else {
+                oldIP = ip;
+                proxyData.old_browser_ip = ip;
+                proxyData.status = "RESETTING";
+                //store the current IP in the db IF its different AND set the status of the proxy to running
+                proxyServer.update(uuid, proxyData).then(r => {
+                  //run the reset method after updating the status and instructions in the db
+                  resetClientIPAddress(lan_ip, carrier, oldIP)
+                    .then(i => {
+                      console.log(
+                        "Success!! newIP in the endpoint!! => ",
+                        ip,
+                        " For ",
+                        lan_ip
+                      );
+                      proxyData.browser_ip = ip;
+                      proxyData.status = "COMPLETE";
+                      proxyServer
+                        .update(uuid, proxyData)
+                        .then(successfulResetUpdateRez => {
+                          console.log(
+                            "successfulResetUpdateRez => ",
+                            successfulResetUpdateRez
+                          );
+                        });
+                    })
+                    .catch(err => {
+                      console.log(
+                        "We have an error in the main /proxy/reset endpoint when calling the resetClientIpAddress method. err => ",
+                        err,
+                        " For ",
+                        lan_ip
+                      );
+                      //Update the db that there was an error and that we are rebooting the proxy server hardware
+                      proxyData.status = "REBOOTING";
+                      proxyServer.update(uuid, proxyData).then(() => {
+                        //Reboot machine
+                        rebootClient(lan_ip)
+                          .then(rebootRes => {})
+                          .catch(err => {
+                            console.log(
+                              "Error trying to reset the ip in the main endpoint. Error: ",
+                              err,
+                              " For ",
+                              lan_ip
+                            );
+                          });
+                      });
+                    });
                 });
-            });
 
-            // res
-            //   .status(200)
-            //   .send(
-            //     `Your IP address is being reset. Your oldIP is ${oldIP}. Please allow up to 3 - 5 minutes for the machine to reset and check the new IP address at https://ipfingerprints.com`
-            //   );
-          }
-        });
-      } else {
-        oldIP = ip;
-        proxyData.old_browser_ip = ip;
-        proxyData.status = "RESETTING";
-        //store the current IP in the db IF its different AND set the status of the proxy to running
-        proxyServer.update(uuid, proxyData).then(x => {
-          //run the reset method after updating the status and instructions in the db
-          resetClientIPAddress(lan_ip, carrier, oldIP)
-            .then(i => {
-              console.log(
-                "Success!! newIP in the endpoint!! => ",
-                ip,
-                " For ",
-                lan_ip
-              );
-              proxyData.browser_ip = ip;
-              proxyData.status = "COMPLETE";
-              proxyServer
-                .update(uuid, proxyData)
-                .then(successfulResetUpdateRez => {
-                  console.log(
-                    "successfulResetUpdateRez => ",
-                    successfulResetUpdateRez
-                  );
-                });
+                // res
+                //   .status(200)
+                //   .send(
+                //     `Your IP address is being reset. Your oldIP is ${oldIP}. Please allow up to 3 - 5 minutes for the machine to reset and check the new IP address at https://ipfingerprints.com`
+                //   );
+              }
             })
             .catch(err => {
               console.log(
@@ -411,15 +387,87 @@ app.get("/api/proxy/reset", function(req, res) {
                   });
               });
             });
-        });
+        } else {
+          oldIP = ip;
+          proxyData.old_browser_ip = ip;
+          proxyData.status = "RESETTING";
+          //store the current IP in the db IF its different AND set the status of the proxy to running
+          proxyServer.update(uuid, proxyData).then(x => {
+            //run the reset method after updating the status and instructions in the db
+            resetClientIPAddress(lan_ip, carrier, oldIP)
+              .then(i => {
+                console.log(
+                  "Success!! newIP in the endpoint!! => ",
+                  ip,
+                  " For ",
+                  lan_ip
+                );
+                proxyData.browser_ip = ip;
+                proxyData.status = "COMPLETE";
+                proxyServer
+                  .update(uuid, proxyData)
+                  .then(successfulResetUpdateRez => {
+                    console.log(
+                      "successfulResetUpdateRez => ",
+                      successfulResetUpdateRez
+                    );
+                  });
+              })
+              .catch(err => {
+                console.log(
+                  "We have an error in the main /proxy/reset endpoint when calling the resetClientIpAddress method. err => ",
+                  err,
+                  " For ",
+                  lan_ip
+                );
+                //Update the db that there was an error and that we are rebooting the proxy server hardware
+                proxyData.status = "REBOOTING";
+                proxyServer.update(uuid, proxyData).then(() => {
+                  //Reboot machine
+                  rebootClient(lan_ip)
+                    .then(rebootRes => {})
+                    .catch(err => {
+                      console.log(
+                        "Error trying to reset the ip in the main endpoint. Error: ",
+                        err,
+                        " For ",
+                        lan_ip
+                      );
+                    });
+                });
+              });
+          });
 
-        // res
-        //   .status(200)
-        //   .send(
-        //     `Your IP address is being reset. Your oldIP is ${oldIP}. Please allow up to 3 - 5 minutes for the machine to reset and check the new IP address at https://ipfingerprints.com`
-        //   );
-      }
-    });
+          // res
+          //   .status(200)
+          //   .send(
+          //     `Your IP address is being reset. Your oldIP is ${oldIP}. Please allow up to 3 - 5 minutes for the machine to reset and check the new IP address at https://ipfingerprints.com`
+          //   );
+        }
+      })
+      .catch(err => {
+        console.log(
+          "We have an error in the main /proxy/reset endpoint when calling the resetClientIpAddress method. err => ",
+          err,
+          " For ",
+          lan_ip
+        );
+        //Update the db that there was an error and that we are rebooting the proxy server hardware
+        proxyData.status = "REBOOTING";
+        proxyServer.update(uuid, proxyData).then(() => {
+          //Reboot machine
+          rebootClient(lan_ip)
+            .then(rebootRes => {})
+            .catch(err => {
+              console.log(
+                "Error trying to reset the ip in the main endpoint. Error: ",
+                err,
+                " For ",
+                lan_ip
+              );
+            });
+        });
+      });
   });
 });
 

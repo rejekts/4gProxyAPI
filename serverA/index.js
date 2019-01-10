@@ -125,15 +125,15 @@ app.get("/proxy/reset", function(req, res) {
       qs: {
         uuid: uuid,
         host: prx.lan_ip,
-        network: prx.carrier
+        carrier: prx.carrier
       }
     };
 
     //send reset instructions to serverB
     rp(options2).then(prz => {
       console.log("Ran the reset endpoint in the serverA endpoint => ", prz);
-      res.status(200).send(prx);
     });
+    res.status(200).send(prx);
 
     //finally send back the proxy data from the first call to get/update the browser_ip
   });
