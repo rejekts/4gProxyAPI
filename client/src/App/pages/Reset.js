@@ -54,26 +54,23 @@ class Reset extends Component {
       });
   };
 
-  checkProxyServerExternalIP = uuid => {
-    const wrapper = uuid => {
-      Axios.get(`/proxy/get_ip`, { params: { uuid } }).then(IP => {
-        console.log(
-          "IP in the checkProxyServerExternalIP method => ",
-          IP.data.browser_ip,
-          "status: ",
-          IP.data.status
-        );
+  checkProxyServerExternalIP = _.debounce(uuid => {
+    Axios.get(`/proxy/get_ip`, { params: { uuid } }).then(IP => {
+      console.log(
+        "IP in the checkProxyServerExternalIP method => ",
+        IP.data.browser_ip,
+        "status: ",
+        IP.data.status
+      );
 
-        this.setState({
-          proxy: IP.data,
-          isLoading: false,
-          browser_ip: IP.data.browser_ip,
-          status: IP.data.status
-        });
+      this.setState({
+        proxy: IP.data,
+        isLoading: false,
+        browser_ip: IP.data.browser_ip,
+        status: IP.data.status
       });
-    };
-    _.debounce(wrapper, 10000);
-  };
+    });
+  }, 10000);
 
   render() {
     const {
