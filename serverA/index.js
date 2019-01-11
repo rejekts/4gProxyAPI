@@ -39,6 +39,10 @@ const server = app.listen(8080, () =>
 );
 // app.timeout = 360000;
 
+app.get("/", function(req, res) {
+  res.status(200).send("Nothing to see here.");
+});
+
 app.get("/proxy/list", function(req, res) {
   console.log(
     "/proxy/list API  Endpoint getting hit in serverA! Time => ",
