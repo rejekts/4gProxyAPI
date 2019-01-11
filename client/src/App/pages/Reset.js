@@ -47,9 +47,6 @@ class Reset extends Component {
   resetProxy = uuid => {
     Axios.get(`/proxy/reset`, { params: { uuid } })
       .then(proxy => {
-        return proxy;
-      })
-      .then(proxy => {
         // console.log("Proxy in reset => ", proxy.data);
         this.setState({
           proxy: proxy.data,
@@ -57,7 +54,7 @@ class Reset extends Component {
           browser_ip: proxy.data.browser_ip,
           old_browser_ip: proxy.data.old_browser_ip,
           lan_ip: proxy.data.lan_ip,
-          status: proxy.data.status
+          status: "PENDING"
         });
       })
       .catch(err => {
@@ -70,35 +67,19 @@ class Reset extends Component {
   checkProxyServerExternalIP = uuid => {
     Axios.get(`/proxy/get_ip`, { params: { uuid } })
       .then(IP => {
-        // console.log(
-        //   "IP in the checkProxyServerExternalIP method => ",
-        //   IP.data.browser_ip,
-        //   "OLD IP in the checkProxyServerExternalIP method => ",
-        //   IP.data.old_browser_ip,
-        //   "status: ",
-        //   IP.data.status,
-        //   "IP.data.browser_ip !== IP.data.old_browser_ip => ",
-        //   IP.data.browser_ip !== IP.data.old_browser_ip,
-        //   "IP.data.status === 'COMPLETE' => ",
-        //   IP.data.status === "COMPLETE"
-        // );
-
+        //check if the ips are diff and the process is complete and clear the interval if so
         if (
           IP.data.browser_ip !== IP.data.old_browser_ip &&
           IP.data.status === "COMPLETE"
         ) {
           clearInterval(this.intervalID);
-          // console.log(
-          //   "clearInterval(this.intervalID) is running! => ",
-          //   this.intervalID
-          // );
+
           this.setState({
             proxy: IP.data,
             isLoading: false,
             browser_ip: IP.data.browser_ip,
             status: IP.data.status
           });
-          return;
         } else {
           this.setState({
             proxy: IP.data,
