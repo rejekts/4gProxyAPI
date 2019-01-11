@@ -1,6 +1,9 @@
 import React, { Component } from "react";
 import Axios from "axios";
 import CheckIPButton from "../components/CheckIPButton";
+import ProxyDetailsTable from "../components/ProxyDetailsTable";
+import { Divider, Header, Icon } from "semantic-ui-react";
+
 import logo from "../logo.svg";
 import _ from "lodash";
 
@@ -11,74 +14,115 @@ class Reset extends Component {
     this.state = {
       proxy: {},
       oldIP: "",
-      resetStatus: "Pending",
       resetStatusMessage: "Your browser IP is being reset.",
       resetStatusInstructions:
-        "Every 30 seconds you can check the status of this process by clicking the button below.",
-      currentIP: "",
+        "The status updates every 30 seconds but you can manually check by clicking the button below.",
       uuid: "",
-      isLoading: true
+      browser_ip: "",
+      old_browser_ip: "",
+      lan_ip: "",
+      status: "PENDING",
+      isLoading: true,
+      clearUpdater: false
     };
   }
 
   // Fetch the proxy and set the uuid in state on first mount
   componentDidMount() {
     const uuid = this.props.match.params.uuid;
-    console.log("uuid in Reset => ", uuid);
     this.setState(() => ({ uuid }));
     this.resetProxy(uuid);
+    this.intervalID = setInterval(() => {
+      this.checkProxyServerExternalIP(uuid);
+    }, 10000);
   }
 
-  componentDidUpdate() {
-    if (this.state.proxy.status !== this.state.resetStatus) {
-      this.setState({ resetStatus: this.state.proxy.status });
-    }
+  componentDidUpdate() {}
+
+  componentWillUnmount() {
+    clearInterval(this.interval);
   }
 
   // Retrieves the proxy details from the Express app and runs the reset isntructions
   resetProxy = uuid => {
     Axios.get(`/proxy/reset`, { params: { uuid } })
       .then(proxy => {
-        console.log("res => ", proxy);
         return proxy;
       })
       .then(proxy => {
-        console.log("Proxy in reset => ", proxy.data);
+        // console.log("Proxy in reset => ", proxy.data);
         this.setState({
           proxy: proxy.data,
           isLoading: false,
           browser_ip: proxy.data.browser_ip,
           old_browser_ip: proxy.data.old_browser_ip,
+          lan_ip: proxy.data.lan_ip,
           status: proxy.data.status
         });
+      })
+      .catch(err => {
+        if (err) {
+          console.log("err => ", err);
+        }
       });
   };
 
-  checkProxyServerExternalIP = _.debounce(uuid => {
-    Axios.get(`/proxy/get_ip`, { params: { uuid } }).then(IP => {
-      console.log(
-        "IP in the checkProxyServerExternalIP method => ",
-        IP.data.browser_ip,
-        "status: ",
-        IP.data.status
-      );
+  checkProxyServerExternalIP = uuid => {
+    Axios.get(`/proxy/get_ip`, { params: { uuid } })
+      .then(IP => {
+        // console.log(
+        //   "IP in the checkProxyServerExternalIP method => ",
+        //   IP.data.browser_ip,
+        //   "OLD IP in the checkProxyServerExternalIP method => ",
+        //   IP.data.old_browser_ip,
+        //   "status: ",
+        //   IP.data.status,
+        //   "IP.data.browser_ip !== IP.data.old_browser_ip => ",
+        //   IP.data.browser_ip !== IP.data.old_browser_ip,
+        //   "IP.data.status === 'COMPLETE' => ",
+        //   IP.data.status === "COMPLETE"
+        // );
 
-      this.setState({
-        proxy: IP.data,
-        isLoading: false,
-        browser_ip: IP.data.browser_ip,
-        status: IP.data.status
+        if (
+          IP.data.browser_ip !== IP.data.old_browser_ip &&
+          IP.data.status === "COMPLETE"
+        ) {
+          clearInterval(this.intervalID);
+          // console.log(
+          //   "clearInterval(this.intervalID) is running! => ",
+          //   this.intervalID
+          // );
+          this.setState({
+            proxy: IP.data,
+            isLoading: false,
+            browser_ip: IP.data.browser_ip,
+            status: IP.data.status
+          });
+          return;
+        } else {
+          this.setState({
+            proxy: IP.data,
+            isLoading: false,
+            browser_ip: IP.data.browser_ip,
+            status: IP.data.status
+          });
+        }
+      })
+      .catch(err => {
+        if (err) {
+          console.log("err => ", err);
+        }
       });
-    });
-  }, 10000);
+  };
 
   render() {
     const {
-      proxy,
+      resetStatusMessage,
+      resetStatusInstructions,
       status,
       old_browser_ip,
       browser_ip,
-      resetStatus,
+      lan_ip,
       isLoading
     } = this.state;
     if (isLoading) {
@@ -90,23 +134,34 @@ class Reset extends Component {
         {this.state.browser_ip ? (
           <div>
             <div>
-              <h1>{this.state.resetStatusMessage}</h1>
-              <h4>{this.state.resetStatusInstructions}</h4>
+              <img src={logo} className="App-logo" alt="logo" />
             </div>
-            <img src={logo} className="App-logo" alt="logo" />
+            <React.Fragment>
+              <Divider horizontal>
+                <Header as="h4">
+                  <Icon name="wifi" />
+                  Reset Info
+                </Header>
+              </Divider>
+
+              <p>{resetStatusMessage}</p>
+              <h6>{resetStatusInstructions}</h6>
+            </React.Fragment>
+
+            <div />
+
+            <ProxyDetailsTable
+              resetStatusInstructions={resetStatusInstructions}
+              resetStatusMessage={resetStatusMessage}
+              status={status}
+              browserIP={browser_ip}
+              lanIP={lan_ip}
+              oldBrowserIP={old_browser_ip}
+            />
             <div>
               <CheckIPButton
                 onClick={() => this.checkProxyServerExternalIP(this.state.uuid)}
               />
-            </div>
-            <div style={{ paddingBottom: 20, paddingTop: 20 }}>
-              Current Browser IP: {this.state.browser_ip}
-            </div>
-            <div style={{ paddingBottom: 20, paddingTop: 20 }}>
-              Old Browser IP: {this.state.old_browser_ip}
-            </div>
-            <div style={{ paddingBottom: 20, paddingTop: 20 }}>
-              Proxy Reset Status: {this.state.status}
             </div>
           </div>
         ) : (

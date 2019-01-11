@@ -67,62 +67,6 @@ app.get("/api/proxies", function(req, res) {
     });
 });
 
-//get browser_ip from client and update dynamodb
-app.get("/api/browser_ip", function(req, res) {
-  AWS.config.update(config.aws_remote_config);
-  let uuid = req.query.uuid;
-  let status = req.query.status;
-  let proxyData = {};
-
-  let proxyServer = new ProxyServer(
-    {
-      accessKeyId: "AKIAJJD5Q2EKMTD5LKHQ",
-      secretAccessKey: "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",
-      region: "us-east-1"
-    },
-    function(re) {}
-  );
-
-  proxyServer
-    .get(uuid)
-    .then(async pr => {
-      let host = pr.lan_ip;
-      proxyData = pr;
-      console.log(
-        "Get current browser_ip from dynamodb in serverB => ",
-        pr.browser_ip
-      );
-      return await grabClientIP(host);
-    })
-    .then(currentIP => {
-      let updateData = {
-        lan_ip: proxyData.lan_ip,
-        vpn_ip: proxyData.vpn_ip,
-        proxy_ip: proxyData.proxy_ip,
-        old_browser_ip: currentIP,
-        browser_ip: currentIP,
-        port: proxyData.port,
-        carrier: proxyData.carrier,
-        apn: proxyData.apn,
-        status: status !== undefined ? status : proxyData.status
-      };
-      proxyServer
-        .update(uuid, updateData)
-        .then(IPUpdateRez => {
-          console.log("IPUpdateRez => ", IPUpdateRez.attrs);
-          res.status(200).send(IPUpdateRez.attrs);
-        })
-        .catch(err => {
-          if (err) {
-            console.log("err => ", err);
-          }
-        });
-    })
-    .catch(err => {
-      res.status(200).send(proxyData);
-    });
-});
-
 // Get a single proxy by uuid
 app.get("/api/proxy", (req, res, next) => {
   console.log("UUID in serverB => ", req.query);
@@ -163,8 +107,7 @@ app.post("/api/add/proxy", (req, res, next) => {
     port,
     carrier,
     apn,
-    status,
-    instructions
+    status
   } = req.body;
   let proxyServer = new ProxyServer(
     {
@@ -185,8 +128,7 @@ app.post("/api/add/proxy", (req, res, next) => {
       port: port,
       carrier: carrier,
       apn: apn,
-      status: status,
-      instructions: instructions
+      status: status
     })
     .then(rez => {
       console.log(
@@ -218,8 +160,7 @@ app.put("/api/update/proxy", (req, res, next) => {
     port,
     carrier,
     apn,
-    status,
-    instructions
+    status
   } = req.body;
 
   let proxyServer = new ProxyServer(
@@ -241,8 +182,7 @@ app.put("/api/update/proxy", (req, res, next) => {
       port: port,
       carrier: carrier,
       apn: apn,
-      status: status,
-      instructions: instructions
+      status: status
     })
     .then(rez => {
       console.log(
@@ -263,6 +203,73 @@ app.put("/api/update/proxy", (req, res, next) => {
       }
     });
 });
+
+//get browser_ip from client and update dynamodb
+app.get("/api/browser_ip", function(req, res) {
+  AWS.config.update(config.aws_remote_config);
+  let uuid = req.query.uuid;
+  let status = req.query.status;
+  let proxyData = {};
+  let browserIPBeforeUpdating;
+
+  let proxyServer = new ProxyServer(
+    {
+      accessKeyId: "AKIAJJD5Q2EKMTD5LKHQ",
+      secretAccessKey: "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",
+      region: "us-east-1"
+    },
+    function(re) {}
+  );
+
+  proxyServer
+    .get(uuid)
+    .then(async pr => {
+      let host = pr.lan_ip;
+      proxyData = pr;
+      browserIPBeforeUpdating = pr.browser_ip;
+      console.log(
+        "Get current browser_ip from dynamodb in serverB => ",
+        pr.browser_ip
+      );
+      return await grabClientIP(host);
+    })
+    .then(currentIP => {
+      //check if status is REBOOTING and turn to complete if IP is different than it was.catch((error) => {
+      if (
+        browserIPBeforeUpdating !== currentIP &&
+        proxyData.status === "REBOOTING"
+      ) {
+        status = "COMPLETE";
+      }
+
+      let updateData = {
+        lan_ip: proxyData.lan_ip,
+        vpn_ip: proxyData.vpn_ip,
+        proxy_ip: proxyData.proxy_ip,
+        old_browser_ip: proxyData.old_browser_ip,
+        browser_ip: currentIP,
+        port: proxyData.port,
+        carrier: proxyData.carrier,
+        apn: proxyData.apn,
+        status: status !== undefined ? status : proxyData.status
+      };
+      proxyServer
+        .update(uuid, updateData)
+        .then(IPUpdateRez => {
+          console.log("IPUpdateRez => ", IPUpdateRez.attrs);
+          res.status(200).send(IPUpdateRez.attrs);
+        })
+        .catch(err => {
+          if (err) {
+            console.log("err => ", err);
+          }
+        });
+    })
+    .catch(err => {
+      res.status(200).send(proxyData);
+    });
+});
+
 //Main endpoint for resetting the browser ip on the proxy server
 app.get("/api/proxy/reset", function(req, res) {
   AWS.config.update(config.aws_remote_config);
@@ -306,9 +313,9 @@ app.get("/api/proxy/reset", function(req, res) {
         port,
         carrier,
         apn,
-        status,
-        instructions
+        status
       } = proxyData;
+      proxyData.status = "PENDING";
 
       //grab current IP from the proxy server
       grabClientIP(lan_ip)

@@ -26,8 +26,7 @@ class ProxyServer {
         port: Joi.string(),
         carrier: Joi.string(),
         apn: Joi.string(),
-        status: Joi.string(),
-        instructions: Joi.string()
+        status: Joi.string()
       }
     });
 

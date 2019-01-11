@@ -8,6 +8,7 @@ class CheckIPButton extends Component {
         <Button
           onClick={this.props.onClick}
           color="blue"
+          size="medium"
           style={{ paddingBottom: 20, paddingTop: 20 }}
         >
           Check Browser IP
