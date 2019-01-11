@@ -220,9 +220,16 @@ const resetClientIPAddress = async function(host, network, oldIP) {
       }
 
       if (timesRebootClientCalled === 0 && timesWrapperCalled === 4) {
-        await rebootClient(host).then(res => {
-          resolve(res);
-        });
+        await rebootClient(host)
+          .then(res => {
+            resolve(res);
+          })
+          .catch(err => {
+            console.log(
+              "err calling reboot after trying all other IP reset methods => ",
+              err
+            );
+          });
       }
     };
 
