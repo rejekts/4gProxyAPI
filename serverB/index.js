@@ -18,6 +18,7 @@ const ProxyServer = require("./dynamodb/proxyServer");
 const grabClientIP = require("./functions/grabClientIP");
 const rebootClient = require("./functions/rebootClient");
 const resetClientIPAddress = require("./functions/resetClientIPAddress");
+const BatchAddProxies = require("./functions/batchAddProxies");
 
 const DynamoDb = require("./dynamodb");
 let dynamoDb = new DynamoDb();
@@ -142,6 +143,43 @@ app.post("/api/add/proxy", (req, res, next) => {
     .catch(err => {
       if (err) {
         console.log("err => ", err);
+      }
+    });
+});
+
+//batch add proxies
+app.post("/api/batch_add/proxies", (req, res, next) => {
+  const {
+    lanDBlockMin,
+    lanDBlockMax,
+    vpnIPMin,
+    vpnIPMax,
+    port,
+    carrier,
+    apn,
+    proxyIP
+  } = req.body;
+
+  BatchAddProxies(
+    lanDBlockMin,
+    lanDBlockMax,
+    vpnIPMin,
+    vpnIPMax,
+    port,
+    carrier,
+    apn,
+    proxyIP
+  )
+    .then(rez => {
+      console.log(
+        "Rez in the /api/batch_add/proxies endpoint in serverB => ",
+        rez
+      );
+      res.status(200).send(`Completed batch addition of proxies => ${rez}`);
+    })
+    .catch(error => {
+      if (error) {
+        console.log("error in the /api/batch_add/proxies endpoint => ", error);
       }
     });
 });
@@ -336,25 +374,25 @@ app.get("/api/proxy/reset", function(req, res) {
                         "Response from db after updating status before rebooting in the reset methid => ",
                         data.attrs
                       );
+                      rebootClient(lan_ip)
+                        .then(rebootRes => {
+                          res
+                            .status(200)
+                            .send(
+                              `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${rebootRes}`
+                            );
+                        })
+                        .catch(err => {
+                          console.log(
+                            "rebooting error in the reset method => ",
+                            err
+                          );
+                        });
                     })
                     .catch(err => {
                       if (err) {
                         console.log("err => ", err);
                       }
-                    });
-                  rebootClient(lan_ip)
-                    .then(rebootRes => {
-                      res
-                        .status(200)
-                        .send(
-                          `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${rebootRes}`
-                        );
-                    })
-                    .catch(err => {
-                      console.log(
-                        "rebooting error in the reset method => ",
-                        err
-                      );
                     });
                 } else {
                   oldIP = ip;
@@ -409,7 +447,13 @@ app.get("/api/proxy/reset", function(req, res) {
                             .then(() => {
                               //Reboot machine
                               rebootClient(lan_ip)
-                                .then(rebootRes => {})
+                                .then(rebootRes => {
+                                  res
+                                    .status(200)
+                                    .send(
+                                      `We were not able to successfully reset your IP Address. The machine is now rebooting. Please wait 60-90 seconds for the machine to boot and the connection to establish before checking for a new IP Address. Err: ${rebootRes}`
+                                    );
+                                })
                                 .catch(err => {
                                   console.log(
                                     "Error trying to reset the ip in the main endpoint. Error: ",
