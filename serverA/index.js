@@ -102,8 +102,6 @@ app.get("/proxy/add", function(req, res) {
 
 app.get("/proxy/get_ip", function(req, res) {
   const uuid = req.query.uuid;
-  let oldIP;
-  let newIP;
 
   console.log(
     "/proxy/get_ip API serverA Endpoint getting hit! Time => ",
@@ -124,7 +122,7 @@ app.get("/proxy/get_ip", function(req, res) {
   };
   rp(options1)
     .then(prx => {
-      console.log("Proxy Data in serverA => ", prx);
+      // console.log("Proxy Data in serverA => ", prx);
       res.status(200).send(prx);
     })
     .catch(error => {
