@@ -274,10 +274,7 @@ app.get("/api/browser_ip", function(req, res) {
 app.get("/api/proxy/reset", function(req, res) {
   AWS.config.update(config.aws_remote_config);
   let uuid = req.query.uuid;
-  let carrier = req.query.carrier;
   let oldIP;
-  let newIP;
-  let proxyData = {};
 
   let proxyServer = new ProxyServer(
     {
@@ -292,8 +289,6 @@ app.get("/api/proxy/reset", function(req, res) {
     "Reset API Endpoint getting hit!",
     "uuid => ",
     uuid,
-    " carrier => ",
-    carrier,
     " Time => ",
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );

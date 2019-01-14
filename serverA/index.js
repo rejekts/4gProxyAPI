@@ -59,10 +59,45 @@ app.get("/proxy/list", function(req, res) {
       // headers such as "Cookie" can be extracted from req object and sent to /test
     }
   };
-  rp(options).then(proxies => {
-    console.log("All Proxies in serverA => ", proxies);
-    res.status(200).send(proxies);
-  });
+  rp(options)
+    .then(proxies => {
+      console.log("All Proxies in serverA => ", proxies);
+      res.status(200).send(proxies);
+    })
+    .catch(error => {
+      if (error) {
+        console.log("error in /proxy/list => ", error);
+      }
+    });
+});
+
+//add new proxy to the db
+app.get("/proxy/add", function(req, res) {
+  console.log(
+    "/proxy/add API  Endpoint getting hit in serverA! Time => ",
+    moment().format("YYYY-MM-DDTHH:mm:ss")
+  );
+
+  let options = {
+    host: "localhost",
+    port: "8090",
+    path: "/api/proxy/add",
+    url: "http://localhost:8090/api/proxy/add",
+    method: "GET",
+    headers: {
+      // headers such as "Cookie" can be extracted from req object and sent to /test
+    }
+  };
+  rp(options)
+    .then(proxies => {
+      console.log("Response to /proxy/add in serverA => ", proxies);
+      res.status(200).send(proxies);
+    })
+    .catch(error => {
+      if (error) {
+        console.log("error in /proxy/list => ", error);
+      }
+    });
 });
 
 app.get("/proxy/get_ip", function(req, res) {
@@ -87,10 +122,16 @@ app.get("/proxy/get_ip", function(req, res) {
       uuid: uuid
     }
   };
-  rp(options1).then(prx => {
-    console.log("Proxy Data in serverA => ", prx);
-    res.status(200).send(prx);
-  });
+  rp(options1)
+    .then(prx => {
+      console.log("Proxy Data in serverA => ", prx);
+      res.status(200).send(prx);
+    })
+    .catch(error => {
+      if (error) {
+        console.log("error in /proxy/get_ip => ", error);
+      }
+    });
 });
 
 app.get("/proxy/reset", function(req, res) {
@@ -117,29 +158,44 @@ app.get("/proxy/reset", function(req, res) {
     }
   };
   //send request to serverB to start reset procedures and update the status and grap current browser_ip
-  rp(options1).then(prx => {
-    console.log("Proxy Data in serverA => ", prx);
-    let options2 = {
-      host: "localhost",
-      port: "8090",
-      path: "/api/proxy/reset",
-      url: "http://localhost:8090/api/proxy/reset",
-      method: "GET",
-      qs: {
-        uuid: uuid,
-        host: prx.lan_ip,
-        carrier: prx.carrier
+  rp(options1)
+    .then(prx => {
+      console.log("Proxy Data in serverA => ", prx);
+      let options2 = {
+        host: "localhost",
+        port: "8090",
+        path: "/api/proxy/reset",
+        url: "http://localhost:8090/api/proxy/reset",
+        method: "GET",
+        qs: {
+          uuid: uuid,
+          host: prx.lan_ip,
+          carrier: prx.carrier
+        }
+      };
+
+      //send reset instructions to serverB
+      rp(options2)
+        .then(prz => {
+          console.log(
+            "Ran the reset endpoint in the serverA endpoint => ",
+            prz
+          );
+        })
+        .catch(error => {
+          if (error) {
+            console.log("error in /proxy/reset 2nd call => ", error);
+          }
+        });
+      res.status(200).send(prx);
+
+      //finally send back the proxy data from the first call to get/update the browser_ip
+    })
+    .catch(error => {
+      if (error) {
+        console.log("error in /proxy/reset 1st call => ", error);
       }
-    };
-
-    //send reset instructions to serverB
-    rp(options2).then(prz => {
-      console.log("Ran the reset endpoint in the serverA endpoint => ", prz);
     });
-    res.status(200).send(prx);
-
-    //finally send back the proxy data from the first call to get/update the browser_ip
-  });
 });
 
 app.get("/proxy/reset/hard", function(req, res) {
