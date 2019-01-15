@@ -39,7 +39,7 @@ app.use(function(req, res, next) {
 });
 
 const server = app.listen(10090, () =>
-  console.log("ServerB Listening on port 9090!")
+  console.log("ServerB Listening on port 10090!")
 );
 
 //get all proxies from dynamodb

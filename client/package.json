@@ -22,7 +22,7 @@
     "allServers": "concurrently \"npm run serverA\" \"npm run serverB\"",
     "all": "concurrently \"npm run serverA\" \"npm run serverB\" \"npm run start\""
   },
-  "proxy": "http://127.0.0.1:8080",
+  "proxy": "http://127.0.0.1:10080",
   "eslintConfig": {
     "extends": "react-app"
   },
