@@ -34,8 +34,8 @@ app.use(function(req, res, next) {
   next();
 });
 
-const server = app.listen(8080, () =>
-  console.log("ServerA Listening on port 8080!")
+const server = app.listen(10080, () =>
+  console.log("ServerA Listening on port 10080!")
 );
 // app.timeout = 360000;
 
@@ -51,9 +51,9 @@ app.get("/proxy/list", function(req, res) {
 
   let options = {
     host: "localhost",
-    port: "8090",
-    path: "/api/proxies",
-    url: "http://localhost:8090/api/proxies",
+    port: "10090",
+    path: "/api/proxy/all",
+    url: "http://localhost:10090/api/proxy/all",
     method: "GET",
     headers: {
       // headers such as "Cookie" can be extracted from req object and sent to /test
@@ -80,9 +80,9 @@ app.get("/proxy/add", function(req, res) {
 
   let options = {
     host: "localhost",
-    port: "8090",
+    port: "10090",
     path: "/api/proxy/add",
-    url: "http://localhost:8090/api/proxy/add",
+    url: "http://localhost:10090/api/proxy/add",
     method: "GET",
     headers: {
       // headers such as "Cookie" can be extracted from req object and sent to /test
@@ -112,9 +112,9 @@ app.get("/proxy/get_ip", function(req, res) {
 
   let options1 = {
     host: "localhost",
-    port: "8090",
-    path: "/api/browser_ip",
-    url: "http://localhost:8090/api/browser_ip",
+    port: "10090",
+    path: "/api/proxy/browser_ip",
+    url: "http://localhost:10090/api/proxy/browser_ip",
     method: "GET",
     qs: {
       uuid: uuid
@@ -146,9 +146,9 @@ app.get("/proxy/reset", function(req, res) {
 
   let options1 = {
     host: "localhost",
-    port: "8090",
+    port: "10090",
     path: "/api/proxy",
-    url: "http://localhost:8090/api/proxy",
+    url: "http://localhost:10090/api/proxy",
     method: "GET",
     qs: {
       uuid: uuid,
@@ -161,7 +161,7 @@ app.get("/proxy/reset", function(req, res) {
       console.log("Proxy Data in serverA => ", prx);
       let options2 = {
         host: "localhost",
-        port: "8090",
+        port: "10090",
         path: "/api/proxy/reset",
         url: "http://localhost:8090/api/proxy/reset",
         method: "GET",

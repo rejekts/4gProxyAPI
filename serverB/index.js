@@ -38,12 +38,12 @@ app.use(function(req, res, next) {
   next();
 });
 
-const server = app.listen(8090, () =>
-  console.log("ServerB Listening on port 8090!")
+const server = app.listen(10090, () =>
+  console.log("ServerB Listening on port 9090!")
 );
 
 //get all proxies from dynamodb
-app.get("/api/proxies", function(req, res) {
+app.get("/api/proxy/all", function(req, res) {
   AWS.config.update(config.aws_remote_config);
 
   let proxyServer = new ProxyServer(
@@ -96,7 +96,7 @@ app.get("/api/proxy", (req, res, next) => {
 });
 
 //add new proxy to the dynamo db
-app.post("/api/add/proxy", (req, res, next) => {
+app.post("/api/proxy/add", (req, res, next) => {
   AWS.config.update(config.aws_remote_config);
 
   const {
@@ -148,7 +148,7 @@ app.post("/api/add/proxy", (req, res, next) => {
 });
 
 //batch add proxies
-app.post("/api/batch_add/proxies", (req, res, next) => {
+app.post("/api/proxy/batch_add", (req, res, next) => {
   const {
     lanDBlockMin,
     lanDBlockMax,
@@ -185,7 +185,7 @@ app.post("/api/batch_add/proxies", (req, res, next) => {
 });
 
 // Update a proxy by uuid
-app.put("/api/update/proxy", (req, res, next) => {
+app.put("/api/proxy/update", (req, res, next) => {
   AWS.config.update(config.aws_remote_config);
 
   const {
@@ -243,7 +243,7 @@ app.put("/api/update/proxy", (req, res, next) => {
 });
 
 //get browser_ip from client and update dynamodb
-app.get("/api/browser_ip", function(req, res) {
+app.get("/api/proxy/browser_ip", function(req, res) {
   AWS.config.update(config.aws_remote_config);
   let uuid = req.query.uuid;
   let status = req.query.status;
@@ -876,7 +876,7 @@ app.get("/api/proxy/reset", function(req, res) {
     });
 */
 
-app.get("/proxy/reset/hard", function(req, res) {
+app.get("/api/proxy/reset/hard", function(req, res) {
   const host = req.query["host"];
   const network = req.query["network"];
   const apn = req.query["apn"];
