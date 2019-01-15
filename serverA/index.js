@@ -103,12 +103,12 @@ app.get("/proxy/add", function(req, res) {
 app.get("/proxy/get_ip", function(req, res) {
   const uuid = req.query.uuid;
 
-  console.log(
-    "/proxy/get_ip API serverA Endpoint getting hit! Time => ",
-    moment().format("YYYY-MM-DDTHH:mm:ss"),
-    "params => ",
-    req.params
-  );
+  // console.log(
+  //   "/proxy/get_ip API serverA Endpoint getting hit! Time => ",
+  //   moment().format("YYYY-MM-DDTHH:mm:ss"),
+  //   "params => ",
+  //   req.params
+  // );
 
   let options1 = {
     host: "localhost",

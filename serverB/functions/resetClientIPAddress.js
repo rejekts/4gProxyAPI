@@ -68,7 +68,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
                         "Error trying to grab the client ip after trying connectionUp method => ",
                         err
                       );
-                      resolve(err);
+                      reject(err);
                     }
                   });
               }, 3000);
@@ -229,6 +229,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
               "err calling reboot after trying all other IP reset methods => ",
               err
             );
+            reject(err);
           });
       }
     };

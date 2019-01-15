@@ -265,10 +265,10 @@ app.get("/api/browser_ip", function(req, res) {
       let host = pr.lan_ip;
       proxyData = pr;
       browserIPBeforeUpdating = pr.browser_ip;
-      console.log(
-        "Get current browser_ip from dynamodb in serverB => ",
-        pr.browser_ip
-      );
+      // console.log(
+      //   "Get current browser_ip from dynamodb in serverB => ",
+      //   pr.browser_ip
+      // );
       return await grabClientIP(host);
     })
     .then(currentIP => {
@@ -321,7 +321,9 @@ app.get("/api/proxy/reset", function(req, res) {
       secretAccessKey: "AjLrWBhQ84B5/gkMfo4SSrNOJKsnV32P/6S8SoNd",
       region: "us-east-1"
     },
-    function(re) {}
+    function(re) {
+      // console.log("whats going on here? => ", re);
+    }
   );
 
   console.log(
@@ -375,11 +377,16 @@ app.get("/api/proxy/reset", function(req, res) {
         //grab the current client IP
         grabClientIP(lan_ip)
           .then(ip => {
+            console.log(
+              "IP in the grabClientIP method in the resetClient endpoint BEFORE running reset => ",
+              ip
+            );
             if (!ip) {
               ip = newData.browser_ip;
             }
             oldIP = ip;
             newData.old_browser_ip = ip;
+            newData.browser_ip = ip;
             newData.status = "RESETTING";
             console.log("newData before RESETTING? => ", newData);
             //store the current IP in the db IF its different AND set the status of the proxy to running
@@ -391,7 +398,7 @@ app.get("/api/proxy/reset", function(req, res) {
                   "results after updating the old browser ip before running reset => ",
                   results.attrs
                 );
-                newData = results.attrs;
+                newData2 = results.attrs;
                 let {
                   uuid,
                   lan_ip,
@@ -403,7 +410,7 @@ app.get("/api/proxy/reset", function(req, res) {
                   carrier,
                   apn,
                   status
-                } = newData;
+                } = newData2;
 
                 //run all reset methods
                 resetClientIPAddress(lan_ip, carrier, oldIP)
@@ -415,10 +422,10 @@ app.get("/api/proxy/reset", function(req, res) {
                       lan_ip
                     );
                     //update the db with COMPLETE status and new IP
-                    newData.browser_ip = resetClientNewIP;
-                    newData.status = "COMPLETE";
+                    newData2.browser_ip = resetClientNewIP;
+                    newData2.status = "COMPLETE";
                     proxyServer
-                      .update(uuid, newData)
+                      .update(uuid, newData2)
                       .then(successfulResetUpdateRez => {
                         console.log(
                           "successfulResetUpdateRez => ",
@@ -442,10 +449,10 @@ app.get("/api/proxy/reset", function(req, res) {
                     );
 
                     //Update the db that there was an error and that we are rebooting the proxy server hardware
-                    newData.status = "REBOOTING";
-                    console.log("newData before REBOOTING => ", newData);
+                    newData2.status = "REBOOTING";
+                    console.log("newData2 before REBOOTING => ", newData2);
                     proxyServer
-                      .update(uuid, newData)
+                      .update(uuid, newData2)
                       .then(data => {
                         console.log(
                           "Response from db after updating status before rebooting in the reset method catch => ",
@@ -480,8 +487,36 @@ app.get("/api/proxy/reset", function(req, res) {
               });
           })
           .catch(err => {
-            console.log("error calling grabClientIP method => ", err);
+            console.log(
+              "error calling grabClientIP method. We are rebooting now => ",
+              err
+            );
             //Need to reboot here
+            newData.status = "REBOOTING";
+            console.log("newData before REBOOTING => ", newData);
+            proxyServer
+              .update(uuid, newData)
+              .then(data => {
+                console.log(
+                  "Response from db after updating status before rebooting in the reset method catch => ",
+                  data.attrs
+                );
+                rebootClient(lan_ip)
+                  .then(rebootRes => {
+                    console.log(
+                      "results from running reboot method => ",
+                      rebootRes
+                    );
+                  })
+                  .catch(err => {
+                    console.log("rebooting error in the reset method => ", err);
+                  });
+              })
+              .catch(err => {
+                if (err) {
+                  console.log("err => ", err);
+                }
+              });
           });
       })
       .catch(error => {

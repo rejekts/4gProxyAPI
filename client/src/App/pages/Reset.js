@@ -16,7 +16,7 @@ class Reset extends Component {
       oldIP: "",
       resetStatusMessage: "Your browser IP is being reset.",
       resetStatusInstructions:
-        "The status updates every 20 seconds but you can manually check by clicking the button below.",
+        "The status updates every 30 seconds but you can manually check by clicking the button below.",
       uuid: "",
       browser_ip: "",
       old_browser_ip: "",
@@ -25,6 +25,11 @@ class Reset extends Component {
       isLoading: true,
       clearUpdater: false
     };
+
+    this.checkProxyServerExternalIP = _.debounce(
+      this.checkProxyServerExternalIP,
+      3000
+    );
   }
 
   // Fetch the proxy and set the uuid in state on first mount
@@ -34,7 +39,7 @@ class Reset extends Component {
     this.resetProxy(uuid);
     this.intervalID = setInterval(() => {
       this.checkProxyServerExternalIP(uuid);
-    }, 20000);
+    }, 30000);
   }
 
   componentDidUpdate() {}
