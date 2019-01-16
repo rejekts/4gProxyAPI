@@ -26,9 +26,9 @@ class Reset extends Component {
       clearUpdater: false
     };
 
-    this.checkProxyServerExternalIP = debounce(uuid => {
-      this.checkProxyServerExternalIP(uuid);
-    }, 3000);
+    // this.checkProxyServerExternalIP = debounce(uuid => {
+    //   this.checkProxyServerExternalIP(uuid);
+    // }, 3000);
   }
 
   // Fetch the proxy and set the uuid in state on first mount
