@@ -8,7 +8,7 @@ class ProxyDetailsTable extends Component {
         <Table definition>
           <Table.Body>
             <Table.Row>
-              <Table.Cell width={8}>Proxy</Table.Cell>
+              <Table.Cell width={10}>Proxy</Table.Cell>
               <Table.Cell>{this.props.lanIP}</Table.Cell>
             </Table.Row>
             <Table.Row>

@@ -22,3 +22,9 @@ class App extends Component {
 }
 
 export default App;
+
+/*
+componentDidMount() {
+    document.title = "Proxy Utilities"
+  }
+*/

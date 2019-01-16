@@ -5,7 +5,7 @@ import ProxyDetailsTable from "../components/ProxyDetailsTable";
 import { Divider, Header, Icon } from "semantic-ui-react";
 
 import logo from "../logo.svg";
-import _ from "lodash";
+import { debounce } from "lodash";
 
 class Reset extends Component {
   // Initialize the state
@@ -26,10 +26,9 @@ class Reset extends Component {
       clearUpdater: false
     };
 
-    this.checkProxyServerExternalIP = _.debounce(
-      this.checkProxyServerExternalIP,
-      3000
-    );
+    this.checkProxyServerExternalIP = debounce(uuid => {
+      this.checkProxyServerExternalIP(uuid);
+    }, 3000);
   }
 
   // Fetch the proxy and set the uuid in state on first mount
@@ -84,6 +83,9 @@ class Reset extends Component {
             isLoading: false,
             browser_ip: IP.data.browser_ip,
             old_browser_ip: IP.data.old_browser_ip,
+            resetStatusMessage: "Your IP has been reset.",
+            resetStatusInstructions:
+              "You can close this page now and continue your task. Have a great day!",
             status: IP.data.status
           });
         } else {

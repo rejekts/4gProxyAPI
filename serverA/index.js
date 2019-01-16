@@ -7,6 +7,7 @@ const moment = require("moment-timezone");
 const childExec = require("child_process").exec;
 const util = require("util");
 const exec = util.promisify(childExec);
+const path = require("path");
 const mysql = require("promise-mysql");
 const DynamoDb = require("./dynamodb");
 const rp = require("request-promise");
@@ -33,6 +34,7 @@ app.use(function(req, res, next) {
   );
   next();
 });
+app.use(express.static(path.join(__dirname, "/../client/build")));
 
 const server = app.listen(10080, () =>
   console.log("ServerA Listening on port 10080!")
@@ -163,7 +165,7 @@ app.get("/proxy/reset", function(req, res) {
         host: "localhost",
         port: "10090",
         path: "/api/proxy/reset",
-        url: "http://localhost:8090/api/proxy/reset",
+        url: "http://localhost:10090/api/proxy/reset",
         method: "GET",
         qs: {
           uuid: uuid,
@@ -402,4 +404,9 @@ app.get("/bot/reset", function(req, res) {
         }
       });
     });
+});
+
+//catchall to send all other traffic than endpoints above to the react app
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname + "/../client/build/index.html"));
 });
