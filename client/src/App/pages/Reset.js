@@ -18,9 +18,9 @@ class Reset extends Component {
       resetStatusInstructions:
         "The status updates every 30 seconds but you can manually check by clicking the button below.",
       uuid: "",
-      browser_ip: "",
-      old_browser_ip: "",
-      lan_ip: "",
+      browserIP: "",
+      oldBrowserIP: "",
+      lanIP: "",
       status: "PENDING",
       isLoading: true,
       clearUpdater: false
@@ -55,9 +55,9 @@ class Reset extends Component {
         this.setState({
           proxy: proxy.data,
           isLoading: false,
-          browser_ip: proxy.data.browser_ip,
-          old_browser_ip: proxy.data.old_browser_ip,
-          lan_ip: proxy.data.lan_ip,
+          browserIP: proxy.data.browserIP,
+          oldBrowserIP: proxy.data.oldBrowserIP,
+          lanIP: proxy.data.lanIP,
           status: "PENDING"
         });
       })
@@ -73,7 +73,7 @@ class Reset extends Component {
       .then(IP => {
         //check if the ips are diff and the process is complete and clear the interval if so
         if (
-          IP.data.browser_ip !== IP.data.old_browser_ip &&
+          IP.data.browserIP !== IP.data.oldBrowserIP &&
           IP.data.status === "COMPLETE"
         ) {
           clearInterval(this.intervalID);
@@ -81,8 +81,8 @@ class Reset extends Component {
           this.setState({
             proxy: IP.data,
             isLoading: false,
-            browser_ip: IP.data.browser_ip,
-            old_browser_ip: IP.data.old_browser_ip,
+            browserIP: IP.data.browserIP,
+            oldBrowserIP: IP.data.oldBrowserIP,
             resetStatusMessage: "Your IP has been reset.",
             resetStatusInstructions:
               "You can close this page now and continue your task. Have a great day!",
@@ -92,7 +92,7 @@ class Reset extends Component {
           this.setState({
             proxy: IP.data,
             isLoading: false,
-            browser_ip: IP.data.browser_ip,
+            browserIP: IP.data.browserIP,
             status: IP.data.status
           });
         }
@@ -109,9 +109,9 @@ class Reset extends Component {
       resetStatusMessage,
       resetStatusInstructions,
       status,
-      old_browser_ip,
-      browser_ip,
-      lan_ip,
+      oldBrowserIP,
+      browserIP,
+      lanIP,
       isLoading
     } = this.state;
     if (isLoading) {
@@ -120,7 +120,7 @@ class Reset extends Component {
 
     return (
       <div className="reset">
-        {this.state.browser_ip ? (
+        {this.state.browserIP ? (
           <div>
             <div>
               <img src={logo} className="App-logo" alt="logo" />
@@ -143,9 +143,9 @@ class Reset extends Component {
               resetStatusInstructions={resetStatusInstructions}
               resetStatusMessage={resetStatusMessage}
               status={status}
-              browserIP={browser_ip}
-              lanIP={lan_ip}
-              oldBrowserIP={old_browser_ip}
+              browserIP={browserIP}
+              lanIP={lanIP}
+              oldBrowserIP={oldBrowserIP}
             />
             <div>
               <CheckIPButton

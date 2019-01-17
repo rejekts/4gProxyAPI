@@ -29,21 +29,21 @@ const BatchAddProxies = async (
     //loop through the lan ip range and add the proxies to the table
     for (let i = lanDBlockMin; i <= lanDBlockMax; i++) {
       //set vars
-      let lan_ip = `192.168.50.${i}`;
-      let vpn_ip = `172.30.230.${i}`;
-      let old_browser_ip = "1.1.1.1";
-      let browser_ip = "1.1.1.1";
+      let lanIP = `192.168.50.${i}`;
+      let vpnIP = `172.30.230.${i}`;
+      let oldBrowserIP = "1.1.1.1";
+      let browserIP = "1.1.1.1";
       // let port = port;
-      let proxy_ip = lan_ip;
+      let proxyIP = lanIP;
       let status = "CREATED";
 
       proxyServer
         .create({
-          lan_ip: lan_ip,
-          vpn_ip: vpn_ip,
-          proxy_ip: proxy_ip,
-          old_browser_ip: old_browser_ip,
-          browser_ip: browser_ip,
+          lanIP: lanIP,
+          vpnIP: vpnIP,
+          proxyIP: proxyIP,
+          oldBrowserIP: oldBrowserIP,
+          browserIP: browserIP,
           port: port,
           carrier: carrier,
           apn: apn,

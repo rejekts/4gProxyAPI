@@ -19,11 +19,11 @@ class ProxyServer {
       timestamps: true,
       schema: {
         uuid: this.dynamo.types.uuid(),
-        lan_ip: Joi.string(),
-        vpn_ip: Joi.string(),
-        proxy_ip: Joi.string(),
-        old_browser_ip: Joi.string(),
-        browser_ip: Joi.string(),
+        lanIP: Joi.string(),
+        vpnIP: Joi.string(),
+        proxyIP: Joi.string(),
+        oldBrowserIP: Joi.string(),
+        browserIP: Joi.string(),
         port: Joi.string(),
         carrier: Joi.string(),
         apn: Joi.string(),
@@ -48,11 +48,11 @@ class ProxyServer {
       this.pr.create(
         {
           uuid: uuid,
-          lan_ip: data.lan_ip,
-          vpn_ip: data.vpn_ip,
-          proxy_ip: data.proxy_ip,
-          old_browser_ip: data.old_browser_ip,
-          browser_ip: data.browser_ip,
+          lanIP: data.lanIP,
+          vpnIP: data.vpnIP,
+          proxyIP: data.proxyIP,
+          oldBrowserIP: data.oldBrowserIP,
+          browserIP: data.browserIP,
           port: data.port,
           carrier: data.carrier,
           apn: data.apn,
@@ -72,18 +72,18 @@ class ProxyServer {
       );
     });
   }
-  //possibly change the ability to update anything but the browser_ips and the status
+  //possibly change the ability to update anything but the browserIPs and the status
   update(uuid, data) {
     // console.log("data in the update of the proxyServer class => ", data);
     return new Promise((resolve, reject) => {
       this.pr.update(
         {
           uuid: uuid,
-          lan_ip: data.lan_ip,
-          vpn_ip: data.vpn_ip,
-          proxy_ip: data.proxy_ip,
-          old_browser_ip: data.old_browser_ip,
-          browser_ip: data.browser_ip,
+          lanIP: data.lanIP,
+          vpnIP: data.vpnIP,
+          proxyIP: data.proxyIP,
+          oldBrowserIP: data.oldBrowserIP,
+          browserIP: data.browserIP,
           port: data.port,
           carrier: data.carrier,
           apn: data.apn,
@@ -109,11 +109,11 @@ class ProxyServer {
           ConsistentRead: true,
           AttributesToGet: [
             "uuid",
-            "lan_ip",
-            "vpn_ip",
-            "proxy_ip",
-            "old_browser_ip",
-            "browser_ip",
+            "lanIP",
+            "vpnIP",
+            "proxyIP",
+            "oldBrowserIP",
+            "browserIP",
             "port",
             "carrier",
             "apn",

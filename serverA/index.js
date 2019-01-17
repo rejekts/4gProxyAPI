@@ -103,8 +103,8 @@ app.get("/proxy/get_ip", function(req, res) {
   let options1 = {
     host: "localhost",
     port: "10090",
-    path: "/api/proxy/browser_ip",
-    url: "http://localhost:10090/api/proxy/browser_ip",
+    path: "/api/proxy/browserIP",
+    url: "http://localhost:10090/api/proxy/browserIP",
     method: "GET",
     qs: {
       uuid: uuid
@@ -145,7 +145,7 @@ app.get("/proxy/reset", function(req, res) {
       status: "Pending"
     }
   };
-  //send request to serverB to start reset procedures and update the status and grap current browser_ip
+  //send request to serverB to start reset procedures and update the status and grap current browserIP
   rp(options1)
     .then(prx => {
       console.log("Proxy Data in serverA => ", prx);
@@ -157,7 +157,7 @@ app.get("/proxy/reset", function(req, res) {
         method: "GET",
         qs: {
           uuid: uuid,
-          host: prx.lan_ip,
+          host: prx.lanIP,
           carrier: prx.carrier
         }
       };
@@ -177,7 +177,7 @@ app.get("/proxy/reset", function(req, res) {
         });
       res.status(200).send(prx);
 
-      //finally send back the proxy data from the first call to get/update the browser_ip
+      //finally send back the proxy data from the first call to get/update the browserIP
     })
     .catch(error => {
       if (error) {
