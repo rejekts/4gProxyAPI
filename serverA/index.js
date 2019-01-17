@@ -2,25 +2,13 @@
 
 const express = require("express");
 const bodyParser = require("body-parser");
-const child_process = require("child_process");
 const moment = require("moment-timezone");
 const childExec = require("child_process").exec;
 const util = require("util");
 const exec = util.promisify(childExec);
 const path = require("path");
-const mysql = require("promise-mysql");
-const DynamoDb = require("./dynamodb");
 const rp = require("request-promise");
 const app = express();
-const AWS = require("aws-sdk");
-const config = require("./config/config.js");
-const isDev = process.env.NODE_ENV !== "production";
-// const ProxyServer = require("./dynamodb/proxyServer");
-// const grabClientIP = require("./functions/grabClientIP");
-// const rebootClient = require("./functions/rebootClient");
-// const resetClientIPAddress = require("./functions/resetClientIPAddress");
-
-let dynamoDb = new DynamoDb();
 
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(bodyParser.json({ limit: "50mb" }));

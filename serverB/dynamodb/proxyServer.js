@@ -18,7 +18,7 @@ class ProxyServer {
       // add the timestamp attributes (updatedAt, createdAt)
       timestamps: true,
       schema: {
-        uuid: Joi.string(),
+        uuid: this.dynamo.types.uuid(),
         lan_ip: Joi.string(),
         vpn_ip: Joi.string(),
         proxy_ip: Joi.string(),
@@ -72,7 +72,7 @@ class ProxyServer {
       );
     });
   }
-
+  //possibly change the ability to update anything but the browser_ips and the status
   update(uuid, data) {
     // console.log("data in the update of the proxyServer class => ", data);
     return new Promise((resolve, reject) => {
