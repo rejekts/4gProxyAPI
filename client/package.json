@@ -17,8 +17,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "serverA": "node ../serverA/index.js",
-    "serverB": "node ../serverB/index.js --ignore client",
+    "serverA": "nodemon ../serverA/index.js",
+    "serverB": "nodemon ../serverB/index.js --ignore client",
     "allServers": "concurrently \"npm run serverA\" \"npm run serverB\"",
     "all": "concurrently \"npm run serverA\" \"npm run serverB\" \"npm run start\""
   },

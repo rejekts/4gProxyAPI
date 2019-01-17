@@ -62,10 +62,24 @@ app.get("/proxy/list", function(req, res) {
 });
 
 //add new proxy to the db
-app.get("/proxy/add", function(req, res) {
+app.post("/proxy/add", function(req, res) {
+  const {
+    lanIP,
+    vpnIP,
+    proxyIP,
+    oldBrowserIP,
+    browserIP,
+    port,
+    carrier,
+    apn,
+    status
+  } = req.body;
+
   console.log(
     "/proxy/add API  Endpoint getting hit in serverA! Time => ",
-    moment().format("YYYY-MM-DDTHH:mm:ss")
+    moment().format("YYYY-MM-DDTHH:mm:ss"),
+    " req.body => ",
+    req.body
   );
 
   let options = {
@@ -73,9 +87,21 @@ app.get("/proxy/add", function(req, res) {
     port: "10090",
     path: "/api/proxy/add",
     url: "http://localhost:10090/api/proxy/add",
-    method: "GET",
+    method: "POST",
+    json: true,
     headers: {
       // headers such as "Cookie" can be extracted from req object and sent to /test
+    },
+    body: {
+      lanIP: lanIP,
+      vpnIP: vpnIP,
+      proxyIP: proxyIP,
+      oldBrowserIP: oldBrowserIP,
+      browserIP: browserIP,
+      port: port,
+      carrier: carrier,
+      apn: apn,
+      status: status
     }
   };
   rp(options)
@@ -90,8 +116,40 @@ app.get("/proxy/add", function(req, res) {
     });
 });
 
+app.get("/proxy/getIPFromDb", function(req, res) {
+  const proxyServerID = req.query.proxyServerID;
+
+  // console.log(
+  //   "/proxy/get_ip API serverA Endpoint getting hit! Time => ",
+  //   moment().format("YYYY-MM-DDTHH:mm:ss"),
+  //   "params => ",
+  //   req.params
+  // );
+
+  let options1 = {
+    host: "localhost",
+    port: "10090",
+    path: "/api/proxy/browserIP",
+    url: "http://localhost:10090/api/proxy/browserIPFromDb",
+    method: "GET",
+    qs: {
+      proxyServerID: proxyServerID
+    }
+  };
+  rp(options1)
+    .then(prx => {
+      // console.log("Proxy Data in serverA => ", prx);
+      res.status(200).send(prx);
+    })
+    .catch(error => {
+      if (error) {
+        console.log("error in /proxy/get_ip => ", error);
+      }
+    });
+});
+
 app.get("/proxy/get_ip", function(req, res) {
-  const uuid = req.query.uuid;
+  const proxyServerID = req.query.proxyServerID;
 
   // console.log(
   //   "/proxy/get_ip API serverA Endpoint getting hit! Time => ",
@@ -107,7 +165,7 @@ app.get("/proxy/get_ip", function(req, res) {
     url: "http://localhost:10090/api/proxy/browserIP",
     method: "GET",
     qs: {
-      uuid: uuid
+      proxyServerID: proxyServerID
     }
   };
   rp(options1)
@@ -123,7 +181,7 @@ app.get("/proxy/get_ip", function(req, res) {
 });
 
 app.get("/proxy/reset", function(req, res) {
-  const uuid = req.query.uuid;
+  const proxyServerID = req.query.proxyServerID;
   let oldIP;
   let newIP;
 
@@ -131,7 +189,7 @@ app.get("/proxy/reset", function(req, res) {
     "Reset API serverA Endpoint getting hit! Time => ",
     moment().format("YYYY-MM-DDTHH:mm:ss"),
     "params => ",
-    req.params
+    req.query
   );
 
   let options1 = {
@@ -141,7 +199,7 @@ app.get("/proxy/reset", function(req, res) {
     url: "http://localhost:10090/api/proxy",
     method: "GET",
     qs: {
-      uuid: uuid,
+      proxyServerID: proxyServerID,
       status: "Pending"
     }
   };
@@ -156,7 +214,7 @@ app.get("/proxy/reset", function(req, res) {
         url: "http://localhost:10090/api/proxy/reset",
         method: "GET",
         qs: {
-          uuid: uuid,
+          proxyServerID: proxyServerID,
           host: prx.lanIP,
           carrier: prx.carrier
         }

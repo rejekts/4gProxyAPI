@@ -12,7 +12,7 @@ class App extends Component {
           <BrowserRouter>
             <div>
               <Route exact path="/add" component={AddProxy} />
-              <Route exact path="/reset/:uuid" component={Reset} />
+              <Route exact path="/reset/:proxyServerID" component={Reset} />
             </div>
           </BrowserRouter>
         </header>

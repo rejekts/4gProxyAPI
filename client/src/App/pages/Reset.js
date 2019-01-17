@@ -5,7 +5,7 @@ import ProxyDetailsTable from "../components/ProxyDetailsTable";
 import { Divider, Header, Icon } from "semantic-ui-react";
 
 import logo from "../logo.svg";
-import { debounce } from "lodash";
+import { throttle } from "lodash";
 
 class Reset extends Component {
   // Initialize the state
@@ -17,7 +17,7 @@ class Reset extends Component {
       resetStatusMessage: "Your browser IP is being reset.",
       resetStatusInstructions:
         "The status updates every 30 seconds but you can manually check by clicking the button below.",
-      uuid: "",
+      proxyServerID: "",
       browserIP: "",
       oldBrowserIP: "",
       lanIP: "",
@@ -26,18 +26,18 @@ class Reset extends Component {
       clearUpdater: false
     };
 
-    this.checkProxyServerExternalIP = debounce(uuid => {
-      this.checkProxyServerExternalIP(uuid);
-    }, 3000);
+    // this.checkProxyServerExternalIP = throttle(proxyServerID => {
+    //   this.checkProxyServerExternalIP(proxyServerID);
+    // }, 5000);
   }
 
-  // Fetch the proxy and set the uuid in state on first mount
+  // Fetch the proxy and set the proxyServerID in state on first mount
   componentDidMount() {
-    const uuid = this.props.match.params.uuid;
-    this.setState(() => ({ uuid }));
-    this.resetProxy(uuid);
+    const proxyServerID = this.props.match.params.proxyServerID;
+    this.setState(() => ({ proxyServerID }));
+    this.resetProxy(proxyServerID);
     this.intervalID = setInterval(() => {
-      this.checkProxyServerExternalIP(uuid);
+      this.checkProxyServerExternalIP(proxyServerID);
     }, 30000);
   }
 
@@ -48,8 +48,8 @@ class Reset extends Component {
   }
 
   // Retrieves the proxy details from the Express app and runs the reset isntructions
-  resetProxy = uuid => {
-    Axios.get(`/proxy/reset`, { params: { uuid } })
+  resetProxy = proxyServerID => {
+    Axios.get(`/proxy/reset`, { params: { proxyServerID } })
       .then(proxy => {
         // console.log("Proxy in reset => ", proxy.data);
         this.setState({
@@ -68,8 +68,46 @@ class Reset extends Component {
       });
   };
 
-  checkProxyServerExternalIP = uuid => {
-    Axios.get(`/proxy/get_ip`, { params: { uuid } })
+  checkDbForProxyServerUpdates = proxyServerID => {
+    console.log("checkDbForProxyServerUpdates called now!");
+    Axios.get(`/proxy/getIPFromDb`, { params: { proxyServerID } })
+      .then(IP => {
+        //check if the ips are diff and the process is complete and clear the interval if so
+        if (
+          IP.data.browserIP !== IP.data.oldBrowserIP &&
+          IP.data.status === "COMPLETE"
+        ) {
+          clearInterval(this.intervalID);
+
+          this.setState({
+            proxy: IP.data,
+            isLoading: false,
+            browserIP: IP.data.browserIP,
+            oldBrowserIP: IP.data.oldBrowserIP,
+            resetStatusMessage: "Your IP has been reset.",
+            resetStatusInstructions:
+              "You can close this page now and continue your task. Have a great day!",
+            status: IP.data.status
+          });
+        } else {
+          this.setState({
+            proxy: IP.data,
+            isLoading: false,
+            browserIP: IP.data.browserIP,
+            status: IP.data.status
+          });
+        }
+      })
+      .catch(err => {
+        if (err) {
+          console.log("err => ", err);
+        }
+      });
+  };
+
+  checkProxyServerExternalIP = proxyServerID => {
+    console.log("chekProxyServerExternalIP called now!");
+    Axios.get(`/proxy/get_ip`, { params: { proxyServerID } })
       .then(IP => {
         //check if the ips are diff and the process is complete and clear the interval if so
         if (
@@ -149,7 +187,9 @@ class Reset extends Component {
             />
             <div>
               <CheckIPButton
-                onClick={() => this.checkProxyServerExternalIP(this.state.uuid)}
+                onClick={() =>
+                  this.checkDbForProxyServerUpdates(this.state.proxyServerID)
+                }
               />
             </div>
           </div>

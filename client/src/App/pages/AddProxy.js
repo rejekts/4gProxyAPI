@@ -5,7 +5,6 @@ import ProxyDetailsTable from "../components/ProxyDetailsTable";
 import { Divider, Header, Icon } from "semantic-ui-react";
 
 import logo from "../logo.svg";
-import _ from "lodash";
 
 class AddProxy extends Component {
   // Initialize the state
@@ -17,7 +16,7 @@ class AddProxy extends Component {
       resetStatusMessage: "Your browser IP is being reset.",
       resetStatusInstructions:
         "The status updates every 30 seconds but you can manually check by clicking the button below.",
-      uuid: "",
+      proxyServerID: "",
       browserIP: "",
       oldBrowserIP: "",
       lanIP: "",
@@ -27,13 +26,13 @@ class AddProxy extends Component {
     };
   }
 
-  // Fetch the proxy and set the uuid in state on first mount
+  // Fetch the proxy and set the proxyServerID in state on first mount
   componentDidMount() {
-    const uuid = this.props.match.params.uuid;
-    this.setState(() => ({ uuid }));
-    this.resetProxy(uuid);
+    const proxyServerID = this.props.match.params.proxyServerID;
+    this.setState(() => ({ proxyServerID }));
+    this.resetProxy(proxyServerID);
     this.intervalID = setInterval(() => {
-      this.checkProxyServerExternalIP(uuid);
+      this.checkProxyServerExternalIP(proxyServerID);
     }, 10000);
   }
 
@@ -44,8 +43,8 @@ class AddProxy extends Component {
   }
 
   // Retrieves the proxy details from the Express app and runs the reset isntructions
-  resetProxy = uuid => {
-    Axios.get(`/proxy/reset`, { params: { uuid } })
+  resetProxy = proxyServerID => {
+    Axios.get(`/proxy/reset`, { params: { proxyServerID } })
       .then(proxy => {
         // console.log("Proxy in reset => ", proxy.data);
         this.setState({
@@ -64,8 +63,8 @@ class AddProxy extends Component {
       });
   };
 
-  checkProxyServerExternalIP = uuid => {
-    Axios.get(`/proxy/get_ip`, { params: { uuid } })
+  checkProxyServerExternalIP = proxyServerID => {
+    Axios.get(`/proxy/get_ip`, { params: { proxyServerID } })
       .then(IP => {
         //check if the ips are diff and the process is complete and clear the interval if so
         if (
@@ -141,7 +140,9 @@ class AddProxy extends Component {
             />
             <div>
               <CheckIPButton
-                onClick={() => this.checkProxyServerExternalIP(this.state.uuid)}
+                onClick={() =>
+                  this.checkProxyServerExternalIP(this.state.proxyServerID)
+                }
               />
             </div>
           </div>

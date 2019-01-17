@@ -14,11 +14,11 @@ class ProxyServer {
     });
 
     this.pr = this.dynamo.define("ProxyServer", {
-      hashKey: "uuid",
+      hashKey: "proxyServerID",
       // add the timestamp attributes (updatedAt, createdAt)
       timestamps: true,
       schema: {
-        uuid: this.dynamo.types.uuid(),
+        proxyServerID: this.dynamo.types.uuid(),
         lanIP: Joi.string(),
         vpnIP: Joi.string(),
         proxyIP: Joi.string(),
@@ -43,11 +43,11 @@ class ProxyServer {
   }
 
   create(data) {
-    let uuid = uuidv1();
+    let proxyServerID = uuidv1();
     return new Promise((resolve, reject) => {
       this.pr.create(
         {
-          uuid: uuid,
+          proxyServerID: proxyServerID,
           lanIP: data.lanIP,
           vpnIP: data.vpnIP,
           proxyIP: data.proxyIP,
@@ -73,12 +73,12 @@ class ProxyServer {
     });
   }
   //possibly change the ability to update anything but the browserIPs and the status
-  update(uuid, data) {
+  update(proxyServerID, data) {
     // console.log("data in the update of the proxyServer class => ", data);
     return new Promise((resolve, reject) => {
       this.pr.update(
         {
-          uuid: uuid,
+          proxyServerID: proxyServerID,
           lanIP: data.lanIP,
           vpnIP: data.vpnIP,
           proxyIP: data.proxyIP,
@@ -101,14 +101,14 @@ class ProxyServer {
     });
   }
 
-  get(uuid) {
+  get(proxyServerID) {
     return new Promise((resolve, reject) => {
       this.pr.get(
-        uuid,
+        proxyServerID,
         {
           ConsistentRead: true,
           AttributesToGet: [
-            "uuid",
+            "proxyServerID",
             "lanIP",
             "vpnIP",
             "proxyIP",
