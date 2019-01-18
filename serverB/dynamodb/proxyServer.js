@@ -89,6 +89,7 @@ class ProxyServer {
           apn: data.apn,
           status: data.status
         },
+        { expected: { lanIP: data.lanIP, proxyServerID: proxyServerID } },
         (err, res) => {
           if (err) {
             logger.error(err);

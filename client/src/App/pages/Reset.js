@@ -5,7 +5,6 @@ import ProxyDetailsTable from "../components/ProxyDetailsTable";
 import { Divider, Header, Icon } from "semantic-ui-react";
 
 import logo from "../logo.svg";
-import { throttle } from "lodash";
 
 class Reset extends Component {
   // Initialize the state
