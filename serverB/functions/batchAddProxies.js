@@ -54,6 +54,7 @@ const BatchAddProxies = async (
             "res in the api/proxy POST endpoint after making proxy in dynamodb => ",
             rez.attrs
           );
+          return rez;
         })
         .catch(err => {
           if (err) {

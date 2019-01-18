@@ -13,6 +13,7 @@ class Reset extends Component {
     this.state = {
       proxy: {},
       oldIP: "",
+      port: "",
       resetStatusMessage: "Your browser IP is being reset.",
       resetStatusInstructions:
         "The status updates every 30 seconds but you can manually check by clicking the button below.",
@@ -55,6 +56,7 @@ class Reset extends Component {
           proxy: proxy.data,
           isLoading: false,
           browserIP: proxy.data.browserIP,
+          port: proxy.data.port,
           oldBrowserIP: proxy.data.oldBrowserIP,
           lanIP: proxy.data.lanIP,
           status: "PENDING"
@@ -149,6 +151,7 @@ class Reset extends Component {
       oldBrowserIP,
       browserIP,
       lanIP,
+      port,
       isLoading
     } = this.state;
     if (isLoading) {
@@ -183,6 +186,7 @@ class Reset extends Component {
               browserIP={browserIP}
               lanIP={lanIP}
               oldBrowserIP={oldBrowserIP}
+              port={port}
             />
             <div>
               <CheckIPButton
