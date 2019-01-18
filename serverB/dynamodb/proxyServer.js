@@ -27,7 +27,8 @@ class ProxyServer {
         port: Joi.string(),
         carrier: Joi.string(),
         apn: Joi.string(),
-        status: Joi.string()
+        status: Joi.string(),
+        resetURL: Joi.string()
       }
     });
 
@@ -56,7 +57,8 @@ class ProxyServer {
           port: data.port,
           carrier: data.carrier,
           apn: data.apn,
-          status: data.status
+          status: data.status,
+          resetURL: `http://proxy2.confucius.marketing/reset/${proxyServerID}`
         },
         (err, res) => {
           if (err) {
@@ -87,9 +89,9 @@ class ProxyServer {
           port: data.port,
           carrier: data.carrier,
           apn: data.apn,
-          status: data.status
+          status: data.status,
+          resetURL: data.resetURL
         },
-        { expected: { lanIP: data.lanIP, proxyServerID: proxyServerID } },
         (err, res) => {
           if (err) {
             logger.error(err);
@@ -119,6 +121,7 @@ class ProxyServer {
             "carrier",
             "apn",
             "status",
+            "resetURL",
             "createdAt",
             "updatedAt"
           ]
@@ -127,7 +130,9 @@ class ProxyServer {
           if (err) {
             reject(err);
           } else {
-            resolve(res.toJSON());
+            if (res !== null) {
+              resolve(res.toJSON());
+            }
           }
         }
       );

@@ -19,10 +19,7 @@ const grabClientIP = require("./functions/grabClientIP");
 const rebootClient = require("./functions/rebootClient");
 const resetClientIPAddress = require("./functions/resetClientIPAddress");
 const BatchAddProxies = require("./functions/batchAddProxies");
-
-const DynamoDb = require("./dynamodb");
-let dynamoDb = new DynamoDb();
-const dynamodbstreams = new AWS.DynamoDBStreams({ apiVersion: "2012-08-10" });
+const printResetURLs = require("./functions/printResetURLs");
 
 app.timeout = 360000;
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
@@ -101,7 +98,8 @@ app.post("/api/proxy/add", (req, res, next) => {
     port,
     carrier,
     apn,
-    status
+    status,
+    resetURL
   } = req.body;
 
   proxyServer
@@ -114,7 +112,8 @@ app.post("/api/proxy/add", (req, res, next) => {
       port: port,
       carrier: carrier,
       apn: apn,
-      status: status
+      status: status,
+      resetURL: resetURL
     })
     .then(rez => {
       console.log(
@@ -128,6 +127,27 @@ app.post("/api/proxy/add", (req, res, next) => {
     .catch(err => {
       if (err) {
         console.log("err => ", err);
+      }
+    });
+});
+
+//print all reset urls
+app.get("/api/proxy/printResetURLs", (req, res, next) => {
+  printResetURLs()
+    .then(rez => {
+      console.log(
+        "Rez in the /api/proxy/printResetURLs endpoint in serverB => ",
+        rez
+      );
+      res.attachment("proxyData.csv");
+      res.status(200).send(rez);
+    })
+    .catch(error => {
+      if (error) {
+        console.log(
+          "error in the /api/proxy/printResetURLs endpoint => ",
+          error
+        );
       }
     });
 });
@@ -183,7 +203,8 @@ app.put("/api/proxy/update", (req, res, next) => {
     port,
     carrier,
     apn,
-    status
+    status,
+    resetURL
   } = req.body;
 
   proxyServer
@@ -196,7 +217,8 @@ app.put("/api/proxy/update", (req, res, next) => {
       port: port,
       carrier: carrier,
       apn: apn,
-      status: status
+      status: status,
+      resetURL: resetURL
     })
     .then(rez => {
       console.log(
@@ -271,7 +293,8 @@ app.get("/api/proxy/browserIP", function(req, res) {
         port: proxyData.port,
         carrier: proxyData.carrier,
         apn: proxyData.apn,
-        status: status !== undefined ? status : proxyData.status
+        status: status !== undefined ? status : proxyData.status,
+        resetURL: proxyData.resetURL
       };
       proxyServer
         .update(proxyServerID, updateData)
@@ -319,7 +342,8 @@ app.get("/api/proxy/reset", function(req, res) {
       port,
       carrier,
       apn,
-      status
+      status,
+      resetURL
     } = proxyData;
     proxyData.status = "PENDING";
 
@@ -330,9 +354,6 @@ app.get("/api/proxy/reset", function(req, res) {
           "Response from db after updating status to pending in the reset method newData: ",
           data.attrs
         );
-        // let newData = JSON.parse(JSON.stringify(data.attrs));
-
-        // let  { proxyServerID, oldBrowserIP, browserIP, status } = newData;
 
         let newData = JSON.parse(JSON.stringify(data.attrs));
 
@@ -345,7 +366,8 @@ app.get("/api/proxy/reset", function(req, res) {
           port,
           carrier,
           apn,
-          status
+          status,
+          resetURL
         } = newData;
 
         //grab the current client IP
@@ -383,7 +405,8 @@ app.get("/api/proxy/reset", function(req, res) {
                   port,
                   carrier,
                   apn,
-                  status
+                  status,
+                  resetURL
                 } = newData2;
 
                 //run all reset methods
