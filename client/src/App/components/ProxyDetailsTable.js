@@ -12,10 +12,6 @@ class ProxyDetailsTable extends Component {
               <Table.Cell>{this.props.lanIP}</Table.Cell>
             </Table.Row>
             <Table.Row>
-              <Table.Cell width={10}>Port</Table.Cell>
-              <Table.Cell>{this.props.port}</Table.Cell>
-            </Table.Row>
-            <Table.Row>
               <Table.Cell>Current Browser IP</Table.Cell>
               <Table.Cell>{this.props.browserIP}</Table.Cell>
             </Table.Row>
