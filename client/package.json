@@ -19,7 +19,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "serverA": "nodemon ../serverA/index.js",
-    "serverB": "nodemon ../serverB/index.js --ignore client",
+    "serverB": "nodemon ../serverB/index.js",
     "allServers": "concurrently \"npm run serverA\" \"npm run serverB\"",
     "all": "concurrently \"npm run serverB\" \"npm run start\""
   },
