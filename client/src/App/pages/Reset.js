@@ -49,7 +49,7 @@ class Reset extends Component {
 
   // Retrieves the proxy details from the Express app and runs the reset isntructions
   resetProxy = proxyServerID => {
-    Axios.get(`api/proxy/reset`, { params: { proxyServerID } })
+    Axios.get(`/api/proxy`, { params: { proxyServerID } })
       .then(proxy => {
         // console.log("Proxy in reset => ", proxy.data);
         this.setState({
@@ -61,6 +61,18 @@ class Reset extends Component {
           lanIP: proxy.data.lanIP,
           status: "PENDING"
         });
+        return proxy;
+      })
+      .then(prx => {
+        Axios.get(`/api/proxy/reset`, { params: { proxyServerID } })
+          .then(resetRez => {
+            console.log("resetRez => ", resetRez);
+          })
+          .catch(err => {
+            if (err) {
+              console.log("err => ", err);
+            }
+          });
       })
       .catch(err => {
         if (err) {
@@ -71,7 +83,7 @@ class Reset extends Component {
 
   checkDbForProxyServerUpdates = proxyServerID => {
     console.log("checkDbForProxyServerUpdates called now!");
-    Axios.get(`api/proxy/browserIPFromDb`, { params: { proxyServerID } })
+    Axios.get(`/api/proxy/browserIPFromDb`, { params: { proxyServerID } })
       .then(IP => {
         //check if the ips are diff and the process is complete and clear the interval if so
         if (
@@ -108,7 +120,7 @@ class Reset extends Component {
 
   checkProxyServerExternalIP = proxyServerID => {
     console.log("chekProxyServerExternalIP called now!");
-    Axios.get(`api/proxy/browserIP`, { params: { proxyServerID } })
+    Axios.get(`/api/proxy/browserIP`, { params: { proxyServerID } })
       .then(IP => {
         //check if the ips are diff and the process is complete and clear the interval if so
         if (

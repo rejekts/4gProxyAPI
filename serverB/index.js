@@ -2,6 +2,7 @@
 
 const express = require("express");
 const bodyParser = require("body-parser");
+const path = require("path");
 const child_process = require("child_process");
 const moment = require("moment-timezone");
 const childExec = require("child_process").exec;
@@ -36,6 +37,7 @@ app.use(function(req, res, next) {
 const server = app.listen(10080, () =>
   console.log("ServerB Listening on port 10080!")
 );
+// app.use(express.static(path.join(__dirname, "/../client/build")));
 
 AWS.config.update(config.aws_remote_config);
 
@@ -538,6 +540,7 @@ app.get("/api/proxy/reset", function(req, res) {
         console.log("error calling proxyserver.get(proxyServerID) => ", error);
         //Need to send error to front end asking for correct proxyServerID or url
       });
+    res.status(200).send("Running reset procedures");
   });
 });
 
