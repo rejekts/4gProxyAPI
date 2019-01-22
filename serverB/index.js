@@ -7,8 +7,6 @@ const moment = require("moment-timezone");
 const childExec = require("child_process").exec;
 const util = require("util");
 const exec = util.promisify(childExec);
-const mysql = require("promise-mysql");
-const rp = require("request-promise");
 const app = express();
 const AWS = require("aws-sdk");
 const config = require("./config/config.js");
@@ -35,8 +33,8 @@ app.use(function(req, res, next) {
   next();
 });
 
-const server = app.listen(10090, () =>
-  console.log("ServerB Listening on port 10090!")
+const server = app.listen(10080, () =>
+  console.log("ServerB Listening on port 10080!")
 );
 
 AWS.config.update(config.aws_remote_config);
@@ -50,8 +48,12 @@ const proxyServer = new ProxyServer(
   function(re) {}
 );
 
+app.get("/", function(req, res) {
+  res.status(200).send("Nothing to see here.");
+});
+
 //get all proxies from dynamodb
-app.get("/api/proxy/all", function(req, res) {
+app.get("/api/proxy/list", function(req, res) {
   // AWS.config.update(config.aws_remote_config);
 
   proxyServer
@@ -101,6 +103,13 @@ app.post("/api/proxy/add", (req, res, next) => {
     status,
     resetURL
   } = req.body;
+
+  console.log(
+    "api/proxy/add API  Endpoint getting hit in serverA! Time => ",
+    moment().format("YYYY-MM-DDTHH:mm:ss"),
+    " req.body => ",
+    req.body
+  );
 
   proxyServer
     .create({
@@ -247,7 +256,7 @@ app.get("/api/proxy/browserIPFromDb", function(req, res) {
 
   proxyServer
     .get(proxyServerID)
-    .then(async pr => {
+    .then(pr => {
       res.status(200).send(pr);
     })
     .catch(err => {
@@ -284,6 +293,8 @@ app.get("/api/proxy/browserIP", function(req, res) {
         status = "COMPLETE";
       }
 
+      proxyData = JSON.parse(JSON.stringify(proxyData));
+
       let updateData = {
         lanIP: proxyData.lanIP,
         vpnIP: proxyData.vpnIP,
@@ -309,6 +320,7 @@ app.get("/api/proxy/browserIP", function(req, res) {
         });
     })
     .catch(err => {
+      console.log("err in /api/proxy/browserIP => ", err);
       res.status(200).send(proxyData);
     });
 });
