@@ -289,8 +289,10 @@ app.get("/api/proxy/browserIP", function(req, res) {
     .then(currentIP => {
       //check if status is REBOOTING and turn to complete if IP is different than it was.catch((error) => {
       if (
-        browserIPBeforeUpdating !== currentIP &&
-        proxyData.status === "REBOOTING"
+        (browserIPBeforeUpdating !== currentIP &&
+          proxyData.status === "REBOOTING") ||
+        (browserIPBeforeUpdating !== currentIP &&
+          proxyData.status === "RESETTING")
       ) {
         status = "COMPLETE";
       }
@@ -448,7 +450,7 @@ app.get("/api/proxy/reset", function(req, res) {
                           "successfulResetUpdateRez => ",
                           successfulResetUpdateRez.attrs
                         );
-                        res.status(200).send(resetClientNewIP);
+                        // res.status(200).send(resetClientNewIP);
                       })
                       .catch(err => {
                         if (err) {
@@ -706,3 +708,8 @@ app.get("/bot/reset", function(req, res) {
     });
 });
 */
+
+//catchall to send all other traffic than endpoints above to the react app
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname + "/../client/build/index.html"));
+});
