@@ -37,7 +37,7 @@ app.use(function(req, res, next) {
 const server = app.listen(10080, () =>
   console.log("ServerB Listening on port 10080!")
 );
-// app.use(express.static(path.join(__dirname, "/../client/build")));
+app.use(express.static(path.join(__dirname, "/../client/build")));
 
 AWS.config.update(config.aws_remote_config);
 
