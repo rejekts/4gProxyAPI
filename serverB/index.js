@@ -394,7 +394,7 @@ app.get("/api/proxy/reset", function(req, res) {
                   "results after updating the old browser ip before running reset => ",
                   results.attrs
                 );
-                let newData2 = JSON.parse(JSON.stringify(data.attrs));
+                let newData2 = JSON.parse(JSON.stringify(results.attrs));
 
                 let {
                   lanIP,
@@ -418,9 +418,15 @@ app.get("/api/proxy/reset", function(req, res) {
                       " For ",
                       lanIP
                     );
+
                     //update the db with COMPLETE status and new IP
                     newData2.browserIP = resetClientNewIP;
                     newData2.status = "COMPLETE";
+
+                    console.log(
+                      "newData2 after successful reset of IP => ",
+                      newData2
+                    );
                     proxyServer
                       .update(proxyServerID, newData2)
                       .then(successfulResetUpdateRez => {

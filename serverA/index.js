@@ -115,7 +115,7 @@ app.post("/proxy/add", function(req, res) {
       }
     });
 });
-
+//grab IP from the db
 app.get("/proxy/getIPFromDb", function(req, res) {
   const proxyServerID = req.query.proxyServerID;
 
@@ -147,8 +147,8 @@ app.get("/proxy/getIPFromDb", function(req, res) {
       }
     });
 });
-
-app.get("/proxy/get_ip", function(req, res) {
+//grab IP straight from the client machine and set in db
+app.get("/proxy/getIp", function(req, res) {
   const proxyServerID = req.query.proxyServerID;
 
   // console.log(
