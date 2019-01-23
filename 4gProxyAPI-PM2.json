@@ -1,0 +1,10 @@
+{
+    "apps": [
+        {
+            "name": "4gProxyAPI-Dynamo",
+            "cwd": "./client",
+            "script": "npm",
+            "args": "run serverB"
+        }
+    ]
+}
