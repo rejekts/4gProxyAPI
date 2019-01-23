@@ -29,7 +29,19 @@ class ProxyServer {
         apn: Joi.string(),
         status: Joi.string(),
         resetURL: Joi.string()
-      }
+      },
+      indexes: [
+        {
+          hashKey: "port",
+          name: "port-index",
+          type: "global"
+        },
+        {
+          hashKey: "lanIP",
+          name: "lanIP-index",
+          type: "global"
+        }
+      ]
     });
 
     this.dynamo.createTables(function(err) {
@@ -139,15 +151,18 @@ class ProxyServer {
     });
   }
 
-  query(idx) {
+  query(idxName, idx) {
     return new Promise((resolve, reject) => {
-      this.pr.query(idx).exec((err, res) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(res);
-        }
-      });
+      this.pr
+        .query(idx)
+        .usingIndex(`${idxName}-index`)
+        .exec((err, res) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(res.Items);
+          }
+        });
     });
   }
 

@@ -568,6 +568,244 @@ app.get("/proxy/reset/clear-cache", function(req, res) {
     });
 });
 
+//Bot Endpoints Below
+
+// BOT - Get a single proxy by idx
+app.get("/api/bot/proxy", (req, res, next) => {
+  console.log("idx in serverB => ", req.query);
+  let idx = req.query.port ? req.query.port : req.query.lanIP;
+  let idxName = req.query.port ? "port" : "lanIP";
+
+  proxyServer
+    .query(idxName, idx)
+    .then(pr => {
+      // console.log("Get a single proxy from dynamodb by port => ", pr[0]);
+      res.status(200).send(pr[0]);
+    })
+    .catch(err => {
+      if (err) {
+        console.log("err => ", err);
+        res.status(500).send(err);
+      }
+    });
+});
+
+//Bot reset endpoint
+app.get("/api/bot/proxy/reset", function(req, res) {
+  let port = req.query.port;
+  let oldIP;
+  // let newData;
+
+  console.log(
+    "Reset API Endpoint getting hit!",
+    "proxyServerID => ",
+    proxyServerID,
+    " Time => ",
+    moment().format("YYYY-MM-DDTHH:mm:ss")
+  );
+
+  //go through the reset procedures in order AND update the instructions and the status/ ip in the db on the way
+  //-------------------------------------------------------
+
+  proxyServer.get(proxyServerID).then(proxyData => {
+    proxyData = JSON.parse(JSON.stringify(proxyData));
+    let {
+      lanIP,
+      vpnIP,
+      proxyIP,
+      oldBrowserIP,
+      browserIP,
+      port,
+      carrier,
+      apn,
+      status,
+      resetURL
+    } = proxyData;
+    proxyData.status = "PENDING";
+
+    proxyServer
+      .update(proxyServerID, proxyData)
+      .then(data => {
+        console.log(
+          "Response from db after updating status to pending in the reset method newData: ",
+          data.attrs
+        );
+
+        let newData = JSON.parse(JSON.stringify(data.attrs));
+
+        let {
+          lanIP,
+          vpnIP,
+          proxyIP,
+          oldBrowserIP,
+          browserIP,
+          port,
+          carrier,
+          apn,
+          status,
+          resetURL
+        } = newData;
+
+        //grab the current client IP
+        grabClientIP(lanIP)
+          .then(ip => {
+            console.log(
+              "IP in the grabClientIP method in the resetClient endpoint BEFORE running reset => ",
+              ip
+            );
+            if (!ip) {
+              ip = browserIP;
+            }
+            oldIP = ip;
+            newData.oldBrowserIP = ip;
+            newData.browserIP = ip;
+            newData.status = "RESETTING";
+            console.log("newData before RESETTING? => ", newData);
+            //store the current IP in the db IF its different AND set the status of the proxy to running
+
+            proxyServer
+              .update(proxyServerID, newData)
+              .then(results => {
+                console.log(
+                  "results after updating the old browser ip before running reset => ",
+                  results.attrs
+                );
+                let newData2 = JSON.parse(JSON.stringify(results.attrs));
+
+                let {
+                  lanIP,
+                  vpnIP,
+                  proxyIP,
+                  oldBrowserIP,
+                  browserIP,
+                  port,
+                  carrier,
+                  apn,
+                  status,
+                  resetURL
+                } = newData2;
+
+                //run all reset methods
+                resetClientIPAddress(lanIP, carrier, oldIP)
+                  .then(resetClientNewIP => {
+                    console.log(
+                      "Success!! newIP in the endpoint!! => ",
+                      resetClientNewIP,
+                      " For ",
+                      lanIP
+                    );
+
+                    //update the db with COMPLETE status and new IP
+                    newData2.browserIP = resetClientNewIP;
+                    newData2.status = "COMPLETE";
+
+                    console.log(
+                      "newData2 after successful reset of IP => ",
+                      newData2
+                    );
+                    proxyServer
+                      .update(proxyServerID, newData2)
+                      .then(successfulResetUpdateRez => {
+                        console.log(
+                          "successfulResetUpdateRez => ",
+                          successfulResetUpdateRez.attrs
+                        );
+                        // res.status(200).send(resetClientNewIP);
+                      })
+                      .catch(err => {
+                        if (err) {
+                          console.log(
+                            "err calling proxyServer update after running resetClientIPAddress => ",
+                            err
+                          );
+                        }
+                      });
+                  })
+                  .catch(error => {
+                    console.log(
+                      "error calling the resetClientIPAddress method => ",
+                      error
+                    );
+
+                    //Update the db that there was an error and that we are rebooting the proxy server hardware
+                    newData2.status = "REBOOTING";
+                    console.log("newData2 before REBOOTING => ", newData2);
+                    proxyServer
+                      .update(proxyServerID, newData2)
+                      .then(data => {
+                        console.log(
+                          "Response from db after updating status before rebooting in the reset method catch => ",
+                          data.attrs
+                        );
+                        rebootClient(lanIP)
+                          .then(rebootRes => {
+                            console.log(
+                              "results from running reboot method => ",
+                              rebootRes
+                            );
+                          })
+                          .catch(err => {
+                            console.log(
+                              "rebooting error in the reset method => ",
+                              err
+                            );
+                          });
+                      })
+                      .catch(err => {
+                        if (err) {
+                          console.log("err => ", err);
+                        }
+                      });
+                  });
+              })
+              .catch(error => {
+                console.log(
+                  "error calling proxyServer.update after grabbing clientIP => ",
+                  error
+                );
+              });
+          })
+          .catch(err => {
+            console.log(
+              "error calling grabClientIP method. We are rebooting now => ",
+              err
+            );
+            //Need to reboot here
+            newData.status = "REBOOTING";
+            console.log("newData before REBOOTING => ", newData);
+            proxyServer
+              .update(proxyServerID, newData)
+              .then(data => {
+                console.log(
+                  "Response from db after updating status before rebooting in the reset method catch => ",
+                  data.attrs
+                );
+                rebootClient(lanIP)
+                  .then(rebootRes => {
+                    console.log(
+                      "results from running reboot method => ",
+                      rebootRes
+                    );
+                  })
+                  .catch(err => {
+                    console.log("rebooting error in the reset method => ", err);
+                  });
+              })
+              .catch(err => {
+                if (err) {
+                  console.log("err => ", err);
+                }
+              });
+          });
+      })
+      .catch(error => {
+        console.log("error calling proxyserver.get(proxyServerID) => ", error);
+        //Need to send error to front end asking for correct proxyServerID or url
+      });
+    res.status(200).send("Running reset procedures");
+  });
+});
+
 //catchall to send all other traffic than endpoints above to the react app
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname + "/../client/build/index.html"));
