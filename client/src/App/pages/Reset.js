@@ -66,7 +66,7 @@ class Reset extends Component {
       .then(prx => {
         Axios.get(`/api/proxy/reset`, { params: { proxyServerID } })
           .then(resetRez => {
-            console.log("resetRez => ", resetRez);
+            console.log("resetRez => ", resetRez.data);
           })
           .catch(err => {
             if (err) {

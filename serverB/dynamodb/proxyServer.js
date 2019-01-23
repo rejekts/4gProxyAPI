@@ -139,6 +139,18 @@ class ProxyServer {
     });
   }
 
+  query(idx) {
+    return new Promise((resolve, reject) => {
+      this.pr.query(idx).exec((err, res) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(res);
+        }
+      });
+    });
+  }
+
   getAll() {
     return new Promise((resolve, reject) => {
       this.pr
