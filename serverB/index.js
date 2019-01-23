@@ -571,7 +571,7 @@ app.get("/proxy/reset/clear-cache", function(req, res) {
 //Bot Endpoints Below
 
 // BOT - Get a single proxy by idx
-app.get("/api/bot/proxy", (req, res, next) => {
+app.get("/api/bot/proxy/status", (req, res, next) => {
   console.log("idx in serverB => ", req.query);
   let idx = req.query.port ? req.query.port : req.query.lanIP;
   let idxName = req.query.port ? "port" : "lanIP";
@@ -579,8 +579,8 @@ app.get("/api/bot/proxy", (req, res, next) => {
   proxyServer
     .query(idxName, idx)
     .then(pr => {
-      // console.log("Get a single proxy from dynamodb by port => ", pr[0]);
-      res.status(200).send(pr[0]);
+      console.log("Get a single proxy from dynamodb by port => ", pr[0].attrs);
+      res.status(200).send(pr[0].attrs.status);
     })
     .catch(err => {
       if (err) {
@@ -598,8 +598,10 @@ app.get("/api/bot/proxy/reset", function(req, res) {
 
   console.log(
     "/api/bot/proxy/Reset API Endpoint getting hit!",
-    "proxyServerID => ",
-    proxyServerID,
+    "idxName",
+    idxName,
+    "idx => ",
+    idx,
     " Time => ",
     moment().format("YYYY-MM-DDTHH:mm:ss")
   );
