@@ -8,7 +8,7 @@ const moment = require('moment-timezone');
 const childExec = require('child_process').exec;
 const util = require('util');
 const fetch = require('node-fetch');
-const retry = require('promise-retry');
+const { RetryAjax } = require('./functions/retryAjax');
 
 const exec = util.promisify(childExec);
 const app = express();
@@ -610,27 +610,25 @@ app.get('/api/bot/proxy/reset', (req, res) => {
                       // Update the db that there was an error and that we are rebooting the proxy server hardware
                       newData2.status = 'REBOOTING';
                       console.log('newData2 before REBOOTING => ', newData2);
-                      proxyServer
-                        .update(proxyServerID, newData2)
-                        .then(data => {
-                          console.log(
-                            'Response from db after updating status before rebooting in the reset method catch => ',
-                            data.attrs
-                          );
-                          rebootClient(lanIP)
-                            .then(rebootRes => {
-                              console.log('results from running reboot method => ', rebootRes);
-                            })
-                            .catch(err => {
-                              console.log('rebooting error in the reset method => ', err);
-                            })
-                            .then(async () => {});
-                        })
-                        .catch(err => {
-                          if (err) {
-                            console.log('err => ', err);
-                          }
-                        });
+
+                      // setup options and params to run retry method to poll client and update db when successful
+                      const retryBrowserIPBody = { proxyServerID };
+                      const retryBrowserIPOptions = {
+                        url: 'http://localhost:10080/api/proxy/browserIP',
+                        method: 'GET',
+                        body: JSON.stringify(retryBrowserIPBody),
+                        headers: { 'Content-Type': 'application/json' }
+                      };
+                      rebootClient(lanIP).then(
+                        successRes => {
+                          console.log('successRes from running reboot method => ', successRes);
+                          RetryAjax(10, 10000, retryBrowserIPOptions);
+                        },
+                        failureRes => {
+                          console.log('failureRes from running reboot method => ', failureRes);
+                          RetryAjax(10, 10000, retryBrowserIPOptions);
+                        }
+                      );
                     });
                 })
                 .catch(error => {
