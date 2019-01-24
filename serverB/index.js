@@ -8,7 +8,7 @@ const moment = require('moment-timezone');
 const childExec = require('child_process').exec;
 const util = require('util');
 const fetch = require('node-fetch');
-const retry = require('async-retry');
+const retry = require('promise-retry');
 
 const exec = util.promisify(childExec);
 const app = express();
@@ -624,10 +624,7 @@ app.get('/api/bot/proxy/reset', (req, res) => {
                             .catch(err => {
                               console.log('rebooting error in the reset method => ', err);
                             })
-                            .then(async () => {
-                              await retry(async(bail));
-                              const res = await fetch('http://localhost:10080/api/proxy/browserIP');
-                            });
+                            .then(async () => {});
                         })
                         .catch(err => {
                           if (err) {
