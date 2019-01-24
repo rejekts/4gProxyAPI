@@ -1,10 +1,13 @@
 {
-    "apps": [
-        {
-            "name": "4gProxyAPI-Dynamo",
-            "cwd": "./client",
-            "script": "npm",
-            "args": "run serverB"
-        }
-    ]
+  "apps": [
+    {
+      "name": "4gProxyAPI-Dynamo",
+      "cwd": "./client",
+      "script": "npm",
+      "args": "run serverB",
+      "log_date_format": "YYYY-MM-DD HH:mm Z",
+      "error_file": "/var/log/4gProxyAPI/4gProxyAPI.stderr.log",
+      "out_file": "/var/log/4gProxyAPI/4gProxyAPI.stdout.log"
+    }
+  ]
 }

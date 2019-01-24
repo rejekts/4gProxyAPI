@@ -1,58 +1,47 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const connectionUp = require("./connectionUp");
-const grabClientIP = require("./grabClientIP");
-const rebootClient = require("./rebootClient");
-const interfaceDownUp = require("./interfaceDownUp");
-const deviceDisconnectAndReconnect = require("./deviceDisconnectAndReconnect");
+const express = require('express');
+const bodyParser = require('body-parser');
+const connectionUp = require('./connectionUp');
+const grabClientIP = require('./grabClientIP');
+const rebootClient = require('./rebootClient');
+const interfaceDownUp = require('./interfaceDownUp');
+const deviceDisconnectAndReconnect = require('./deviceDisconnectAndReconnect');
 
-//function to run all the methods until ip is reset on client machine
+// function to run all the methods until ip is reset on client machine
 const resetClientIPAddress = async function(host, network, oldIP) {
   return new Promise(async (resolve, reject) => {
     let timesWrapperCalled = 0;
     let timesConnectionUpCalled = 0;
     let timesInterfaceDownUpCalled = 0;
     let timesDeviceDisconnectAndReconnectCalled = 0;
-    let timesRebootClientCalled = 0;
+    const timesRebootClientCalled = 0;
     let newIPTry1;
     let newIPTry2;
     let newIPTry3;
 
     const wrapper = async function() {
       timesWrapperCalled++;
-      console.log("timesWrapperCalled => ", timesWrapperCalled);
+      console.log('timesWrapperCalled => ', timesWrapperCalled);
 
       if (timesConnectionUpCalled === 0 && timesWrapperCalled === 1) {
-        console.log("Running the connectionUp method");
+        console.log('Running the connectionUp method');
         await connectionUp(host, network)
           .then(connectionUpResponse => {
             timesConnectionUpCalled++;
-            console.log("connectionUpResponse => ", connectionUpResponse);
-            let successfulConnectionActivationTry1 =
-              connectionUpResponse.stdout.indexOf(
-                "Connection successfully activated"
-              ) >= 0
-                ? true
-                : false;
+            console.log('connectionUpResponse => ', connectionUpResponse);
+            const successfulConnectionActivationTry1 =
+              connectionUpResponse.stdout.indexOf('Connection successfully activated') >= 0;
 
             if (successfulConnectionActivationTry1) {
               console.log(
-                "successfulConnectionActivationTry1 - connectionUp => ",
+                'successfulConnectionActivationTry1 - connectionUp => ',
                 successfulConnectionActivationTry1
               );
-              setTimeout(function() {
+              setTimeout(() => {
                 grabClientIP(host)
                   .then(ip => {
                     newIPTry1 = ip;
-                    console.log(
-                      "newIP in the connectionUp method => ",
-                      newIPTry1
-                    );
-                    if (
-                      newIPTry1 !== undefined &&
-                      !newIPTry1.stderr &&
-                      newIPTry1 !== oldIP
-                    ) {
+                    console.log('newIP in the connectionUp method => ', newIPTry1);
+                    if (newIPTry1 !== undefined && !newIPTry1.stderr && newIPTry1 !== oldIP) {
                       resolve(newIPTry1);
                     } else {
                       console.log(
@@ -65,13 +54,13 @@ const resetClientIPAddress = async function(host, network, oldIP) {
                   .catch(err => {
                     if (err) {
                       console.log(
-                        "Error trying to grab the client ip after trying connectionUp method => ",
+                        'Error trying to grab the client ip after trying connectionUp method => ',
                         err
                       );
                       reject(err);
                     }
                   });
-              }, 3000);
+              }, 1500);
             } else {
               return wrapper();
             }
@@ -87,37 +76,24 @@ const resetClientIPAddress = async function(host, network, oldIP) {
       }
 
       if (timesInterfaceDownUpCalled === 0 && timesWrapperCalled === 2) {
-        console.log(
-          "The connectionUp method didnt work. Trying the interfaceDownUp now"
-        );
+        console.log('The connectionUp method didnt work. Trying the interfaceDownUp now');
 
         await interfaceDownUp(host, network)
           .then(interfaceDownUpResponse => {
             timesInterfaceDownUpCalled++;
-            let successfulConnectionActivationTry2 =
-              interfaceDownUpResponse.stdout.indexOf(
-                "Connection successfully activated"
-              ) >= 0
-                ? true
-                : false;
+            const successfulConnectionActivationTry2 =
+              interfaceDownUpResponse.stdout.indexOf('Connection successfully activated') >= 0;
             if (successfulConnectionActivationTry2) {
               console.log(
-                "successfulConnectionActivationTry2 - interfaceDownUp => ",
+                'successfulConnectionActivationTry2 - interfaceDownUp => ',
                 successfulConnectionActivationTry2
               );
-              setTimeout(function() {
+              setTimeout(() => {
                 grabClientIP(host)
                   .then(ip => {
                     newIPTry2 = ip;
-                    console.log(
-                      "newIP in the interfaceDownUp method => ",
-                      newIPTry2
-                    );
-                    if (
-                      newIPTry2 !== undefined &&
-                      !newIPTry2.stderr &&
-                      newIPTry2 !== oldIP
-                    ) {
+                    console.log('newIP in the interfaceDownUp method => ', newIPTry2);
+                    if (newIPTry2 !== undefined && !newIPTry2.stderr && newIPTry2 !== oldIP) {
                       resolve(newIPTry2);
                     } else {
                       console.log(
@@ -130,13 +106,13 @@ const resetClientIPAddress = async function(host, network, oldIP) {
                   .catch(err => {
                     if (err) {
                       console.log(
-                        "Error trying to grab the client ip after trying interfaceDownUp method => ",
+                        'Error trying to grab the client ip after trying interfaceDownUp method => ',
                         err
                       );
                       reject(err);
                     }
                   });
-              }, 3000);
+              }, 1500);
             } else {
               return wrapper();
             }
@@ -151,41 +127,27 @@ const resetClientIPAddress = async function(host, network, oldIP) {
           });
       }
 
-      if (
-        timesDeviceDisconnectAndReconnectCalled === 0 &&
-        timesWrapperCalled === 3
-      ) {
+      if (timesDeviceDisconnectAndReconnectCalled === 0 && timesWrapperCalled === 3) {
         console.log(
-          "The interfaceDownUp method didnt work. Trying the deviceDisconnectAndReconnect method now"
+          'The interfaceDownUp method didnt work. Trying the deviceDisconnectAndReconnect method now'
         );
 
         await deviceDisconnectAndReconnect(host)
           .then(deviceDisconnectAndReconnectResponse => {
             timesDeviceDisconnectAndReconnectCalled++;
-            let successfulConnectionActivationTry3 =
-              deviceDisconnectAndReconnectResponse.stdout.indexOf(
-                "successfully activated"
-              ) >= 0
-                ? true
-                : false;
+            const successfulConnectionActivationTry3 =
+              deviceDisconnectAndReconnectResponse.stdout.indexOf('successfully activated') >= 0;
             if (successfulConnectionActivationTry3) {
               console.log(
-                "successfulConnectionActivationTry3 - deviceDisconnectAndReconnect => ",
+                'successfulConnectionActivationTry3 - deviceDisconnectAndReconnect => ',
                 successfulConnectionActivationTry3
               );
-              setTimeout(function() {
+              setTimeout(() => {
                 grabClientIP(host)
                   .then(ip => {
                     newIPTry3 = ip;
-                    console.log(
-                      "newIP in the deviceDisconnectAndReconnect method => ",
-                      newIPTry3
-                    );
-                    if (
-                      newIPTry3 !== undefined &&
-                      !newIPTry3.stderr &&
-                      newIPTry3 !== oldIP
-                    ) {
+                    console.log('newIP in the deviceDisconnectAndReconnect method => ', newIPTry3);
+                    if (newIPTry3 !== undefined && !newIPTry3.stderr && newIPTry3 !== oldIP) {
                       resolve(newIPTry3);
                     } else {
                       console.log(
@@ -198,13 +160,13 @@ const resetClientIPAddress = async function(host, network, oldIP) {
                   .catch(err => {
                     if (err) {
                       console.log(
-                        "Error trying to grab the client ip after trying interfaceDownUp method => ",
+                        'Error trying to grab the client ip after trying interfaceDownUp method => ',
                         err
                       );
                       reject(err);
                     }
                   });
-              }, 3000);
+              }, 1500);
             } else {
               return wrapper();
             }
@@ -225,10 +187,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
             resolve(res);
           })
           .catch(err => {
-            console.log(
-              "err calling reboot after trying all other IP reset methods => ",
-              err
-            );
+            console.log('err calling reboot after trying all other IP reset methods => ', err);
             reject(err);
           });
       }
