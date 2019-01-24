@@ -607,16 +607,19 @@ app.get('/api/bot/proxy/reset', (req, res) => {
                     .catch(error => {
                       console.log('error calling the resetClientIPAddress method => ', error);
 
-                      // Update the db that there was an error and that we are rebooting the proxy server hardware
+                      // Update the db status  that we are rebooting the proxy server hardware
                       newData2.status = 'REBOOTING';
                       console.log('newData2 before REBOOTING => ', newData2);
 
                       // setup options and params to run retry method to poll client and update db when successful
-                      const retryBrowserIPBody = { proxyServerID };
+                      const retryBrowserIPQs = {
+                        proxyServerID,
+                        status: newData2.status
+                      };
                       const retryBrowserIPOptions = {
                         url: 'http://localhost:10080/api/proxy/browserIP',
                         method: 'GET',
-                        body: JSON.stringify(retryBrowserIPBody),
+                        qs: JSON.stringify(retryBrowserIPQs),
                         headers: { 'Content-Type': 'application/json' }
                       };
                       rebootClient(lanIP).then(

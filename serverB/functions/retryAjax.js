@@ -7,7 +7,7 @@ const retryAjax = (retries, interval, options) => {
     const params = options.qs
       ? new URLSearchParams(options.qs)
       : new URLSearchParams(options.params);
-    fetch(url + params)
+    fetch(url + params, options)
       .then(resolve)
       .catch(err => {
         setTimeout(() => {
