@@ -8,6 +8,7 @@ const moment = require('moment-timezone');
 const childExec = require('child_process').exec;
 const util = require('util');
 const fetch = require('node-fetch');
+const retry = require('async-retry');
 
 const exec = util.promisify(childExec);
 const app = express();
@@ -292,8 +293,10 @@ app.get('/api/proxy/browserIP', (req, res) => {
         });
     })
     .catch(err => {
-      console.log('err in /api/proxy/browserIP => ', err);
-      res.status(500).send(err);
+      if (err) {
+        console.log('Could not resolve host error in /api/proxy/browserIP => ', err.stderr);
+        res.status(500).send(err);
+      }
     });
 });
 
@@ -506,6 +509,7 @@ app.get('/api/bot/proxy/reset', (req, res) => {
   const idx = req.query.port ? req.query.port : req.query.lanIP;
   const idxName = req.query.port ? 'port' : 'lanIP';
   let oldIP;
+  const resetYet = false;
 
   console.log(
     '/api/bot/proxy/Reset API Endpoint getting hit!',
@@ -619,6 +623,10 @@ app.get('/api/bot/proxy/reset', (req, res) => {
                             })
                             .catch(err => {
                               console.log('rebooting error in the reset method => ', err);
+                            })
+                            .then(async () => {
+                              await retry(async(bail));
+                              const res = await fetch('http://localhost:10080/api/proxy/browserIP');
                             });
                         })
                         .catch(err => {

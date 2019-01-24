@@ -20,7 +20,6 @@ const resetClientIPAddress = async function(host, network, oldIP) {
     const wrapper = async function() {
       timesWrapperCalled++;
       console.log('timesWrapperCalled => ', timesWrapperCalled);
-
       if (timesConnectionUpCalled === 0 && timesWrapperCalled === 1) {
         console.log('Running the connectionUp method');
         await connectionUp(host, network)

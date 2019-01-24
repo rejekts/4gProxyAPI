@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "async-retry": "^1.2.3",
     "concurrently": "^4.1.0",
     "json2csv": "^4.3.3",
     "lodash": "^4.17.11",

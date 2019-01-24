@@ -149,9 +149,7 @@ class Reset extends Component {
         }
       })
       .catch(err => {
-        if (err) {
-          console.log("err => ", err);
-        }
+        console.log("err => ", err);
       });
   };
 
