@@ -7,6 +7,7 @@ const child_process = require('child_process');
 const moment = require('moment-timezone');
 const childExec = require('child_process').exec;
 const util = require('util');
+const fetch = require('node-fetch');
 
 const exec = util.promisify(childExec);
 const app = express();
@@ -22,7 +23,7 @@ const resetClientIPAddress = require('./functions/resetClientIPAddress');
 const BatchAddProxies = require('./functions/batchAddProxies');
 const printResetURLs = require('./functions/printResetURLs');
 
-app.timeout = 360000;
+app.timeout = 720000;
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(express.static('dist'));
@@ -285,13 +286,14 @@ app.get('/api/proxy/browserIP', (req, res) => {
         })
         .catch(err => {
           if (err) {
-            console.log('err => ', err);
+            console.log('err updating the db in the /api/proxy/browserIP method => ', err);
+            res.status(500).send(err);
           }
         });
     })
     .catch(err => {
       console.log('err in /api/proxy/browserIP => ', err);
-      res.status(200).send(proxyData);
+      res.status(500).send(err);
     });
 });
 

@@ -2,7 +2,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const connectionUp = require('./connectionUp');
 const grabClientIP = require('./grabClientIP');
-// const rebootClient = require('./rebootClient');
 const interfaceDownUp = require('./interfaceDownUp');
 const deviceDisconnectAndReconnect = require('./deviceDisconnectAndReconnect');
 
@@ -180,17 +179,6 @@ const resetClientIPAddress = async function(host, network, oldIP) {
             }
           });
       }
-
-      // if (timesRebootClientCalled === 0 && timesWrapperCalled === 4) {
-      //   await rebootClient(host)
-      //     .then(res => {
-      //       resolve(res);
-      //     })
-      //     .catch(err => {
-      //       console.log('err calling reboot after trying all other IP reset methods => ', err);
-      //       reject(err);
-      //     });
-      // }
     };
 
     return await wrapper();
