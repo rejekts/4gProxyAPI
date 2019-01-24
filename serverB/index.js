@@ -510,7 +510,6 @@ app.get('/api/bot/proxy/reset', (req, res) => {
   const idx = req.query.port ? req.query.port : req.query.lanIP;
   const idxName = req.query.port ? 'port' : 'lanIP';
   let oldIP;
-  const resetYet = false;
 
   console.log(
     '/api/bot/proxy/Reset API Endpoint getting hit!',
