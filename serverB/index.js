@@ -685,7 +685,7 @@ app.get('/api/bot/proxy/reset', (req, res) => {
 
 // catchall to send all other traffic than endpoints above to the react app
 app.get('*', (req, res) => {
-  res.sendFile(path.join(`${__dirname}/../client/build`));
+  res.sendFile(path.join(`${__dirname}/../client/build/index.html`));
 });
 
 /*
