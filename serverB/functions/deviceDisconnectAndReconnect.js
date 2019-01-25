@@ -9,7 +9,7 @@ const deviceDisconnectAndReconnect = async function(host) {
 
   const wrapper = function() {
     return exec(
-      `ssh pi@${host} "sudo nmcli device disconnect cdc-wdm0 && sleep 3 && sudo nmcli device connect cdc-wdm0 || sleep 1; sudo nmcli device disconnect cdc-wdm0; sleep 5; sudo nmcli device connect cdc-wdm0"`
+      `ssh pi@${host} "sudo nmcli device disconnect cdc-wdm0 && sleep 10 && sudo nmcli device connect cdc-wdm0 || sleep 5; sudo nmcli device disconnect cdc-wdm0; sleep 10; sudo nmcli device connect cdc-wdm0"`
     )
       .then(connectionData => connectionData)
       .catch(err => {

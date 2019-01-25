@@ -9,7 +9,7 @@ const interfaceDownUp = async function(host, network) {
 
   const wrapper = function() {
     return exec(
-      `ssh pi@${host} "sudo nmcli connection down ${network} && sleep 1; sudo nmcli connection up ${network} || sudo nmcli connection down ${network}; sleep 3 && sudo nmcli connection up ${network}"`
+      `ssh pi@${host} "sudo nmcli connection down ${network} && sleep 5; sudo nmcli connection up ${network} || sudo nmcli connection down ${network}; sleep 10 && sudo nmcli connection up ${network}"`
     )
       .then(connectionData => connectionData)
       .catch(err => {
