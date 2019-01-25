@@ -7,10 +7,11 @@ const moment = require('moment-timezone');
 const child_process = require('child_process');
 const childExec = require('child_process').exec;
 const util = require('util');
+const fetch = require('node-fetch');
+const promiseRetry = require('promise-retry');
 
 const exec = util.promisify(childExec);
 const app = express();
-const fetch = require('node-fetch');
 const AWS = require('aws-sdk');
 const config = require('./config/config.js');
 
@@ -288,7 +289,7 @@ app.get('/api/proxy/browserIP', (req, res) => {
         })
         .catch(err => {
           if (err) {
-            console.log('err updating the db in the /api/proxy/browserIP method => ', err);
+            // console.log('err updating the db in the /api/proxy/browserIP method => ', err);
             res.status(500).send(err);
           }
         });
@@ -534,10 +535,10 @@ app.get('/api/bot/proxy/reset', (req, res) => {
       proxyServer
         .update(proxyServerID, proxyData)
         .then(data => {
-          console.log(
-            'Response from db after updating status to pending in the reset method newData: ',
-            data.attrs
-          );
+          // console.log(
+          //   'Response from db after updating status to pending in the reset method newData: ',
+          //   data.attrs
+          // );
 
           const newData = JSON.parse(JSON.stringify(data.attrs));
 
@@ -557,16 +558,16 @@ app.get('/api/bot/proxy/reset', (req, res) => {
               newData.oldBrowserIP = ip;
               newData.browserIP = ip;
               newData.status = 'RESETTING';
-              console.log('newData before RESETTING? => ', newData);
+              // console.log('newData before RESETTING? => ', newData);
               // store the current IP in the db IF its different AND set the status of the proxy to running
 
               proxyServer
                 .update(proxyServerID, newData)
                 .then(results => {
-                  console.log(
-                    'results after updating the old browser ip before running reset => ',
-                    results.attrs
-                  );
+                  // console.log(
+                  //   'results after updating the old browser ip before running reset => ',
+                  //   results.attrs
+                  // );
                   const newData2 = JSON.parse(JSON.stringify(results.attrs));
 
                   const { lanIP, carrier } = newData2;
@@ -593,7 +594,7 @@ app.get('/api/bot/proxy/reset', (req, res) => {
                             'successfulResetUpdateRez => ',
                             successfulResetUpdateRez.attrs
                           );
-                          // res.status(200).send(resetClientNewIP);
+                          res.status(200).send(successfulResetUpdateRez.attrs);
                         })
                         .catch(err => {
                           if (err) {
@@ -601,60 +602,43 @@ app.get('/api/bot/proxy/reset', (req, res) => {
                               'err calling proxyServer update after running resetClientIPAddress => ',
                               err
                             );
+                            res.status(500).send(err);
                           }
                         });
                     })
                     .catch(error => {
                       console.log('error calling the resetClientIPAddress method => ', error);
 
-                      // Update the db status  that we are rebooting the proxy server hardware
+                      // Update the db that there was an error and that we are rebooting the proxy server hardware
                       newData2.status = 'REBOOTING';
                       console.log('newData2 before REBOOTING => ', newData2);
-
-                      // setup options and params to run retry method to poll client and update db when successful
-                      const retryBrowserIPqs = {
-                        proxyServerID,
-                        status: 'REBOOTING'
-                      };
-                      const retryBrowserIPOptions = {
-                        url: 'http://localhost:10080/api/proxy/browserIP',
-                        method: 'GET',
-                        qs: JSON.stringify(retryBrowserIPqs),
-                        headers: { 'Content-Type': 'application/json' }
-                      };
-                      rebootClient(lanIP).then(
-                        successRes => {
-                          console.log('successRes from running reboot method => ', successRes);
-                          RetryAjax(10, 10000, retryBrowserIPOptions)
-                            .then(retryAjaxRes => {
-                              console.log(`retryAjaxRes => ${retryAjaxRes}`);
+                      proxyServer
+                        .update(proxyServerID, newData2)
+                        .then(data => {
+                          console.log(
+                            'Response from db after updating status before rebooting in the reset method catch => ',
+                            data.attrs
+                          );
+                          rebootClient(lanIP)
+                            .then(rebootRes => {
+                              console.log('results from running reboot method => ', rebootRes);
+                              res.status(200).send(data.attrs);
                             })
                             .catch(err => {
-                              console.log(
-                                `We went through all the tries in the retryAjax method and none worked. err: ${err}`
-                              );
+                              console.log('rebooting error in the reset method => ', err);
+                              res.status(200).send(data.attrs);
                             });
-                        },
-                        failureRes => {
-                          console.log('failureRes from running reboot method => ', failureRes);
-                          RetryAjax(10, 10000, retryBrowserIPOptions)
-                            .then(retryAjaxRes => {
-                              console.log(`retryAjaxRes => ${retryAjaxRes}`);
-                            })
-                            .catch(err => {
-                              console.log(
-                                `We went through all the tries in the retryAjax method and none worked. err: ${err}`
-                              );
-                            });
-                        }
-                      );
+                        })
+                        .catch(err => {
+                          if (err) {
+                            console.log('err => ', err);
+                          }
+                        });
                     });
                 })
-                .catch(error => {
-                  console.log(
-                    'error calling proxyServer.update after grabbing clientIP => ',
-                    error
-                  );
+                .catch(err => {
+                  console.log('error calling proxyServer.update after grabbing clientIP => ', err);
+                  res.status(500).send(err);
                 });
             })
             .catch(err => {
@@ -662,50 +646,35 @@ app.get('/api/bot/proxy/reset', (req, res) => {
               // Need to reboot here
               newData.status = 'REBOOTING';
               console.log('newData before REBOOTING => ', newData);
-              // setup options and params to run retry method to poll client and update db when successful
-              const retryBrowserIPqs = {
-                proxyServerID,
-                status: 'REBOOTING'
-              };
-              const retryBrowserIPOptions = {
-                url: 'http://localhost:10080/api/proxy/browserIP',
-                method: 'GET',
-                qs: JSON.stringify(retryBrowserIPqs),
-                headers: { 'Content-Type': 'application/json' }
-              };
-              rebootClient(lanIP).then(
-                successRes => {
-                  console.log('successRes from running reboot method => ', successRes);
-                  RetryAjax(10, 10000, retryBrowserIPOptions)
-                    .then(retryAjaxRes => {
-                      console.log(`retryAjaxRes => ${retryAjaxRes}`);
+              proxyServer
+                .update(proxyServerID, newData)
+                .then(data => {
+                  console.log(
+                    'Response from db after updating status before rebooting in the reset method catch => ',
+                    data.attrs
+                  );
+                  rebootClient(lanIP)
+                    .then(rebootRes => {
+                      console.log('results from running reboot method => ', rebootRes);
+                      res.status(200).send(data.attrs);
                     })
                     .catch(err => {
-                      console.log(
-                        `We went through all the tries in the retryAjax method and none worked. err: ${err}`
-                      );
+                      console.log('rebooting error in the reset method => ', err);
+                      res.status(200).send(data.attrs);
                     });
-                },
-                failureRes => {
-                  console.log('failureRes from running reboot method => ', failureRes);
-                  RetryAjax(10, 10000, retryBrowserIPOptions)
-                    .then(retryAjaxRes => {
-                      console.log(`retryAjaxRes => ${retryAjaxRes}`);
-                    })
-                    .catch(err => {
-                      console.log(
-                        `We went through all the tries in the retryAjax method and none worked. err: ${err}`
-                      );
-                    });
-                }
-              );
+                })
+                .catch(err => {
+                  if (err) {
+                    console.log('err => ', err);
+                  }
+                });
             });
         })
         .catch(error => {
           console.log('error calling proxyserver.get(proxyServerID) => ', error);
           // Need to send error to front end asking for correct proxyServerID or url
+          res.status(500).send(error);
         });
-      res.status(200).send('Running reset procedures');
     })
     .catch(err => {
       if (err) {
@@ -716,5 +685,32 @@ app.get('/api/bot/proxy/reset', (req, res) => {
 
 // catchall to send all other traffic than endpoints above to the react app
 app.get('*', (req, res) => {
-  res.sendFile(path.join(`${__dirname}/../client/build/index.html`));
+  res.sendFile(path.join(`${__dirname}/../client/build`));
 });
+
+/*
+//interval func attempt at running fetch until it succeeded
+let timesCalled = 0;
+                          setInterval(() => {
+                            timesCalled++;
+                            if (timesCalled <= 20) {
+                              fetch(
+                                `http://localhost:10080/api/proxy/browserIP?proxyServerID=${proxyServerID}&status=REBOOTING`,
+                                { method: 'GET' }
+                              )
+                                .then(data => {
+                                  console.log(
+                                    'timesCalled: ',
+                                    timesCalled,
+                                    ' data in interval fetch: ',
+                                    data.json()
+                                  );
+                                  // res.status(data.status).send(data.json());
+                                })
+                                .catch(err => {
+                                  console.log('err in the catch for the promiseRetry => ', err);
+                                });
+                            }
+                            return 'done';
+                          }, 5000);
+*/

@@ -13,12 +13,12 @@ const grabClientIP = async function(host) {
       })
       .catch(err => {
         if (err) {
-          console.log(
-            `Error in the grabClientIP method. Error details: cmd => `,
-            err.cmd,
-            '; err => ',
-            err.stderr
-          );
+          // console.log(
+          //   `Error in the grabClientIP method. Error details: cmd => `,
+          //   err.cmd,
+          //   '; err => ',
+          //   err.stderr
+          // );
           reject(err);
         }
       })

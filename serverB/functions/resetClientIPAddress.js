@@ -58,7 +58,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
                       reject(err);
                     }
                   });
-              }, 3000);
+              }, 500);
             } else {
               return wrapper();
             }
@@ -110,7 +110,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
                       reject(err);
                     }
                   });
-              }, 3000);
+              }, 500);
             } else {
               return wrapper();
             }
@@ -164,7 +164,7 @@ const resetClientIPAddress = async function(host, network, oldIP) {
                       reject(err);
                     }
                   });
-              }, 3000);
+              }, 500);
             } else {
               return wrapper();
             }
@@ -177,6 +177,15 @@ const resetClientIPAddress = async function(host, network, oldIP) {
               reject(err);
             }
           });
+      }
+
+      if (timesWrapperCalled >= 4) {
+        const outOfMethodsErr = new Error();
+        reject(
+          new Error(
+            `resetClientIPAddress methods didnt work returning error now. err: ${outOfMethodsErr}`
+          )
+        );
       }
     };
 
