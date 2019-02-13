@@ -59,6 +59,7 @@ class Reset extends Component {
           browserIP: proxy.data.browserIP,
           port: proxy.data.port,
           oldBrowserIP: proxy.data.oldBrowserIP,
+          proxyIP: proxy.data.proxyIP,
           lanIP: proxy.data.lanIP,
           status: 'PENDING'
         });
