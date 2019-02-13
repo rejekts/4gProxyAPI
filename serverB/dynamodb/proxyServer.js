@@ -1,9 +1,10 @@
-let uuidv1 = require("uuid/v4"),
-  Dynamo = require("./dynamodb.js");
-const Joi = require("joi");
-const Logger = require("../log");
+const uuidv1 = require('uuid/v4');
 
-let logger = new Logger({ context: "DYNAMO DB" });
+const Joi = require('joi');
+const Dynamo = require('./dynamodb.js');
+const Logger = require('../log');
+
+const logger = new Logger({ context: 'DYNAMO DB' });
 
 class ProxyServer {
   constructor(data, cb) {
@@ -13,8 +14,8 @@ class ProxyServer {
       region: data.region
     });
 
-    this.pr = this.dynamo.define("ProxyServer", {
-      hashKey: "proxyServerID",
+    this.pr = this.dynamo.define('ProxyServer', {
+      hashKey: 'proxyServerID',
       // add the timestamp attributes (updatedAt, createdAt)
       timestamps: true,
       schema: {
@@ -32,35 +33,35 @@ class ProxyServer {
       },
       indexes: [
         {
-          hashKey: "port",
-          name: "port-index",
-          type: "global"
+          hashKey: 'port',
+          name: 'port-index',
+          type: 'global'
         },
         {
-          hashKey: "lanIP",
-          name: "lanIP-index",
-          type: "global"
+          hashKey: 'lanIP',
+          name: 'lanIP-index',
+          type: 'global'
         }
       ]
     });
 
     this.dynamo.createTables(function(err) {
       if (err) {
-        logger.error("Error creating tables: ", JSON.stringify(err, null, 2));
+        logger.error('Error creating tables: ', JSON.stringify(err, null, 2));
       } else {
         cb(this);
-        logger.info("Tables have been created");
+        logger.info('Tables have been created');
       }
     });
     return this;
   }
 
   create(data) {
-    let proxyServerID = uuidv1();
+    const proxyServerID = uuidv1();
     return new Promise((resolve, reject) => {
       this.pr.create(
         {
-          proxyServerID: proxyServerID,
+          proxyServerID,
           lanIP: data.lanIP,
           vpnIP: data.vpnIP,
           proxyIP: data.proxyIP,
@@ -77,22 +78,21 @@ class ProxyServer {
             logger.error(err);
             reject(err);
           }
-          logger.info(
-            `Proxy data was written in dynamoDB: ${JSON.stringify(res, 4, "")}`
-          );
+          logger.info(`Proxy data was written in dynamoDB: ${JSON.stringify(res, 4, '')}`);
           // console.log("Creating proxies in DynamoDb => ", res);
           resolve(res);
         }
       );
     });
   }
-  //possibly change the ability to update anything but the browserIPs and the status
+
+  // possibly change the ability to update anything but the browserIPs and the status
   update(proxyServerID, data) {
     // console.log("data in the update of the proxyServer class => ", data);
     return new Promise((resolve, reject) => {
       this.pr.update(
         {
-          proxyServerID: proxyServerID,
+          proxyServerID,
           lanIP: data.lanIP,
           vpnIP: data.vpnIP,
           proxyIP: data.proxyIP,
@@ -109,7 +109,7 @@ class ProxyServer {
             logger.error(err);
             reject(err);
           }
-          logger.info("Proxies field was updated:", res);
+          logger.info('Proxies field was updated:', res);
           resolve(res);
         }
       );
@@ -123,28 +123,26 @@ class ProxyServer {
         {
           ConsistentRead: true,
           AttributesToGet: [
-            "proxyServerID",
-            "lanIP",
-            "vpnIP",
-            "proxyIP",
-            "oldBrowserIP",
-            "browserIP",
-            "port",
-            "carrier",
-            "apn",
-            "status",
-            "resetURL",
-            "createdAt",
-            "updatedAt"
+            'proxyServerID',
+            'lanIP',
+            'vpnIP',
+            'proxyIP',
+            'oldBrowserIP',
+            'browserIP',
+            'port',
+            'carrier',
+            'apn',
+            'status',
+            'resetURL',
+            'createdAt',
+            'updatedAt'
           ]
         },
         (err, res) => {
           if (err) {
             reject(err);
-          } else {
-            if (res !== null) {
-              resolve(res.toJSON());
-            }
+          } else if (res !== null) {
+            resolve(res.toJSON());
           }
         }
       );

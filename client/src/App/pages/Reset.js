@@ -1,10 +1,10 @@
-import React, { Component } from "react";
-import Axios from "axios";
-import CheckIPButton from "../components/CheckIPButton";
-import ProxyDetailsTable from "../components/ProxyDetailsTable";
-import { Divider, Header, Icon } from "semantic-ui-react";
+import React, { Component } from 'react';
+import Axios from 'axios';
+import CheckIPButton from '../components/CheckIPButton';
+import ProxyDetailsTable from '../components/ProxyDetailsTable';
+import { Divider, Header, Icon } from 'semantic-ui-react';
 
-import logo from "../logo.svg";
+import logo from '../logo.svg';
 
 class Reset extends Component {
   // Initialize the state
@@ -12,16 +12,17 @@ class Reset extends Component {
     super(props);
     this.state = {
       proxy: {},
-      oldIP: "",
-      port: "",
-      resetStatusMessage: "Your browser IP is being reset.",
+      oldIP: '',
+      port: '',
+      resetStatusMessage: 'Your browser IP is being reset.',
       resetStatusInstructions:
-        "The status updates every 30 seconds but you can manually check by clicking the button below.",
-      proxyServerID: "",
-      browserIP: "",
-      oldBrowserIP: "",
-      lanIP: "",
-      status: "PENDING",
+        'The status updates every 30 seconds but you can manually check by clicking the button below.',
+      proxyServerID: '',
+      browserIP: '',
+      oldBrowserIP: '',
+      lanIP: '',
+      proxyIP: '',
+      status: 'PENDING',
       isLoading: true,
       clearUpdater: false
     };
@@ -59,37 +60,34 @@ class Reset extends Component {
           port: proxy.data.port,
           oldBrowserIP: proxy.data.oldBrowserIP,
           lanIP: proxy.data.lanIP,
-          status: "PENDING"
+          status: 'PENDING'
         });
         return proxy;
       })
       .then(prx => {
         Axios.get(`/api/proxy/reset`, { params: { proxyServerID } })
           .then(resetRez => {
-            console.log("resetRez => ", resetRez.data);
+            console.log('resetRez => ', resetRez.data);
           })
           .catch(err => {
             if (err) {
-              console.log("err => ", err);
+              console.log('err => ', err);
             }
           });
       })
       .catch(err => {
         if (err) {
-          console.log("err => ", err);
+          console.log('err => ', err);
         }
       });
   };
 
   checkDbForProxyServerUpdates = proxyServerID => {
-    console.log("checkDbForProxyServerUpdates called now!");
+    console.log('checkDbForProxyServerUpdates called now!');
     Axios.get(`/api/proxy/browserIPFromDb`, { params: { proxyServerID } })
       .then(IP => {
         //check if the ips are diff and the process is complete and clear the interval if so
-        if (
-          IP.data.browserIP !== IP.data.oldBrowserIP &&
-          IP.data.status === "COMPLETE"
-        ) {
+        if (IP.data.browserIP !== IP.data.oldBrowserIP && IP.data.status === 'COMPLETE') {
           clearInterval(this.intervalID);
 
           this.setState({
@@ -97,9 +95,9 @@ class Reset extends Component {
             isLoading: false,
             browserIP: IP.data.browserIP,
             oldBrowserIP: IP.data.oldBrowserIP,
-            resetStatusMessage: "Your IP has been reset.",
+            resetStatusMessage: 'Your IP has been reset.',
             resetStatusInstructions:
-              "You can close this page now and continue your task. Have a great day!",
+              'You can close this page now and continue your task. Have a great day!',
             status: IP.data.status
           });
         } else {
@@ -113,20 +111,17 @@ class Reset extends Component {
       })
       .catch(err => {
         if (err) {
-          console.log("err => ", err);
+          console.log('err => ', err);
         }
       });
   };
 
   checkProxyServerExternalIP = proxyServerID => {
-    console.log("chekProxyServerExternalIP called now!");
+    console.log('chekProxyServerExternalIP called now!');
     Axios.get(`/api/proxy/browserIP`, { params: { proxyServerID } })
       .then(IP => {
         //check if the ips are diff and the process is complete and clear the interval if so
-        if (
-          IP.data.browserIP !== IP.data.oldBrowserIP &&
-          IP.data.status === "COMPLETE"
-        ) {
+        if (IP.data.browserIP !== IP.data.oldBrowserIP && IP.data.status === 'COMPLETE') {
           clearInterval(this.intervalID);
 
           this.setState({
@@ -134,9 +129,9 @@ class Reset extends Component {
             isLoading: false,
             browserIP: IP.data.browserIP,
             oldBrowserIP: IP.data.oldBrowserIP,
-            resetStatusMessage: "Your IP has been reset.",
+            resetStatusMessage: 'Your IP has been reset.',
             resetStatusInstructions:
-              "You can close this page now and continue your task. Have a great day!",
+              'You can close this page now and continue your task. Have a great day!',
             status: IP.data.status
           });
         } else {
@@ -149,7 +144,7 @@ class Reset extends Component {
         }
       })
       .catch(err => {
-        console.log("err => ", err);
+        console.log('err => ', err);
       });
   };
 
@@ -161,6 +156,7 @@ class Reset extends Component {
       oldBrowserIP,
       browserIP,
       lanIP,
+      proxyIP,
       port,
       isLoading
     } = this.state;
@@ -195,14 +191,13 @@ class Reset extends Component {
               status={status}
               browserIP={browserIP}
               lanIP={lanIP}
+              proxyIP={proxyIP}
               oldBrowserIP={oldBrowserIP}
               port={port}
             />
             <div>
               <CheckIPButton
-                onClick={() =>
-                  this.checkDbForProxyServerUpdates(this.state.proxyServerID)
-                }
+                onClick={() => this.checkDbForProxyServerUpdates(this.state.proxyServerID)}
               />
             </div>
           </div>

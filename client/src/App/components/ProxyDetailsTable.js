@@ -1,15 +1,16 @@
-import React, { Component } from "react";
-import { Table } from "semantic-ui-react";
+import React, { Component } from 'react';
+import { Table } from 'semantic-ui-react';
 
 class ProxyDetailsTable extends Component {
   render() {
+    const isConfuciusEmployee = this.props.lanIP === this.props.proxyIP;
     return (
       <React.Fragment>
         <Table definition>
           <Table.Body>
             <Table.Row>
               <Table.Cell width={10}>Proxy</Table.Cell>
-              <Table.Cell>{this.props.lanIP}</Table.Cell>
+              <Table.Cell>{isConfuciusEmployee ? this.props.lanIP : this.props.proxyIP}</Table.Cell>
             </Table.Row>
             <Table.Row>
               <Table.Cell>Current Browser IP</Table.Cell>

@@ -18,14 +18,13 @@ const connectionUp = async function(host, network) {
           console.log(
             `Error in the connectionUp method. Calling recursively now for the ${timesCalled}th time. Error details: cmd => `,
             err.cmd,
-            "; err => ",
+            '; err => ',
             err.stderr
           );
           if (timesCalled >= 1) {
             return err;
-          } 
-            return wrapper();
-          
+          }
+          return wrapper();
         }
       });
   };

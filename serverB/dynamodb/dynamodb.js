@@ -4,13 +4,12 @@
 let dynamo = require('dynamodb');
 
 class DynamoDb {
-    constructor (data) {
-        dynamo.AWS.config.update(
-            {
-                accessKeyId: data.accessKeyId,
-                secretAccessKey: data.secretAccessKey,
-                region: data.region
-            });
+    constructor(data) {
+        dynamo.AWS.config.update({
+            accessKeyId: data.accessKeyId,
+            secretAccessKey: data.secretAccessKey,
+            region: data.region
+        });
         return dynamo;
     };
 }
