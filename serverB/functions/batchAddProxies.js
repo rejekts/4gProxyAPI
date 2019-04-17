@@ -1,6 +1,6 @@
-const ProxyServer = require("../dynamodb/proxyServer");
-const AWS = require("aws-sdk");
-const config = require("../config/config.js");
+const ProxyServer = require('../dynamodb/proxyServer');
+const AWS = require('aws-sdk');
+const config = require('../config/config.js');
 
 const BatchAddProxies = async (
   lanDBlockMin,
@@ -16,9 +16,9 @@ const BatchAddProxies = async (
 
   let proxyServer = await new ProxyServer(
     {
-      accessKeyId: "AKIAJJD5Q2EKMTD5LKHQ",
-      secretAccessKey: "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",
-      region: "us-east-1"
+      accessKeyId: 'AKIARCH7TKA67XLVVCXY',
+      secretAccessKey: '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',
+      region: 'us-east-1',
     },
     function(re) {}
   );
@@ -31,11 +31,11 @@ const BatchAddProxies = async (
       //set vars
       let lanIP = `192.168.50.${i}`;
       let vpnIP = `172.30.230.${i}`;
-      let oldBrowserIP = "1.1.1.1";
-      let browserIP = "1.1.1.1";
+      let oldBrowserIP = '1.1.1.1';
+      let browserIP = '1.1.1.1';
       // let port = port;
       let proxyIP = lanIP;
-      let status = "CREATED";
+      let status = 'CREATED';
 
       proxyServer
         .create({
@@ -47,18 +47,18 @@ const BatchAddProxies = async (
           port: port,
           carrier: carrier,
           apn: apn,
-          status: status
+          status: status,
         })
         .then(rez => {
           console.log(
-            "res in the api/proxy POST endpoint after making proxy in dynamodb => ",
+            'res in the api/proxy POST endpoint after making proxy in dynamodb => ',
             rez.attrs
           );
           return rez;
         })
         .catch(err => {
           if (err) {
-            console.log("err => ", err);
+            console.log('err => ', err);
           }
         });
     }

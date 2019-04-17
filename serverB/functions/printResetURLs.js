@@ -8,9 +8,9 @@ const printResetURLs = async () => {
 
   const proxyServer = await new ProxyServer(
     {
-      accessKeyId: 'AKIAJJD5Q2EKMTD5LKHQ',
-      secretAccessKey: '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',
-      region: 'us-east-1'
+      accessKeyId: 'AKIARCH7TKA67XLVVCXY',
+      secretAccessKey: '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',
+      region: 'us-east-1',
     },
     re => {}
   );
@@ -37,9 +37,11 @@ const printResetURLs = async () => {
     'lanIp',
     'proxyIP',
     'apn',
-    'resetURL'
+    'resetURL',
   ];
-  const opts = { fields };
+  const opts = {
+    fields,
+  };
   const parser = new Json2csvParser(opts);
   const csv = await parser.parse(allDetails);
 

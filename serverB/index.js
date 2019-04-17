@@ -30,19 +30,22 @@ app.timeout = 720000;
 app.use(
   bodyParser.urlencoded({
     limit: '50mb',
-    extended: true
+    extended: true,
   })
 );
 app.use(
   bodyParser.json({
-    limit: '50mb'
+    limit: '50mb',
   })
 );
 app.use(express.static('dist'));
 app.enable('trust proxy');
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept'
+  );
   next();
 });
 app.use(express.static(path.join(__dirname, '/../client/build')));
@@ -54,9 +57,9 @@ AWS.config.update(config.aws_remote_config);
 
 const proxyServer = new ProxyServer(
   {
-    accessKeyId: 'AKIAJJD5Q2EKMTD5LKHQ',
-    secretAccessKey: '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',
-    region: 'us-east-1'
+    accessKeyId: 'AKIARCH7TKA67XLVVCXY',
+    secretAccessKey: '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',
+    region: 'us-east-1',
   },
   re => {}
 );
@@ -114,7 +117,7 @@ app.post('/api/proxy/add', (req, res, next) => {
     carrier,
     apn,
     status,
-    resetURL
+    resetURL,
   } = req.body;
 
   console.log(
@@ -135,14 +138,16 @@ app.post('/api/proxy/add', (req, res, next) => {
       carrier,
       apn,
       status,
-      resetURL
+      resetURL,
     })
     .then(rez => {
       console.log(
         'res in the api/proxy POST endpoint after making proxy in dynamodb => ',
         rez.attrs
       );
-      res.status(200).send(`New record created in dynamodb => ${JSON.stringify(rez.attrs)}`);
+      res
+        .status(200)
+        .send(`New record created in dynamodb => ${JSON.stringify(rez.attrs)}`);
     })
     .catch(err => {
       if (err) {
@@ -155,24 +160,51 @@ app.post('/api/proxy/add', (req, res, next) => {
 app.get('/api/proxy/printResetURLs', (req, res, next) => {
   printResetURLs()
     .then(rez => {
-      console.log('Rez in the /api/proxy/printResetURLs endpoint in serverB => ', rez);
+      console.log(
+        'Rez in the /api/proxy/printResetURLs endpoint in serverB => ',
+        rez
+      );
       res.attachment('proxyData.csv');
       res.status(200).send(rez);
     })
     .catch(error => {
       if (error) {
-        console.log('error in the /api/proxy/printResetURLs endpoint => ', error);
+        console.log(
+          'error in the /api/proxy/printResetURLs endpoint => ',
+          error
+        );
       }
     });
 });
 
 // batch add proxies
 app.post('/api/proxy/batch_add', (req, res, next) => {
-  const { lanDBlockMin, lanDBlockMax, vpnIPMin, vpnIPMax, port, carrier, apn, proxyIP } = req.body;
+  const {
+    lanDBlockMin,
+    lanDBlockMax,
+    vpnIPMin,
+    vpnIPMax,
+    port,
+    carrier,
+    apn,
+    proxyIP,
+  } = req.body;
 
-  BatchAddProxies(lanDBlockMin, lanDBlockMax, vpnIPMin, vpnIPMax, port, carrier, apn, proxyIP)
+  BatchAddProxies(
+    lanDBlockMin,
+    lanDBlockMax,
+    vpnIPMin,
+    vpnIPMax,
+    port,
+    carrier,
+    apn,
+    proxyIP
+  )
     .then(rez => {
-      console.log('Rez in the /api/batch_add/proxies endpoint in serverB => ', rez);
+      console.log(
+        'Rez in the /api/batch_add/proxies endpoint in serverB => ',
+        rez
+      );
       res.status(200).send(`Completed batch addition of proxies => ${rez}`);
     })
     .catch(error => {
@@ -197,7 +229,7 @@ app.put('/api/proxy/update', (req, res, next) => {
     carrier,
     apn,
     status,
-    resetURL
+    resetURL,
   } = req.body;
 
   proxyServer
@@ -211,7 +243,7 @@ app.put('/api/proxy/update', (req, res, next) => {
       carrier,
       apn,
       status,
-      resetURL
+      resetURL,
     })
     .then(rez => {
       console.log(
@@ -270,8 +302,10 @@ app.get('/api/proxy/browserIP', (req, res) => {
     .then(currentIP => {
       // check if status is REBOOTING and turn to complete if IP is different than it was.catch((error) => {
       if (
-        (browserIPBeforeUpdating !== currentIP && proxyData.status === 'REBOOTING') ||
-        (browserIPBeforeUpdating !== currentIP && proxyData.status === 'RESETTING')
+        (browserIPBeforeUpdating !== currentIP &&
+          proxyData.status === 'REBOOTING') ||
+        (browserIPBeforeUpdating !== currentIP &&
+          proxyData.status === 'RESETTING')
       ) {
         status = 'COMPLETE';
       }
@@ -288,7 +322,7 @@ app.get('/api/proxy/browserIP', (req, res) => {
         carrier: proxyData.carrier,
         apn: proxyData.apn,
         status: status !== undefined ? status : proxyData.status,
-        resetURL: proxyData.resetURL
+        resetURL: proxyData.resetURL,
       };
       proxyServer
         .update(proxyServerID, updateData)
@@ -305,7 +339,10 @@ app.get('/api/proxy/browserIP', (req, res) => {
     })
     .catch(err => {
       if (err) {
-        console.log('Could not resolve host error in /api/proxy/browserIP => ', err.stderr);
+        console.log(
+          'Could not resolve host error in /api/proxy/browserIP => ',
+          err.stderr
+        );
         res.status(500).send(err);
       }
     });
@@ -388,11 +425,17 @@ app.get('/api/proxy/reset', (req, res) => {
                     newData2.browserIP = resetClientNewIP;
                     newData2.status = 'COMPLETE';
 
-                    console.log('newData2 after successful reset of IP => ', newData2);
+                    console.log(
+                      'newData2 after successful reset of IP => ',
+                      newData2
+                    );
                     proxyServer
                       .update(proxyServerID, newData2)
                       .then(successfulResetUpdateRez => {
-                        console.log('successfulResetUpdateRez => ', successfulResetUpdateRez.attrs);
+                        console.log(
+                          'successfulResetUpdateRez => ',
+                          successfulResetUpdateRez.attrs
+                        );
                         // res.status(200).send(resetClientNewIP);
                       })
                       .catch(err => {
@@ -405,7 +448,10 @@ app.get('/api/proxy/reset', (req, res) => {
                       });
                   })
                   .catch(error => {
-                    console.log('error calling the resetClientIPAddress method => ', error);
+                    console.log(
+                      'error calling the resetClientIPAddress method => ',
+                      error
+                    );
 
                     // Update the db that there was an error and that we are rebooting the proxy server hardware
                     newData2.status = 'REBOOTING';
@@ -419,10 +465,16 @@ app.get('/api/proxy/reset', (req, res) => {
                         );
                         rebootClient(lanIP)
                           .then(rebootRes => {
-                            console.log('results from running reboot method => ', rebootRes);
+                            console.log(
+                              'results from running reboot method => ',
+                              rebootRes
+                            );
                           })
                           .catch(err => {
-                            console.log('rebooting error in the reset method => ', err);
+                            console.log(
+                              'rebooting error in the reset method => ',
+                              err
+                            );
                           });
                       })
                       .catch(err => {
@@ -433,11 +485,17 @@ app.get('/api/proxy/reset', (req, res) => {
                   });
               })
               .catch(error => {
-                console.log('error calling proxyServer.update after grabbing clientIP => ', error);
+                console.log(
+                  'error calling proxyServer.update after grabbing clientIP => ',
+                  error
+                );
               });
           })
           .catch(err => {
-            console.log('error calling grabClientIP method. We are rebooting now => ', err);
+            console.log(
+              'error calling grabClientIP method. We are rebooting now => ',
+              err
+            );
             // Need to reboot here
             newData.status = 'REBOOTING';
             console.log('newData before REBOOTING => ', newData);
@@ -450,7 +508,10 @@ app.get('/api/proxy/reset', (req, res) => {
                 );
                 rebootClient(lanIP)
                   .then(rebootRes => {
-                    console.log('results from running reboot method => ', rebootRes);
+                    console.log(
+                      'results from running reboot method => ',
+                      rebootRes
+                    );
                   })
                   .catch(err => {
                     console.log('rebooting error in the reset method => ', err);
@@ -595,7 +656,10 @@ app.get('/api/bot/proxy/reset', (req, res) => {
                       newData2.browserIP = resetClientNewIP;
                       newData2.status = 'COMPLETE';
 
-                      console.log('newData2 after successful reset of IP => ', newData2);
+                      console.log(
+                        'newData2 after successful reset of IP => ',
+                        newData2
+                      );
                       proxyServer
                         .update(proxyServerID, newData2)
                         .then(successfulResetUpdateRez => {
@@ -616,7 +680,10 @@ app.get('/api/bot/proxy/reset', (req, res) => {
                         });
                     })
                     .catch(error => {
-                      console.log('error calling the resetClientIPAddress method => ', error);
+                      console.log(
+                        'error calling the resetClientIPAddress method => ',
+                        error
+                      );
 
                       // Update the db that there was an error and that we are rebooting the proxy server hardware
                       newData2.status = 'REBOOTING';
@@ -630,11 +697,17 @@ app.get('/api/bot/proxy/reset', (req, res) => {
                           );
                           rebootClient(lanIP)
                             .then(rebootRes => {
-                              console.log('results from running reboot method => ', rebootRes);
+                              console.log(
+                                'results from running reboot method => ',
+                                rebootRes
+                              );
                               res.status(200).send(data.attrs);
                             })
                             .catch(err => {
-                              console.log('rebooting error in the reset method => ', err);
+                              console.log(
+                                'rebooting error in the reset method => ',
+                                err
+                              );
                               res.status(200).send(data.attrs);
                             });
                         })
@@ -646,12 +719,18 @@ app.get('/api/bot/proxy/reset', (req, res) => {
                     });
                 })
                 .catch(err => {
-                  console.log('error calling proxyServer.update after grabbing clientIP => ', err);
+                  console.log(
+                    'error calling proxyServer.update after grabbing clientIP => ',
+                    err
+                  );
                   res.status(500).send(err);
                 });
             })
             .catch(err => {
-              console.log('error calling grabClientIP method. We are rebooting now => ', err);
+              console.log(
+                'error calling grabClientIP method. We are rebooting now => ',
+                err
+              );
               // Need to reboot here
               newData.status = 'REBOOTING';
               console.log('newData before REBOOTING => ', newData);
@@ -664,11 +743,17 @@ app.get('/api/bot/proxy/reset', (req, res) => {
                   );
                   rebootClient(lanIP)
                     .then(rebootRes => {
-                      console.log('results from running reboot method => ', rebootRes);
+                      console.log(
+                        'results from running reboot method => ',
+                        rebootRes
+                      );
                       res.status(200).send(data.attrs);
                     })
                     .catch(err => {
-                      console.log('rebooting error in the reset method => ', err);
+                      console.log(
+                        'rebooting error in the reset method => ',
+                        err
+                      );
                       res.status(200).send(data.attrs);
                     });
                 })
@@ -680,7 +765,10 @@ app.get('/api/bot/proxy/reset', (req, res) => {
             });
         })
         .catch(error => {
-          console.log('error calling proxyserver.get(proxyServerID) => ', error);
+          console.log(
+            'error calling proxyserver.get(proxyServerID) => ',
+            error
+          );
           // Need to send error to front end asking for correct proxyServerID or url
           res.status(500).send(error);
         });

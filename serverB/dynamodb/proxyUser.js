@@ -4,14 +4,16 @@ const Joi = require('joi');
 const Dynamo = require('./dynamodb.js');
 const Logger = require('../log');
 
-const logger = new Logger({ context: 'DYNAMO DB' });
+const logger = new Logger({
+  context: 'DYNAMO DB',
+});
 
 class ProxyUser {
   constructor(data, cb) {
     this.dynamo = new Dynamo({
       accessKeyId: data.accessKeyId,
       secretAccessKey: data.secretAccessKey,
-      region: data.region
+      region: data.region,
     });
 
     this.pr = this.dynamo.define('ProxyUser', {
@@ -23,7 +25,7 @@ class ProxyUser {
         firstName: Joi.string(),
         lastName: Joi.string(),
         email: Joi.string().email({
-          minDomainAtoms: 2
+          minDomainAtoms: 2,
         }),
         password: Joi.string(),
         plans: Joi.object({
@@ -32,36 +34,36 @@ class ProxyUser {
             price: Joi.string(),
             planID: Joi.string(),
             expirationDate: Joi.string(),
-            paymentMethod: Joi.string()
+            paymentMethod: Joi.string(),
           }),
           plan2NameNEEDEDHERE: Joi.object({
             isActive: Joi.boolean(),
             price: Joi.string(),
             planID: Joi.string(),
             expirationDate: Joi.string(),
-            paymentMethod: Joi.string()
+            paymentMethod: Joi.string(),
           }),
           plan3NameNEEDEDHERE: Joi.object({
             isActive: Joi.boolean(),
             price: Joi.string(),
             planID: Joi.string(),
             expirationDate: Joi.string(),
-            paymentMethod: Joi.string()
-          })
-        })
+            paymentMethod: Joi.string(),
+          }),
+        }),
       },
       indexes: [
         {
           hashKey: 'email',
           name: 'email-index',
-          type: 'global'
+          type: 'global',
         },
         {
           hashKey: 'lastName',
           name: 'lastName-index',
-          type: 'global'
-        }
-      ]
+          type: 'global',
+        },
+      ],
     });
 
     this.dynamo.createTables(function(err) {
@@ -90,14 +92,16 @@ class ProxyUser {
           carrier: data.carrier,
           apn: data.apn,
           status: data.status,
-          resetURL: `http://proxy2.confucius.marketing/reset/${proxyUserID}`
+          resetURL: `http://api.proxypi.me/reset/${proxyUserID}`,
         },
         (err, res) => {
           if (err) {
             logger.error(err);
             reject(err);
           }
-          logger.info(`Proxy data was written in dynamoDB: ${JSON.stringify(res, 4, '')}`);
+          logger.info(
+            `Proxy data was written in dynamoDB: ${JSON.stringify(res, 4, '')}`
+          );
           // console.log("Creating proxies in DynamoDb => ", res);
           resolve(res);
         }
@@ -121,7 +125,7 @@ class ProxyUser {
           carrier: data.carrier,
           apn: data.apn,
           status: data.status,
-          resetURL: data.resetURL
+          resetURL: data.resetURL,
         },
         (err, res) => {
           if (err) {
@@ -154,8 +158,8 @@ class ProxyUser {
             'status',
             'resetURL',
             'createdAt',
-            'updatedAt'
-          ]
+            'updatedAt',
+          ],
         },
         (err, res) => {
           if (err) {
