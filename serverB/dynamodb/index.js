@@ -4,9 +4,9 @@ class DynamoDb {
   constructor(data) {
     this.proxyServer = new ProxyServer(
       {
-        accessKeyId: 'AKIAJGHL7PLJSIJO6DBQ',
-        secretAccessKey: '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',
-        region: 'us-east-1'
+        accessKeyId: 'AKIARCH7TKA67XLVVCXY',
+        secretAccessKey: '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',
+        region: 'us-east-1',
       },
       () => {}
     );
