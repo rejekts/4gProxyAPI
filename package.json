@@ -20,7 +20,7 @@
         "child_process": "^1.0.2",
         "cors": "^2.8.5",
         "dynamodb": "^1.1.2",
-        "express": "^4.16.4",
+        "express": "^4.17.3",
         "fs-extra": "^7.0.1",
         "gravatar": "^1.8.0",
         "joi": "^14.3.1",
