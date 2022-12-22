@@ -25,7 +25,7 @@
         "gravatar": "^1.8.0",
         "joi": "^14.3.1",
         "json2csv": "^4.3.3",
-        "jsonwebtoken": "^8.5.0",
+        "jsonwebtoken": "^9.0.0",
         "lodash": "^4.17.11",
         "moment-timezone": "^0.5.23",
         "node-fetch": "^2.3.0",
